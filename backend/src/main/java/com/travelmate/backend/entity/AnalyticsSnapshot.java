@@ -22,8 +22,9 @@ public class AnalyticsSnapshot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "trip_id", nullable = false)
-    private Long tripId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip;
 
     @Column(name = "total_trips", nullable = false)
     private Integer totalTrips = 0;

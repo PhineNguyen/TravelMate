@@ -27,8 +27,9 @@ public class WeatherSnapshot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "trip_id")
-    private Long tripId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip;
 
     @Column(name = "date", nullable = false)
     private LocalDate date;

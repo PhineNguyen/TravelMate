@@ -19,8 +19,9 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "trip_id", nullable = true)
-    private Long tripId;
+    @OneToOne
+    @JoinColumn(name = "trip_id", nullable = true)
+    private Trip trip;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

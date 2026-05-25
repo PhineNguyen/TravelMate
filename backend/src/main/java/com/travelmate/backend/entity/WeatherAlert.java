@@ -25,11 +25,13 @@ public class WeatherAlert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "trip_id")
-    private Long tripId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip;
 
-    @Column(name = "snapshot_id")
-    private Long snapshotId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "snapshot_id", nullable = false)
+    private WeatherSnapshot snapshot;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)

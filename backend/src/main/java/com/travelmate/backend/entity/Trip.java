@@ -53,7 +53,7 @@ public class Trip {
     private PlanningMode planningMode;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id", nullable = false)
+    @JoinColumn(name = "template_id")
     private TripTemplate template;
 
     @Column(name = "is_customized", nullable = false)

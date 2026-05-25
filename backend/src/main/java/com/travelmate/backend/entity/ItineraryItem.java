@@ -29,11 +29,11 @@ public class ItineraryItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
-    private Trip tripId; // scalar for fast insert; or use @ManyToOne(fetch = LAZY) private Trip trip;
+    private Trip trip; // scalar for fast insert; or use @ManyToOne(fetch = LAZY) private Trip trip;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
-    private Place placeId; // keep scalar for perf; optional @ManyToOne(fetch = LAZY)
+    private Place place; // keep scalar for perf; optional @ManyToOne(fetch = LAZY)
 
     @Column(name = "day_number", nullable = false)
     private Integer dayNumber;
