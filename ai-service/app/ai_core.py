@@ -1,6 +1,14 @@
 import google.generativeai as genai
+from sqlalchemy.orm import Session
 from app.config import Config
-from app.schemas import TripRequest, FinalTripPlanSchema
+from app.database import ChatMessage
+from app.schemas import (
+    TripRequest, FinalTripPlanSchema, 
+    PlaceRecommendationRequest, PlaceRecommendationResponse,
+    RouteOptimizationRequest, OptimizedRouteResponse,
+    WeatherAdjustmentRequest, WeatherAdjustmentResponse,
+    ChatRequest
+)
 import json
 
 class AICoreService:
@@ -44,3 +52,91 @@ class AICoreService:
 
         # Chuyển chuỗi văn bản JSON từ AI thành đối tượng Dictionary trong Python
         return json.loads(response.text)
+    
+    async def recommend_places(self, data: PlaceRecommendationRequest) -> dict:
+        system_prompt = f"""
+        Bạn là thổ địa du lịch tại {data.destination}. Người dùng đang tìm kiếm các địa điểm thuộc loại '{data.place_type}' 
+        trong bán kính {data.radius_km}km. 
+        Sở thích đặc biệt: {data.preferences if data.preferences else 'Không có'}.
+        Hãy gợi ý danh sách các địa điểm phù hợp nhất, kèm chi phí ước tính và mô tả ngắn gọn.
+        """
+        response = self.model.generate_content(
+            system_prompt,
+            generation_config={
+                "response_mime_type": "application/json",
+                "response_schema": PlaceRecommendationResponse,
+                "temperature": 0.4 # Nhiệt độ cao hơn một chút để đa dạng gợi ý
+            }
+        )
+        return json.loads(response.text)
+
+    async def optimize_route(self, data: RouteOptimizationRequest) -> dict:
+        places_str = ", ".join([f"{item.location_name} (Thứ tự cũ: {item.current_sequence})" for item in data.locations])
+        system_prompt = f"""
+        Hãy đóng vai trò chuyên gia bản đồ. Người dùng có danh sách các địa điểm cần đi như sau: {places_str}.
+        Dựa trên khoảng cách địa lý thực tế, hãy sắp xếp lại trường 'optimized_sequence' (từ 1, 2, 3...) 
+        sao cho lộ trình di chuyển là hợp lý nhất, đi theo cụm gần nhau, tránh chạy vòng vèo tốn thời gian.
+        """
+        response = self.model.generate_content(
+            system_prompt,
+            generation_config={
+                "response_mime_type": "application/json",
+                "response_schema": OptimizedRouteResponse,
+                "temperature": 0.1 # Nhiệt độ rất thấp để giữ tính logic toán học, địa lý
+            }
+        )
+        return json.loads(response.text)
+
+    async def adjust_weather(self, data: WeatherAdjustmentRequest) -> dict:
+        activities_str = json.dumps([act.dict() for act in data.current_activities], ensure_ascii=False)
+        system_prompt = f"""
+        Thời tiết tại điểm đến đang có cảnh báo: '{data.weather_alert}'.
+        Ngân sách tối đa cho phép thay đổi: {data.budget_limit} VND.
+        Đây là lịch trình hiện tại của người dùng: {activities_str}
+        
+        Nhiệm vụ:
+        1. Giữ nguyên các hoạt động không bị ảnh hưởng bởi thời tiết (ví dụ: ăn uống trong nhà).
+        2. Loại bỏ các hoạt động ngoài trời nguy hiểm/bất tiện và thay thế bằng các địa điểm trong nhà 
+        (bảo tàng, xưởng thủ công, cà phê...) có mức chi phí tương đương.
+        3. Cung cấp lý do giải thích sự thay đổi ở trường 'adjustment_reason'.
+        """
+        response = self.model.generate_content(
+            system_prompt,
+            generation_config={
+                "response_mime_type": "application/json",
+                "response_schema": WeatherAdjustmentResponse,
+                "temperature": 0.2
+            }
+        )
+        return json.loads(response.text)
+    
+    async def chat_with_ai(self, data: ChatRequest, db: Session) -> dict:
+        # 1. Truy xuất lịch sử trò chuyện từ Database dựa trên session_id
+        history_records = db.query(ChatMessage).filter(ChatMessage.session_id == data.session_id).order_by(ChatMessage.id).all()
+        
+        formatted_history = []
+        for record in history_records:
+            formatted_history.append({
+                "role": record.role,
+                "parts": [record.content]
+            })
+
+        # 2. Khởi tạo phiên trò chuyện của Gemini kèm theo bộ nhớ cũ
+        chat_session = self.model.start_chat(history=formatted_history)
+
+        # 3. Gửi tin nhắn mới và nhận phản hồi
+        response = chat_session.send_message(data.message)
+        ai_reply = response.text
+
+        # 4. Lưu tin nhắn của Người dùng vào Database
+        user_msg = ChatMessage(session_id=data.session_id, role="user", content=data.message)
+        db.add(user_msg)
+
+        # 5. Lưu câu trả lời của AI vào Database
+        ai_msg = ChatMessage(session_id=data.session_id, role="model", content=ai_reply)
+        db.add(ai_msg)
+        
+        # Xác nhận lưu thay đổi
+        db.commit()
+
+        return {"reply": ai_reply}
