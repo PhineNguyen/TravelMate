@@ -19,7 +19,7 @@ public class TripDTO {
     private BigDecimal totalBudget;
     private PlanningMode planningMode;
     private Long templateId;
-    private boolean isCustomized;
+    private Boolean isCustomized;
     private TripStatus tripStatus;
     private String inviteCode;
     private LocalDateTime createdAt;

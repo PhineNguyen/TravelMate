@@ -1,0 +1,184 @@
+package com.travelmate.backend.service.impl;
+
+import com.travelmate.backend.dto.request.TripRequest;
+import com.travelmate.backend.dto.response.TripResponse;
+import com.travelmate.backend.entity.Trip;
+import com.travelmate.backend.repository.TripRepository;
+import com.travelmate.backend.service.TripService;
+import com.travelmate.backend.mapper.TripMapper;
+
+import com.travelmate.backend.entity.TripTemplate;
+import com.travelmate.backend.entity.User;
+import com.travelmate.backend.entity.enums.TripStatus;
+
+import com.travelmate.backend.repository.TripTemplateRepository;
+import com.travelmate.backend.repository.UserRepository;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class TripServiceImpl implements TripService {
+    private final TripRepository tripRepository;
+    private final UserRepository userRepository;
+    private final TripTemplateRepository tripTemplateRepository;
+
+    @Override
+    @Transactional
+    public TripResponse create(TripRequest dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("TripRequest must not be null");
+        }
+        if (dto.getId() != null) {
+            throw new IllegalArgumentException("Id must be null when creating");
+        }
+        if (dto.getOwnerId() == null) {
+            throw new IllegalArgumentException("OwnerId is required");
+        }
+        if (trimToNull(dto.getDestination()) == null) {
+            throw new IllegalArgumentException("Destination is required");
+        }
+        if (dto.getStartDate() == null) {
+            throw new IllegalArgumentException("StartDate is required");
+        }
+        if (dto.getDuration() == null || dto.getDuration() <= 0) {
+            throw new IllegalArgumentException("duration must be > 0");
+        }
+        if (dto.getPlanningMode() == null) {
+            throw new IllegalArgumentException("PlanningMode is required");
+        }
+
+        User owner = userRepository.findById(dto.getOwnerId())
+                .orElseThrow(() -> new IllegalArgumentException("OwnerId not found"));
+
+        TripTemplate tripTemplate = null;
+        if (dto.getTemplateId() != null) {
+            tripTemplate = tripTemplateRepository.findById(dto.getTemplateId())
+                    .orElseThrow(() -> new IllegalArgumentException("Template not found"));
+        }
+
+        java.math.BigDecimal totalBudget = dto.getTotalBudget() != null
+                ? dto.getTotalBudget().setScale(2, RoundingMode.HALF_UP)
+                : null;
+
+        String inviteCode = trimToNull(dto.getInviteCode());
+        if (inviteCode == null) {
+            inviteCode = generateUniqueInviteCode();
+        } else {
+            if (tripRepository.existsByInviteCode(inviteCode)) {
+                throw new IllegalArgumentException("Invite code already in use");
+            }
+        }
+
+        TripStatus status = dto.getTripStatus() != null ? dto.getTripStatus() : TripStatus.DRAFT;
+        boolean isCustomized = dto.getIsCustomized() != null ? dto.getIsCustomized() : false;
+
+        Trip trip = Trip.builder()
+                .owner(owner)
+                .destination(trimToNull(dto.getDestination()))
+                .startDate(dto.getStartDate())
+                .duration(dto.getDuration())
+                .totalBudget(totalBudget)
+                .planningMode(dto.getPlanningMode())
+                .template(tripTemplate)
+                .isCustomized(isCustomized)
+                .tripStatus(status)
+                .inviteCode(inviteCode)
+                .build();
+        try {
+            return TripMapper.toResponse(tripRepository.save(trip));
+        } catch (DataIntegrityViolationException ex) {
+            throw new IllegalArgumentException("Database constraint violated", ex);
+        }
+
+    }
+
+    @Override
+    @Transactional
+    public TripResponse update(TripRequest dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("TripRequest must be not null");
+        }
+        if (dto.getId() == null) {
+            throw new IllegalArgumentException("Id is required to update");
+        }
+        Trip existing = tripRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("TripId not found"));
+        if (dto.getDestination() != null)
+            existing.setDestination(trimToNull(dto.getDestination()));
+        if (dto.getStartDate() != null)
+            existing.setStartDate(dto.getStartDate());
+        if (dto.getDuration() != null) {
+            if (dto.getDuration() <= 0)
+                throw new IllegalArgumentException("Duration must not be <= 0");
+            existing.setDuration(dto.getDuration());
+        }
+        if (dto.getTotalBudget() != null) {
+            existing.setTotalBudget(dto.getTotalBudget().setScale(2, RoundingMode.HALF_UP));
+        }
+        if (dto.getPlanningMode() != null)
+            existing.setPlanningMode(dto.getPlanningMode());
+        if (dto.getIsCustomized() != null)
+            existing.setCustomized(dto.getIsCustomized());
+        if (dto.getTripStatus() != null)
+            existing.setTripStatus(dto.getTripStatus());
+
+        if (dto.getTemplateId() != null) {
+            TripTemplate tripTemplate = tripTemplateRepository.findById(dto.getTemplateId())
+                    .orElseThrow(() -> new IllegalArgumentException("TemplateID not found"));
+            existing.setTemplate(tripTemplate);
+        }
+        try {
+            return TripMapper.toResponse(tripRepository.save(existing));
+        } catch (DataIntegrityViolationException ex) {
+            throw new IllegalArgumentException("Database constraint violated", ex);
+        }
+    }
+
+    @Override
+    public TripResponse findById(Long id) {
+        if (id == null)
+            throw new IllegalArgumentException("id not found");
+        return tripRepository.findById(id).map(TripMapper::toResponse).orElse(null);
+    }
+
+    @Override
+    public List<TripResponse> listAll() {
+        return tripRepository.findAll().stream().map(TripMapper::toResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        if (id == null)
+            throw new IllegalArgumentException("Id is required");
+        if (!tripRepository.existsById(id))
+            throw new IllegalArgumentException("Trip not found");
+        tripRepository.deleteById(id);
+    }
+
+    private String generateUniqueInviteCode() {
+        String code;
+        do {
+            code = UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        } while (tripRepository.existsByInviteCode(code));
+        return code;
+    }
+
+    private String trimToNull(String v) {
+        if (v == null)
+            return null;
+        String t = v.trim();
+        return t.isEmpty() ? null : t;
+    }
+}

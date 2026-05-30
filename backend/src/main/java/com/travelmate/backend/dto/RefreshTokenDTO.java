@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 public class RefreshTokenDTO {
     private Long id;
     private Long userId;
+    private String tokenHash;
     private LocalDateTime expiryDate;
-    private boolean revoked;
+    private Boolean revoked;
     private LocalDateTime createdAt;
 }

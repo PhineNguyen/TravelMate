@@ -21,7 +21,7 @@ public class ItineraryItemDTO {
     private BigDecimal costEstimate;
     private Integer orderIndex;
     private SourceType sourceType;
-    private boolean isLocked;
+    private Boolean isLocked;
     private String customType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

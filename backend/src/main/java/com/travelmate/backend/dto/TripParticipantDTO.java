@@ -13,6 +13,6 @@ public class TripParticipantDTO {
     private Long userId;
     private ParticipantRole role;
     private LocalDateTime joinedAt;
-    private boolean isActive;
+    private Boolean isActive;
 
 }

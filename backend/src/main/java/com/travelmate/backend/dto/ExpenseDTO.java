@@ -17,5 +17,5 @@ public class ExpenseDTO {
     private ExpenseCategory category;
     private String description;
     private LocalDateTime createdAt;
-    private boolean isShared;
+    private Boolean isShared;
 }

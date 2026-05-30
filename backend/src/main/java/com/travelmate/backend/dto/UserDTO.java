@@ -10,5 +10,5 @@ public class UserDTO {
     private String fullName;
     private String email;
     private String avatarUrl;
-    private boolean active;
+    private Boolean active;
 }

@@ -16,5 +16,5 @@ public class TemplateItemDTO {
     private LocalTime startTime;
     private Integer duration;
     private String note;
-    private boolean isOptional;
+    private Boolean isOptional;
 }

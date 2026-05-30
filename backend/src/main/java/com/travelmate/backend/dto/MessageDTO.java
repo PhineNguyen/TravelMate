@@ -15,8 +15,8 @@ public class MessageDTO {
     private String content;
     private MessageType messageType;
     private LocalDateTime createdAt;
-    private boolean isEdited;
+    private Boolean isEdited;
     private LocalDateTime editedAt;
-    private boolean isDeleted;
+    private Boolean isDeleted;
     private String attachmentUrl;
 }
