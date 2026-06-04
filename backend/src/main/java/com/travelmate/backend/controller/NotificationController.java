@@ -1,12 +1,14 @@
 package com.travelmate.backend.controller;
 
 import com.travelmate.backend.dto.NotificationDTO;
+import com.travelmate.backend.security.CustomUserDetails;
 import com.travelmate.backend.service.NotificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,9 +42,28 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.listAll());
     }
 
+    @PutMapping("/{id}/read")
+    public ResponseEntity<NotificationDTO> markRead(@PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(notificationService.markRead(id, currentUserId(authentication)));
+    }
+
+    @PutMapping("/read-all")
+    public ResponseEntity<Void> markAllRead(Authentication authentication) {
+        notificationService.markAllRead(currentUserId(authentication));
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         notificationService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Long currentUserId(Authentication authentication) {
+        Object principal = authentication != null ? authentication.getPrincipal() : null;
+        if (principal instanceof CustomUserDetails details) {
+            return details.getId();
+        }
+        throw new IllegalStateException("Authenticated user not available");
     }
 }

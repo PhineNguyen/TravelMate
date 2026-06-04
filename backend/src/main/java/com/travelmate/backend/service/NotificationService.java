@@ -8,6 +8,10 @@ public interface NotificationService {
 
     NotificationDTO update(NotificationDTO dto);
 
+    NotificationDTO markRead(Long id, Long userId);
+
+    void markAllRead(Long userId);
+
     NotificationDTO findById(Long id);
 
     List<NotificationDTO> listAll();

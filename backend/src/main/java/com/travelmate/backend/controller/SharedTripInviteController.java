@@ -41,6 +41,21 @@ public class SharedTripInviteController {
         return ResponseEntity.ok(sharedTripInviteService.listAll());
     }
 
+    @PutMapping("/{id}/accept")
+    public ResponseEntity<SharedTripInviteDTO> accept(@PathVariable Long id) {
+        return ResponseEntity.ok(sharedTripInviteService.accept(id));
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<SharedTripInviteDTO> reject(@PathVariable Long id) {
+        return ResponseEntity.ok(sharedTripInviteService.reject(id));
+    }
+
+    @PutMapping("/{id}/revoke")
+    public ResponseEntity<SharedTripInviteDTO> revoke(@PathVariable Long id) {
+        return ResponseEntity.ok(sharedTripInviteService.revoke(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         sharedTripInviteService.delete(id);

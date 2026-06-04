@@ -79,6 +79,35 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
+    public NotificationDTO markRead(Long id, Long userId) {
+        if (id == null)
+            throw new IllegalArgumentException("id is required");
+        if (userId == null)
+            throw new IllegalArgumentException("userId is required");
+
+        Notification existing = notificationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+        if (existing.getUser() == null || !userId.equals(existing.getUser().getId())) {
+            throw new IllegalArgumentException("Notification does not belong to user");
+        }
+        existing.setRead(true);
+        return NotificationMapper.toDto(notificationRepository.save(existing));
+    }
+
+    @Override
+    @Transactional
+    public void markAllRead(Long userId) {
+        if (userId == null)
+            throw new IllegalArgumentException("userId is required");
+
+        List<Notification> notifications = notificationRepository
+                .findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+        notifications.forEach(notification -> notification.setRead(true));
+        notificationRepository.saveAll(notifications);
+    }
+
+    @Override
     public NotificationDTO findById(Long id) {
         if (id == null)
             throw new IllegalArgumentException("id is required");

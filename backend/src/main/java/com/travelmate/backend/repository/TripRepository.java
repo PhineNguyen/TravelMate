@@ -13,6 +13,14 @@ import com.travelmate.backend.entity.enums.TripStatus;
 
 public interface TripRepository extends JpaRepository<Trip, Long> {
 
+    List<Trip> findAllByIsDeletedFalse();
+
+    Optional<Trip> findByIdAndIsDeletedFalse(Long id);
+
+    boolean existsByIdAndIsDeletedFalse(Long id);
+
+    List<Trip> findByOwnerIdAndIsDeletedFalse(Long ownerId);
+
     List<Trip> findByOwnerId(Long ownerId);
 
     Page<Trip> findByOwnerId(Long ownerId, Pageable pageable);

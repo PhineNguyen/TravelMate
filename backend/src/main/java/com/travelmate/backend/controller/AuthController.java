@@ -3,7 +3,11 @@ package com.travelmate.backend.controller;
 import com.travelmate.backend.dto.request.AuthLoginRequest;
 import com.travelmate.backend.dto.request.AuthRefreshRequest;
 import com.travelmate.backend.dto.request.AuthRegisterRequest;
+import com.travelmate.backend.dto.request.OAuthLoginRequest;
+import com.travelmate.backend.dto.request.PasswordResetConfirmRequest;
+import com.travelmate.backend.dto.request.PasswordResetRequest;
 import com.travelmate.backend.dto.response.AuthResponse;
+import com.travelmate.backend.dto.response.PasswordResetResponse;
 import com.travelmate.backend.service.AuthService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -31,9 +35,25 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/oauth")
+    public ResponseEntity<AuthResponse> oauthLogin(@Valid @RequestBody OAuthLoginRequest request) {
+        return ResponseEntity.ok(authService.oauthLogin(request));
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody AuthRefreshRequest request) {
         return ResponseEntity.ok(authService.refresh(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<PasswordResetResponse> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
+        return ResponseEntity.ok(authService.requestPasswordReset(request));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetConfirmRequest request) {
+        authService.confirmPasswordReset(request);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/logout")

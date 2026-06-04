@@ -9,6 +9,7 @@ import com.travelmate.backend.repository.TripRepository;
 import com.travelmate.backend.repository.UserRepository;
 import com.travelmate.backend.service.SharedTripInviteService;
 import com.travelmate.backend.mapper.SharedTripInviteMapper;
+import com.travelmate.backend.entity.enums.InviteStatus;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -49,7 +50,7 @@ public class SharedTripInviteServiceImpl implements SharedTripInviteService {
         if (dto.getReceiverEmail() == null)
             throw new IllegalArgumentException("receiverEmail is required");
 
-        Trip trip = tripRepository.findById(dto.getTripId())
+        Trip trip = tripRepository.findByIdAndIsDeletedFalse(dto.getTripId())
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
         User sender = userRepository.findById(dto.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -59,7 +60,8 @@ public class SharedTripInviteServiceImpl implements SharedTripInviteService {
                 .sender(sender)
                 .receiverEmail(dto.getReceiverEmail())
                 .inviteCode(dto.getInviteCode() != null ? dto.getInviteCode() : generateUniqueInviteCode())
-                .status(dto.getStatus() != null ? dto.getStatus() : null)
+                .status(dto.getStatus() != null ? dto.getStatus()
+                        : InviteStatus.PENDING)
                 .expiresAt(dto.getExpiresAt())
                 .build();
 
@@ -80,7 +82,7 @@ public class SharedTripInviteServiceImpl implements SharedTripInviteService {
         if (dto.getReceiverEmail() != null)
             existing.setReceiverEmail(dto.getReceiverEmail());
         if (dto.getStatus() != null)
-            existing.setStatus(dto.getStatus());
+            applyStatusTransition(existing, dto.getStatus());
         if (dto.getExpiresAt() != null)
             existing.setExpiresAt(dto.getExpiresAt());
 
@@ -110,7 +112,67 @@ public class SharedTripInviteServiceImpl implements SharedTripInviteService {
             throw new IllegalArgumentException("id is required");
         if (!repository.existsById(id))
             throw new IllegalArgumentException("SharedTripInvite not found");
-        repository.deleteById(id);
+        SharedTripInvite existing = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("SharedTripInvite not found"));
+        existing.setStatus(InviteStatus.REVOKED);
+        repository.save(existing);
     }
 
+    @Override
+    @Transactional
+    public SharedTripInviteDTO accept(Long id) {
+        SharedTripInvite existing = getActiveInvite(id);
+        applyStatusTransition(existing, InviteStatus.ACCEPTED);
+        return SharedTripInviteMapper.toDto(repository.save(existing));
+    }
+
+    @Override
+    @Transactional
+    public SharedTripInviteDTO reject(Long id) {
+        SharedTripInvite existing = getActiveInvite(id);
+        applyStatusTransition(existing, InviteStatus.REJECTED);
+        return SharedTripInviteMapper.toDto(repository.save(existing));
+    }
+
+    @Override
+    @Transactional
+    public SharedTripInviteDTO revoke(Long id) {
+        SharedTripInvite existing = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("SharedTripInvite not found"));
+        if (existing.getStatus() == InviteStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Accepted invitation cannot be revoked");
+        }
+        existing.setStatus(InviteStatus.REVOKED);
+        return SharedTripInviteMapper.toDto(repository.save(existing));
+    }
+
+    private SharedTripInvite getActiveInvite(Long id) {
+        if (id == null)
+            throw new IllegalArgumentException("id is required");
+        SharedTripInvite existing = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("SharedTripInvite not found"));
+        if (existing.getStatus() == InviteStatus.EXPIRED || existing.getStatus() == InviteStatus.REVOKED) {
+            throw new IllegalArgumentException("Invitation is no longer active");
+        }
+        if (existing.getExpiresAt() != null && existing.getExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            existing.setStatus(InviteStatus.EXPIRED);
+            repository.save(existing);
+            throw new IllegalArgumentException("Invitation is expired");
+        }
+        if (existing.getStatus() != InviteStatus.PENDING) {
+            throw new IllegalArgumentException("Invitation is no longer pending");
+        }
+        return existing;
+    }
+
+    private void applyStatusTransition(SharedTripInvite invite, InviteStatus next) {
+        InviteStatus current = invite.getStatus();
+        boolean allowed = current == InviteStatus.PENDING
+                && (next == InviteStatus.ACCEPTED || next == InviteStatus.REJECTED
+                        || next == InviteStatus.REVOKED || next == InviteStatus.EXPIRED);
+        if (!allowed) {
+            throw new IllegalArgumentException("Invalid invitation status transition");
+        }
+        invite.setStatus(next);
+    }
 }

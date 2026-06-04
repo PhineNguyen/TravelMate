@@ -81,6 +81,7 @@ public class TripServiceImpl implements TripService {
         }
 
         TripStatus status = dto.getTripStatus() != null ? dto.getTripStatus() : TripStatus.DRAFT;
+        validateCreateStatus(status);
         boolean isCustomized = dto.getIsCustomized() != null ? dto.getIsCustomized() : false;
 
         Trip trip = Trip.builder()
@@ -112,8 +113,11 @@ public class TripServiceImpl implements TripService {
         if (dto.getId() == null) {
             throw new IllegalArgumentException("Id is required to update");
         }
-        Trip existing = tripRepository.findById(dto.getId())
+        Trip existing = tripRepository.findByIdAndIsDeletedFalse(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("TripId not found"));
+        if (isTerminal(existing.getTripStatus())) {
+            throw new IllegalArgumentException("Trip is read-only in terminal state");
+        }
         if (dto.getDestination() != null)
             existing.setDestination(trimToNull(dto.getDestination()));
         if (dto.getStartDate() != null)
@@ -131,7 +135,7 @@ public class TripServiceImpl implements TripService {
         if (dto.getIsCustomized() != null)
             existing.setCustomized(dto.getIsCustomized());
         if (dto.getTripStatus() != null)
-            existing.setTripStatus(dto.getTripStatus());
+            validateAndSetStatus(existing, dto.getTripStatus());
 
         if (dto.getTemplateId() != null) {
             TripTemplate tripTemplate = tripTemplateRepository.findById(dto.getTemplateId())
@@ -149,12 +153,13 @@ public class TripServiceImpl implements TripService {
     public TripResponse findById(Long id) {
         if (id == null)
             throw new IllegalArgumentException("id not found");
-        return tripRepository.findById(id).map(TripMapper::toResponse).orElse(null);
+        return tripRepository.findByIdAndIsDeletedFalse(id).map(TripMapper::toResponse).orElse(null);
     }
 
     @Override
     public List<TripResponse> listAll() {
-        return tripRepository.findAll().stream().map(TripMapper::toResponse).collect(Collectors.toList());
+        return tripRepository.findAllByIsDeletedFalse().stream().map(TripMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -162,9 +167,13 @@ public class TripServiceImpl implements TripService {
     public void delete(Long id) {
         if (id == null)
             throw new IllegalArgumentException("Id is required");
-        if (!tripRepository.existsById(id))
+        if (!tripRepository.existsByIdAndIsDeletedFalse(id))
             throw new IllegalArgumentException("Trip not found");
-        tripRepository.deleteById(id);
+        Trip existing = tripRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+        existing.setDeleted(true);
+        existing.setDeletedAt(java.time.LocalDateTime.now());
+        tripRepository.save(existing);
     }
 
     private String generateUniqueInviteCode() {
@@ -180,5 +189,35 @@ public class TripServiceImpl implements TripService {
             return null;
         String t = v.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    private void validateCreateStatus(TripStatus status) {
+        if (status == TripStatus.ARCHIVED) {
+            throw new IllegalArgumentException("ARCHIVED is not allowed for new trip");
+        }
+    }
+
+    private void validateAndSetStatus(Trip existing, TripStatus requestedStatus) {
+        TripStatus current = existing.getTripStatus();
+        if (requestedStatus == current) {
+            return;
+        }
+        if (!isAllowedTransition(current, requestedStatus)) {
+            throw new IllegalArgumentException("Invalid trip status transition");
+        }
+        existing.setTripStatus(requestedStatus);
+    }
+
+    private boolean isAllowedTransition(TripStatus current, TripStatus next) {
+        return switch (current) {
+            case DRAFT -> next == TripStatus.PLANNED || next == TripStatus.CANCELLED;
+            case PLANNED -> next == TripStatus.DRAFT || next == TripStatus.ACTIVE || next == TripStatus.CANCELLED;
+            case ACTIVE -> next == TripStatus.COMPLETED || next == TripStatus.CANCELLED;
+            case COMPLETED, CANCELLED, ARCHIVED -> false;
+        };
+    }
+
+    private boolean isTerminal(TripStatus status) {
+        return status == TripStatus.COMPLETED || status == TripStatus.CANCELLED || status == TripStatus.ARCHIVED;
     }
 }
