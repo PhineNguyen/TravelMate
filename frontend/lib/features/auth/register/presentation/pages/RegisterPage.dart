@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
+
+import '../../../../../core/widgets/app_button.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -6,28 +9,27 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackground(), // Đóng gói trang trí nền
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 30),
-                  _buildTitle(),
-                  const SizedBox(height: 24),
-                  _buildRegistrationForm(),
-                  const SizedBox(height: 15),
-                  _buildSubmitButton(),
-                  const SizedBox(height: 8),
-                  _buildFooter(),
-                ],
-              ),
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 40),
+                _buildTitle(),
+                const SizedBox(height: 32),
+                _buildRegistrationForm(),
+                const SizedBox(height: 40),
+                AppButton(
+                  label: "Create account",
+                  onTap: () {},
+                ),
+                const SizedBox(height: 20),
+                _buildFooter(context),
+              ],
             ),
           ),
         ),
@@ -35,33 +37,30 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
-  BoxDecoration _buildBackground() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFE0F2FE), Colors.white],
-      ),
-    );
-  }
-
   Widget _buildHeader() {
     return Row(
       children: [
-        const Icon(Icons.explore_rounded, color: Colors.blueAccent, size: 36),
-        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1ABC9C).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.explore_rounded,
+              color: Color(0xFF1ABC9C), size: 32),
+        ),
+        const SizedBox(width: 12),
         RichText(
           text: const TextSpan(
             style: TextStyle(
-              fontSize: 32,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
             children: [
+              TextSpan(text: "Travel", style: TextStyle(color: Colors.white)),
               TextSpan(
-                  text: "Travel", style: TextStyle(color: Color(0xFF1A1A1A))),
-              TextSpan(
-                  text: "Mate", style: TextStyle(color: Colors.blueAccent)),
+                  text: "Mate", style: TextStyle(color: Color(0xFF1ABC9C))),
             ],
           ),
         ),
@@ -70,17 +69,18 @@ class RegisterPage extends StatelessWidget {
   }
 
   Widget _buildTitle() {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           "Create account",
-          style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        SizedBox(height: 5),
+        const SizedBox(height: 8),
         Text(
           "Start planning smarter trips today",
-          style: TextStyle(fontSize: 18, color: Colors.grey),
+          style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
         ),
       ],
     );
@@ -91,10 +91,10 @@ class RegisterPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField("FULL NAME", "Your full name", TextInputType.name),
-        const SizedBox(height: 15),
+        const SizedBox(height: 20),
         _buildInputField(
             "EMAIL", "example@email.com", TextInputType.emailAddress),
-        const SizedBox(height: 15),
+        const SizedBox(height: 20),
         _buildInputField(
             "PASSWORD", "Your password", TextInputType.visiblePassword,
             isPassword: true),
@@ -107,57 +107,56 @@ class RegisterPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-              fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            label,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade500,
+                letterSpacing: 1.1),
+          ),
         ),
-        const SizedBox(height: 5),
-        TextFormField(
-          obscureText: isPassword,
-          keyboardType: type,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: const OutlineInputBorder(),
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.5),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF172234),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: TextFormField(
+            obscureText: isPassword,
+            keyboardType: type,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(18),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        minimumSize: const Size(double.infinity, 54),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-      onPressed: () {},
-      child: const Text("Create account",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildFooter() {
+  Widget _buildFooter(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Already have an account?",
-            style: TextStyle(fontSize: 14, color: Colors.grey)),
+        Text("Already have an account?",
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
         TextButton(
-          onPressed: () {},
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.blue,
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const LoginPage()));
+          },
+          child: const Text(
+            "Sign in",
+            style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF1ABC9C),
+                fontWeight: FontWeight.bold),
           ),
-          child: const Text("Sign in",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         ),
       ],
     );

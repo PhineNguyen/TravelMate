@@ -1,98 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/trip_details/trip_detail/presentation/pages/TripDetailPage.dart';
 
-class TemplatePage extends StatefulWidget {
-  const TemplatePage({super.key});
+import '../../../../../core/widgets/app_button.dart';
+
+class TemplatesPage extends StatefulWidget {
+  final VoidCallback? onBackToHome;
+
+  const TemplatesPage({super.key, this.onBackToHome});
 
   @override
-  State<TemplatePage> createState() => _TripTemplateState();
+  State<TemplatesPage> createState() => _TripTemplatesState();
 }
 
-class _TripTemplateState extends State<TemplatePage> {
-  final Set<String> _selectedCategories = {};
+class _TripTemplatesState extends State<TemplatesPage> {
+  final Set<String> _selectedCategories = {"All"};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackground(),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context),
-                SizedBox(height: 10),
-                _buildSearchBar(),
-                SizedBox(height: 10),
-                _buildRegionWrap(),
-                SizedBox(height: 15),
-                _buildSectionHeader("TRENDING THIS WEEK", "View all"),
-                const SizedBox(height: 15),
-                _buildTemplateCard(
-                  category: "Cultural",
-                  usage: "2.4k used",
-                  title: "Japan Discovery 14D",
-                  locations: "Tokyo · Kyoto · Osaka · Hiroshima",
-                  duration: "14 days",
-                  pax: "2-4 pax",
-                  rating: "4.9",
-                  price: "\$2,800",
-                  color: Colors.blue,
-                  bgIcon: Icons.temple_buddhist_outlined,
-                ),
-                _buildTemplateCard(
-                  category: "Culinary",
-                  usage: "1.8k used",
-                  title: "Paris & Côte d'Azur 10D",
-                  locations: "Paris · Nice · Monaco · Cannes",
-                  duration: "10 days",
-                  pax: "2 pax",
-                  rating: "4.8",
-                  price: "\$3,200",
-                  color: Colors.orange,
-                  bgIcon: Icons.castle_outlined,
-                ),
-                _buildTemplateCard(
-                  category: "Culinary",
-                  usage: "1.8k used",
-                  title: "Paris & Côte d'Azur 10D",
-                  locations: "Paris · Nice · Monaco · Cannes",
-                  duration: "10 days",
-                  pax: "2 pax",
-                  rating: "4.8",
-                  price: "\$3,200",
-                  color: Colors.orange,
-                  bgIcon: Icons.castle_outlined,
-                ),
-                _buildTemplateCard(
-                  category: "Culinary",
-                  usage: "1.8k used",
-                  title: "Paris & Côte d'Azur 10D",
-                  locations: "Paris · Nice · Monaco · Cannes",
-                  duration: "10 days",
-                  pax: "2 pax",
-                  rating: "4.8",
-                  price: "\$3,200",
-                  color: Colors.orange,
-                  bgIcon: Icons.castle_outlined,
-                ),
-              ],
-            ),
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 30),
+              _buildSearchBar(),
+              const SizedBox(height: 25),
+              _buildRegionWrap(),
+              const SizedBox(height: 30),
+              _buildSectionHeader("TRENDING THIS WEEK", "View all"),
+              const SizedBox(height: 15),
+              _buildTemplateCard(
+                category: "Cultural",
+                usage: "2.4k used",
+                title: "Japan Discovery 14D",
+                locations: "Tokyo · Kyoto · Osaka · Hiroshima",
+                duration: "14 days",
+                pax: "2-4 pax",
+                rating: "4.9",
+                price: "\$2,800",
+                color: const Color(0xFF1ABC9C),
+                bgIcon: Icons.temple_buddhist_outlined,
+              ),
+              _buildTemplateCard(
+                category: "Culinary",
+                usage: "1.8k used",
+                title: "Paris & Côte d'Azur 10D",
+                locations: "Paris · Nice · Monaco · Cannes",
+                duration: "10 days",
+                pax: "2 pax",
+                rating: "4.8",
+                price: "\$3,200",
+                color: Colors.orangeAccent,
+                bgIcon: Icons.castle_outlined,
+              ),
+              _buildTemplateCard(
+                category: "Adventure",
+                usage: "1.2k used",
+                title: "Swiss Alps Explorer",
+                locations: "Zermatt · Interlaken · Lucerne",
+                duration: "7 days",
+                pax: "1-2 pax",
+                rating: "4.7",
+                price: "\$1,950",
+                color: Colors.blueAccent,
+                bgIcon: Icons.terrain_outlined,
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  BoxDecoration _buildBackground() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFE0F2FE), Colors.white],
       ),
     );
   }
@@ -100,34 +79,42 @@ class _TripTemplateState extends State<TemplatePage> {
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF101828),
-            size: 24,
+        GestureDetector(
+          onTap: () {
+            if (widget.onBackToHome != null) {
+              widget.onBackToHome!();
+            } else {
+              Navigator.maybePop(context);
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF172234),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade800),
+            ),
+            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 15),
         const Text(
           "Trip Templates",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF101828),
-            letterSpacing: -0.5,
+            color: Colors.white,
           ),
         ),
         const Spacer(),
-        IconButton(
-          onPressed: () {
-            //logic here
-          },
-          icon: const Icon(
-            Icons.tune_rounded,
-            color: Colors.black,
-            size: 25,
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF172234),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade800),
           ),
+          child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
         ),
       ],
     );
@@ -135,23 +122,20 @@ class _TripTemplateState extends State<TemplatePage> {
 
   Widget _buildSearchBar() {
     return Container(
-      height: 50,
+      height: 54,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-          ),
-        ],
+        color: const Color(0xFF172234),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade800, width: 0.5),
       ),
-      child: TextFormField(
+      child: TextField(
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: "Search Templates, Destinations",
-          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey),
+          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
       ),
     );
@@ -184,20 +168,20 @@ class _TripTemplateState extends State<TemplatePage> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        margin: const EdgeInsets.only(right: 10),
+        margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF8B5CF6) : Colors.white,
-          borderRadius: BorderRadius.circular(15),
+          color: isSelected ? const Color(0xFF1ABC9C) : const Color(0xFF172234),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey[200]!,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? Colors.transparent : Colors.grey.shade800,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w600,
+            color: isSelected ? const Color(0xFF0B1423) : Colors.grey.shade500,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
           ),
         ),
       ),
@@ -209,25 +193,20 @@ class _TripTemplateState extends State<TemplatePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                color: Colors.grey.shade500,
                 letterSpacing: 1.2)),
         if (actionText != null)
-          TextButton(
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              // tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            onPressed: () {},
+          GestureDetector(
+            onTap: () {},
             child: Text(
               actionText,
               style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blueAccent),
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1ABC9C)),
             ),
           ),
       ],
@@ -247,28 +226,21 @@ class _TripTemplateState extends State<TemplatePage> {
     required IconData bgIcon,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF172234),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade800),
       ),
       child: Column(
         children: [
-          // ====HEADER
           Stack(
             children: [
               Container(
-                height: 140,
+                height: 160,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1), // Màu nền nhạt
+                  color: color.withOpacity(0.05),
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(24)),
                 ),
@@ -276,38 +248,45 @@ class _TripTemplateState extends State<TemplatePage> {
                   child: Icon(
                     bgIcon,
                     size: 80,
-                    color: color.withOpacity(0.2),
+                    color: color.withOpacity(0.15),
                   ),
                 ),
               ),
-              // Category (Cultural/Culinary...) label
               Positioned(
-                top: 12,
-                left: 12,
-                child: Text(
-                  category,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              // Nhãn Usage (Số người dùng)
-              Positioned(
-                top: 12,
-                right: 12,
+                top: 16,
+                left: 16,
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    category,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0B1423).withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     children: [
                       const Icon(Icons.local_fire_department,
-                          color: Colors.white, size: 17),
+                          color: Colors.orangeAccent, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         usage,
@@ -322,49 +301,46 @@ class _TripTemplateState extends State<TemplatePage> {
               ),
             ],
           ),
-
-          // --- information details
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
                   style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF101828)),
+                      color: Colors.white),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Icon(Icons.location_on_rounded,
-                        size: 14, color: Colors.grey[400]),
-                    const SizedBox(width: 4),
+                        size: 14, color: Colors.grey.shade600),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         locations,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                        style: TextStyle(
+                            color: Colors.grey.shade500, fontSize: 13),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                //infor, time
+                const SizedBox(height: 20),
                 Row(
                   children: [
                     _buildSmallInfo(Icons.access_time_rounded, duration),
-                    const SizedBox(width: 15),
+                    const SizedBox(width: 20),
                     _buildSmallInfo(Icons.people_outline_rounded, pax),
-                    const SizedBox(width: 15),
+                    const SizedBox(width: 20),
                     _buildSmallInfo(Icons.star_rounded, rating,
-                        iconColor: Colors.orange),
+                        iconColor: Colors.orangeAccent),
                   ],
                 ),
-                const SizedBox(height: 20),
-                // price, button
+                const SizedBox(height: 25),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -372,34 +348,33 @@ class _TripTemplateState extends State<TemplatePage> {
                       text: TextSpan(
                         text: price,
                         style: const TextStyle(
-                            fontSize: 22,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF101828)),
+                            color: Colors.white),
                         children: [
                           TextSpan(
                             text: " est / person",
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.normal,
-                                color: Colors.grey[500]),
+                                color: Colors.grey.shade600),
                           ),
                         ],
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2D68FF),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 16),
+                    SizedBox(
+                      width: 140,
+                      child: AppButton(
+                        label: "Use template",
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const TripDetailPage()));
+                        },
+                        height: 48,
                       ),
-                      child: const Text("Use template",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
                     ),
                   ],
                 ),
@@ -411,13 +386,16 @@ class _TripTemplateState extends State<TemplatePage> {
     );
   }
 
-// Hàm phụ để tạo các icon-text nhỏ (14 days, 2-4 pax...)
   Widget _buildSmallInfo(IconData icon, String text, {Color? iconColor}) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: iconColor ?? Colors.grey[400]),
-        const SizedBox(width: 4),
-        Text(text, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+        Icon(icon, size: 16, color: iconColor ?? Colors.grey.shade600),
+        const SizedBox(width: 6),
+        Text(text,
+            style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 13,
+                fontWeight: FontWeight.bold)),
       ],
     );
   }

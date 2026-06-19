@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../../../core/widgets/app_button.dart';
+
 class ResetPwPage extends StatefulWidget {
   const ResetPwPage({super.key});
 
@@ -10,7 +12,6 @@ class ResetPwPage extends StatefulWidget {
 
 class _ResetPwPageState extends State<ResetPwPage>
     with SingleTickerProviderStateMixin {
-  // Biến lưu trữ giá trị xoay
   double _rotateX = 0;
   double _rotateY = 0;
 
@@ -26,7 +27,6 @@ class _ResetPwPageState extends State<ResetPwPage>
       duration: const Duration(milliseconds: 500),
     );
 
-    // Khởi tạo giá trị mặc định để tránh lỗi late initialization
     _animationX = const AlwaysStoppedAnimation(0.0);
     _animationY = const AlwaysStoppedAnimation(0.0);
 
@@ -57,29 +57,26 @@ class _ResetPwPageState extends State<ResetPwPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackgroundDecoration(),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            // Thêm để tránh lỗi tràn màn hình khi hiện bàn phím
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context),
-                  const SizedBox(height: 40),
-                  _buildAnimated3DCard(),
-                  const SizedBox(height: 20),
-                  _buildTextContent(),
-                  const SizedBox(height: 30),
-                  _buildEmailInputField(),
-                  const SizedBox(height: 30),
-                  _buildActionButtons(context),
-                ],
-              ),
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                _buildHeader(context),
+                const SizedBox(height: 40),
+                _buildAnimated3DCard(),
+                const SizedBox(height: 40),
+                _buildTextContent(),
+                const SizedBox(height: 32),
+                _buildEmailInputField(),
+                const SizedBox(height: 40),
+                _buildActionButtons(context),
+                const SizedBox(height: 30),
+              ],
             ),
           ),
         ),
@@ -87,30 +84,18 @@ class _ResetPwPageState extends State<ResetPwPage>
     );
   }
 
-  // 1. Trang trí nền Gradient
-  BoxDecoration _buildBackgroundDecoration() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFE0F2FE), Colors.white],
-      ),
-    );
-  }
-
-  // 2. Header: Nút quay lại và Tiêu đề
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         _buildCircleActionIcon(
             Icons.arrow_back_ios_new_rounded, () => Navigator.pop(context)),
-        const SizedBox(width: 5),
+        const SizedBox(width: 15),
         const Text(
           "Reset Password",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF101828),
+            color: Colors.white,
             letterSpacing: -0.5,
           ),
         ),
@@ -118,13 +103,11 @@ class _ResetPwPageState extends State<ResetPwPage>
     );
   }
 
-  // 3. Khối hình ảnh 3D tương tác
   Widget _buildAnimated3DCard() {
     return GestureDetector(
       onPanUpdate: (details) {
         _controller.stop();
         setState(() {
-          // Sửa logic xoay: Vuốt ngang (dx) xoay quanh trục Y, vuốt dọc (dy) xoay quanh trục X
           _rotateY += details.delta.dx * 0.01;
           _rotateX -= details.delta.dy * 0.01;
         });
@@ -143,126 +126,110 @@ class _ResetPwPageState extends State<ResetPwPage>
     );
   }
 
-  // 4. Nội dung text tiêu đề và mô tả
   Widget _buildTextContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           "Forgot your password?",
-          style: TextStyle(fontSize: 23, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 10),
-        const Text(
-          "Enter your registered email and we'll send you instructions to reset your password. Link expires in 30 minutes.",
           style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black87),
-          textAlign: TextAlign.justify,
+              fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          "Enter your registered email and we'll send you instructions to reset your password. Link expires in 30 minutes.",
+          style:
+              TextStyle(fontSize: 16, color: Colors.grey.shade500, height: 1.5),
         ),
       ],
     );
   }
 
-  // 5. Ô nhập liệu Email
   Widget _buildEmailInputField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "EMAIL ADDRESS",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[500],
-            fontSize: 14,
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            "EMAIL ADDRESS",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade500,
+              fontSize: 12,
+              letterSpacing: 1.1,
+            ),
           ),
         ),
-        const SizedBox(height: 10),
-        TextFormField(
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            hintText: "example@email.com",
-            border: OutlineInputBorder(),
-            filled: true,
-            fillColor: Colors.white70,
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF172234),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade800),
+          ),
+          child: TextFormField(
+            keyboardType: TextInputType.emailAddress,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: "example@email.com",
+              hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(18),
+            ),
           ),
         ),
       ],
     );
   }
 
-  // 6. Các nút bấm hành động
   Widget _buildActionButtons(BuildContext context) {
     return Column(
       children: [
-        _buildButton(
+        AppButton(
           label: "Send Reset Link",
-          onPressed: () {},
-          isPrimary: true,
+          onTap: () {},
         ),
-        const SizedBox(height: 12),
-        _buildButton(
+        const SizedBox(height: 16),
+        AppButton(
           label: "Back to sign in",
-          onPressed: () => Navigator.pop(context),
+          onTap: () => Navigator.pop(context),
           isPrimary: false,
         ),
       ],
     );
   }
 
-  // Hàm dùng chung để tạo Button
-  Widget _buildButton({
-    required String label,
-    required VoidCallback onPressed,
-    required bool isPrimary,
-  }) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isPrimary ? Colors.blueAccent : Colors.white,
-        foregroundColor: isPrimary ? Colors.white : Colors.grey[600],
-        minimumSize: const Size(double.infinity, 54),
-        elevation: isPrimary ? 4 : 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: isPrimary
-              ? BorderSide.none
-              : BorderSide(color: Colors.grey[200]!),
-        ),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
-      onPressed: onPressed,
-      child: Text(label),
-    );
-  }
-
   Widget _buildCircleActionIcon(IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(25),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
-          shape: BoxShape.circle,
+          color: const Color(0xFF172234),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade800),
         ),
-        child: Icon(icon, color: const Color(0xFF475467), size: 22),
+        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }
 
-  // Nội dung tấm thẻ Lottie
   Widget _build3DCardContent() {
     return AspectRatio(
-      aspectRatio: 21 / 11.8,
+      aspectRatio: 16 / 9,
       child: Container(
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF172234),
           borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+              color: const Color(0xFF1ABC9C).withOpacity(0.1), width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.1),
-              blurRadius: 30,
+              color: const Color(0xFF1ABC9C).withOpacity(0.05),
+              blurRadius: 40,
               spreadRadius: 5,
             ),
           ],

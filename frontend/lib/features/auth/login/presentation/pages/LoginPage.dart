@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/auth/forgot_password/presentation/pages/ResetPwPage.dart';
+import 'package:frontend/features/auth/register/presentation/pages/RegisterPage.dart';
+import 'package:frontend/features/navigation/MainNavigator.dart';
+
+import '../../../../../core/widgets/app_button.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -6,33 +11,23 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFE0F2FE), Colors.white],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 30),
-                _buildWelcomeText(),
-                const SizedBox(height: 24),
-                _buildLoginForm(),
-                const SizedBox(height: 15),
-                _buildSocialLogin(),
-                const SizedBox(height: 8),
-                _buildRegisterLink(),
-              ],
-            ),
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 40),
+              _buildWelcomeText(),
+              const SizedBox(height: 32),
+              _buildLoginForm(context),
+              const SizedBox(height: 24),
+              _buildSocialLogin(),
+              const SizedBox(height: 24),
+              _buildRegisterLink(context),
+            ],
           ),
         ),
       ),
@@ -42,17 +37,27 @@ class LoginPage extends StatelessWidget {
   Widget _buildHeader() {
     return Row(
       children: [
-        const Icon(Icons.explore_rounded, color: Colors.blueAccent, size: 36),
-        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1ABC9C).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.explore_rounded,
+              color: Color(0xFF1ABC9C), size: 32),
+        ),
+        const SizedBox(width: 12),
         RichText(
           text: const TextSpan(
             style: TextStyle(
-                fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
             children: [
+              TextSpan(text: "Travel", style: TextStyle(color: Colors.white)),
               TextSpan(
-                  text: "Travel", style: TextStyle(color: Color(0xFF1A1A1A))),
-              TextSpan(
-                  text: "Mate", style: TextStyle(color: Colors.blueAccent)),
+                  text: "Mate", style: TextStyle(color: Color(0xFF1ABC9C))),
             ],
           ),
         ),
@@ -61,91 +66,146 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget _buildWelcomeText() {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Welcome Back",
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-        Text("Sign in to continue planning your world",
-            style: TextStyle(fontSize: 15, color: Colors.grey)),
+        const Text(
+          "Welcome Back",
+          style: TextStyle(
+              fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Sign in to continue planning your world",
+          style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+        ),
       ],
     );
   }
 
-  Widget _buildLoginForm() {
+  Widget _buildLoginForm(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildLabel("EMAIL ADDRESS"),
-        TextFormField(
-            decoration: const InputDecoration(
-                hintText: "example@email.com", border: OutlineInputBorder())),
-        const SizedBox(height: 15),
+        _buildInputField("example@email.com", false),
+        const SizedBox(height: 20),
         _buildLabel("PASSWORD"),
-        TextFormField(
-            obscureText: true,
-            decoration: const InputDecoration(
-                hintText: "Your password", border: OutlineInputBorder())),
+        _buildInputField("Your password", true),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-              onPressed: () {}, child: const Text("Forgot password ?")),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const ResetPwPage()));
+            },
+            child: const Text(
+              "Forgot password ?",
+              style: TextStyle(
+                  color: Color(0xFF1ABC9C), fontWeight: FontWeight.w500),
+            ),
+          ),
         ),
-        const SizedBox(height: 15),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blueAccent,
-              minimumSize: const Size(double.infinity, 54)),
-          onPressed: () {},
-          child: const Text("Sign in",
-              style: TextStyle(color: Colors.white, fontSize: 16)),
+        const SizedBox(height: 10),
+        AppButton(
+          label: "Sign in",
+          onTap: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainNavigator()),
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildLabel(String text) => Text(text,
-      style: const TextStyle(
-          fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey));
+  Widget _buildLabel(String text) => Padding(
+        padding: const EdgeInsets.only(left: 4, bottom: 8),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade500,
+            letterSpacing: 1.1,
+          ),
+        ),
+      );
+
+  Widget _buildInputField(String hint, bool isPassword) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF172234),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: TextFormField(
+        obscureText: isPassword,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(18),
+        ),
+      ),
+    );
+  }
 
   Widget _buildSocialLogin() {
     return Column(
       children: [
         Row(
           children: [
-            Expanded(child: Divider(thickness: 1, color: Colors.grey[300])),
-            const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text("or continue with")),
-            Expanded(child: Divider(thickness: 1, color: Colors.grey[300])),
+            Expanded(child: Divider(thickness: 1, color: Colors.grey.shade800)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                "or continue with",
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              ),
+            ),
+            Expanded(child: Divider(thickness: 1, color: Colors.grey.shade800)),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 24),
         Row(
           children: [
-            Expanded(
-                child: OutlinedButton(
-                    onPressed: () {}, child: const Text("Google"))),
-            const SizedBox(width: 5),
-            Expanded(
-                child: OutlinedButton(
-                    onPressed: () {}, child: const Text("Facebook"))),
+            Expanded(child: _buildSocialButton("Google")),
+            const SizedBox(width: 15),
+            Expanded(child: _buildSocialButton("Facebook")),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildRegisterLink() {
+  Widget _buildSocialButton(String label) {
+    return AppButton(
+      label: label,
+      onTap: () {},
+      isPrimary: false,
+      height: 54,
+    );
+  }
+
+  Widget _buildRegisterLink(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("No account?",
-            style: TextStyle(fontSize: 14, color: Colors.grey)),
+        Text("No account?",
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
         TextButton(
-            onPressed: () {},
-            child: const Text("Create one",
-                style: TextStyle(fontWeight: FontWeight.w600))),
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const RegisterPage()));
+          },
+          child: const Text(
+            "Create one",
+            style: TextStyle(
+                color: Color(0xFF1ABC9C), fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
   }

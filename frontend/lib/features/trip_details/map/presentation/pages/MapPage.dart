@@ -6,104 +6,90 @@ class MapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackground(), // Đồng bộ gradient nền
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context),
-                const SizedBox(height: 15),
-                _buildMapViewCard(), // Bản đồ dạng Card bo góc
-                const SizedBox(height: 25),
-                _buildSectionHeader("OPTIMISED SEGMENTS", "JR Pass"),
-                const SizedBox(height: 15),
-                // Danh sách các chặng đi
-                _buildSegmentCard(
-                  icon: Icons.train_rounded,
-                  fromTo: "Osaka → Kyoto",
-                  subTitle: "Shinkansen bullet train · 15 min",
-                  distance: "15 km",
-                  color: const Color(0xFF12927F),
-                ),
-                _buildSegmentCard(
-                  icon: Icons.train_rounded,
-                  fromTo: "Kyoto → Mt. Fuji",
-                  subTitle: "JR Limited Express · 2h 20min",
-                  distance: "340 km",
-                  color: const Color(0xFF2D68FF),
-                ),
-                _buildSegmentCard(
-                  icon: Icons.train_rounded,
-                  fromTo: "Mt. Fuji → Tokyo",
-                  subTitle: "Limited Express Fujisan · 2h 5min",
-                  distance: "105 km",
-                  color: const Color(0xFF8B5CF6),
-                ),
-                const SizedBox(height: 10),
-                _buildNavigationButton(),
-              ],
-            ),
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 30),
+              _buildMapViewCard(),
+              const SizedBox(height: 30),
+              _buildSectionHeader("OPTIMISED SEGMENTS", "JR Pass"),
+              const SizedBox(height: 15),
+              _buildSegmentCard(
+                icon: Icons.train_rounded,
+                fromTo: "Osaka → Kyoto",
+                subTitle: "Shinkansen bullet train · 15 min",
+                distance: "15 km",
+                color: const Color(0xFF1ABC9C),
+              ),
+              _buildSegmentCard(
+                icon: Icons.train_rounded,
+                fromTo: "Kyoto → Mt. Fuji",
+                subTitle: "JR Limited Express · 2h 20min",
+                distance: "340 km",
+                color: Colors.blueAccent,
+              ),
+              _buildSegmentCard(
+                icon: Icons.train_rounded,
+                fromTo: "Mt. Fuji → Tokyo",
+                subTitle: "Limited Express Fujisan · 2h 5min",
+                distance: "105 km",
+                color: Colors.purpleAccent,
+              ),
+              const SizedBox(height: 30),
+              _buildNavigationButton(),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // 1. Background đồng bộ với TemplatePage
-  BoxDecoration _buildBackground() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFE0F2FE), Colors.white],
-      ),
-    );
-  }
-
-  // 2. Header đồng bộ
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF101828),
-            size: 24,
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF172234),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade800),
+            ),
+            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 15),
         const Text(
           "Route Optimisation",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF101828),
-            letterSpacing: -0.5,
+            color: Colors.white,
           ),
         ),
         const Spacer(),
-        // Badge "Optimised" thay cho nút tune
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFE6F9F1),
+            color: const Color(0xFF1ABC9C).withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFF1ABC9C).withOpacity(0.3)),
           ),
           child: const Row(
             children: [
               Icon(Icons.check_circle_rounded,
-                  color: Color(0xFF12927F), size: 16),
-              SizedBox(width: 4),
+                  color: Color(0xFF1ABC9C), size: 16),
+              SizedBox(width: 6),
               Text(
                 "Optimised",
                 style: TextStyle(
-                  color: Color(0xFF12927F),
+                  color: Color(0xFF1ABC9C),
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -115,69 +101,70 @@ class MapPage extends StatelessWidget {
     );
   }
 
-  // 3. Section Header đồng bộ
   Widget _buildSectionHeader(String title, String actionText) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                color: Colors.grey.shade500,
                 letterSpacing: 1.2)),
         Text(
           actionText,
           style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2D68FF)),
+              color: Color(0xFF1ABC9C)),
         ),
       ],
     );
   }
 
-  // 4. Bản đồ được bọc trong Card trắng bo góc
   Widget _buildMapViewCard() {
     return Container(
-      height: 320,
+      height: 340,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFE8EDFF),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white, width: 2),
+        color: const Color(0xFF172234),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.grey.shade800, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(30),
         child: Stack(
           children: [
             CustomPaint(size: Size.infinite, painter: GridPainter()),
             CustomPaint(size: Size.infinite, painter: DashLinePainter()),
-            _buildMapMarker(220, 40, "Osaka", const Color(0xFF12927F)),
-            _buildMapMarker(150, 110, "Kyoto", const Color(0xFFD97706)),
-            _buildMapMarker(90, 180, "Mt. Fuji", const Color(0xFF8B5CF6)),
-            _buildMapMarker(40, 250, "Tokyo ★", const Color(0xFF2D68FF)),
-            // Save time label
+            _buildMapMarker(220, 40, "Osaka", const Color(0xFF1ABC9C)),
+            _buildMapMarker(150, 110, "Kyoto", Colors.orangeAccent),
+            _buildMapMarker(90, 180, "Mt. Fuji", Colors.purpleAccent),
+            _buildMapMarker(40, 250, "Tokyo ★", Colors.blueAccent),
             Positioned(
-              bottom: 15,
-              right: 15,
+              bottom: 20,
+              right: 20,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF0B1423),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade800),
                 ),
                 child: const Text(
                   "Save 4h 20min",
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
             ),
@@ -193,24 +180,25 @@ class MapPage extends StatelessWidget {
       left: left,
       child: Column(
         children: [
-          Icon(Icons.location_on_rounded, color: color, size: 28),
+          Icon(Icons.location_on_rounded, color: color, size: 32),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+              color: const Color(0xFF0B1423),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: color.withOpacity(0.5)),
             ),
             child: Text(label,
-                style:
-                    const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  // 5. Card chặng đi đồng bộ với TemplateCard
   Widget _buildSegmentCard({
     required IconData icon,
     required String fromTo,
@@ -220,26 +208,21 @@ class MapPage extends StatelessWidget {
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF172234),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade800),
       ),
       child: Row(
         children: [
           Container(
-            width: 45,
-            height: 45,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: color.withOpacity(0.3)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
@@ -251,13 +234,14 @@ class MapPage extends StatelessWidget {
                 Text(
                   fromTo,
                   style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF101828)),
+                      color: Colors.white),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   subTitle,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                 ),
               ],
             ),
@@ -265,7 +249,7 @@ class MapPage extends StatelessWidget {
           Text(
             distance,
             style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: color),
+                fontSize: 15, fontWeight: FontWeight.bold, color: color),
           ),
         ],
       ),
@@ -273,33 +257,50 @@ class MapPage extends StatelessWidget {
   }
 
   Widget _buildNavigationButton() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: ElevatedButton.icon(
-        onPressed: () {},
-        icon: const Icon(Icons.navigation_rounded),
-        label: const Text("Start Navigation",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF12927F),
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 56),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 0,
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        width: double.infinity,
+        height: 58,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1ABC9C),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1ABC9C).withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.navigation_rounded,
+                  size: 22, color: Color(0xFF0B1423)),
+              SizedBox(width: 12),
+              Text(
+                "Start Navigation",
+                style: TextStyle(
+                  color: Color(0xFF0B1423),
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// --- Các lớp vẽ (Giữ nguyên logic của bạn) ---
-
 class GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withOpacity(0.05)
       ..strokeWidth = 1.0;
     const double step = 40.0;
     for (double i = 0; i < size.width; i += step) {
@@ -318,8 +319,8 @@ class DashLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2D68FF)
-      ..strokeWidth = 2.5
+      ..color = const Color(0xFF1ABC9C)
+      ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
 
     final path = Path();
@@ -328,7 +329,7 @@ class DashLinePainter extends CustomPainter {
     path.lineTo(195, 90); // Mt Fuji
     path.lineTo(265, 40); // Tokyo
 
-    double dashWidth = 5, dashSpace = 4, distance = 0;
+    double dashWidth = 8, dashSpace = 6, distance = 0;
     for (final pathMetric in path.computeMetrics()) {
       while (distance < pathMetric.length) {
         canvas.drawPath(

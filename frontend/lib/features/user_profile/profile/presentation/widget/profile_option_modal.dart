@@ -102,11 +102,10 @@ class ProfilePage extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
-        // Thanh thanh điều hướng trên cùng (Back + Title)
+        // Thanh điều hướng trên cùng (Back + Title)
         Row(
           children: [
             GestureDetector(
-              // ✅ ĐÃ SỬA: Xóa từ khóa 'widget.' vì đây là StatelessWidget
               onTap: () {
                 if (onBackToHome != null) {
                   onBackToHome!();
@@ -126,7 +125,6 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 15),
-            // ✅ ĐÃ SỬA: Đổi tên thành Profile
             const Text(
               "Profile",
               style: TextStyle(
@@ -139,40 +137,43 @@ class ProfilePage extends StatelessWidget {
         ),
         const SizedBox(height: 30),
 
-        // ✅ ĐÃ SỬA: Đưa các phần này ra khỏi Row để xếp dọc chuẩn UI
-        Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1ABC9C),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1ABC9C).withOpacity(0.2),
-                    blurRadius: 20,
-                  )
-                ],
+        // ✅ ĐÃ HOÀN THIỆN: Bọc Avatar vào GestureDetector để khi bấm vào sẽ kích hoạt popup
+        GestureDetector(
+          onTap: () => _showProfileSettingsModal(context),
+          child: Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1ABC9C),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1ABC9C).withOpacity(0.2),
+                      blurRadius: 20,
+                    )
+                  ],
+                ),
+                child: const CircleAvatar(
+                  radius: 48,
+                  backgroundColor: Color(0xFF172234),
+                  child: Text("AJ",
+                      style: TextStyle(
+                          color: Color(0xFF1ABC9C),
+                          fontSize: 34,
+                          fontWeight: FontWeight.bold)),
+                ),
               ),
-              child: const CircleAvatar(
-                radius: 48,
-                backgroundColor: Color(0xFF172234),
-                child: Text("AJ",
-                    style: TextStyle(
-                        color: Color(0xFF1ABC9C),
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold)),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                  color: Color(0xFF1ABC9C), shape: BoxShape.circle),
-              child:
-                  const Icon(Icons.check, color: Color(0xFF0B1423), size: 14),
-            )
-          ],
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                    color: Color(0xFF1ABC9C), shape: BoxShape.circle),
+                child:
+                    const Icon(Icons.check, color: Color(0xFF0B1423), size: 14),
+              )
+            ],
+          ),
         ),
         const SizedBox(height: 20),
         const Text(
@@ -197,6 +198,117 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+
+  // ✅ HÀM MỚI: Xử lý hiển thị cửa sổ lựa chọn (Modal Bottom Sheet) từ dưới trượt lên
+  void _showProfileSettingsModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF172234),
+      barrierColor: Colors.black.withOpacity(0.6),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Thanh gạch nhỏ định hướng kéo vuốt xuống để đóng nhanh popup
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade700,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "PROFILE OPTIONS",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildModalItem(
+                icon: Icons.account_circle_outlined,
+                label: "Edit Profile Info",
+                color: const Color(0xFF1ABC9C),
+                onTap: () {
+                  Navigator.pop(context); // Đóng popup trước khi chuyển trang
+                },
+              ),
+              _buildModalItem(
+                icon: Icons.settings_outlined,
+                label: "App Settings",
+                color: Colors.blueAccent,
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              _buildModalItem(
+                icon: Icons.lock_outline_rounded,
+                label: "Change Password",
+                color: Colors.orangeAccent,
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(color: Color(0xFF0B1423), height: 30, thickness: 1),
+              _buildModalItem(
+                icon: Icons.logout_rounded,
+                label: "Sign out",
+                color: Colors.redAccent,
+                isDestructive: true,
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ✅ WIDGET PHỤ TRỢ: Tạo nhanh các item dạng danh sách cho popup lựa chọn
+  Widget _buildModalItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12)),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: isDestructive ? Colors.redAccent : Colors.white,
+        ),
+      ),
+      trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey.shade700),
     );
   }
 

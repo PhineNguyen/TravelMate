@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/widgets/app_button.dart';
+
 class PreferencesPage extends StatefulWidget {
   const PreferencesPage({super.key});
 
@@ -17,47 +19,33 @@ class _PreferencePageState extends State<PreferencesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackgroundDecoration(),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 30),
-                  _buildSectionTitle("BUDGET RANGE (PER TRIP)"),
-                  _buildBudgetSelector(),
-                  const SizedBox(height: 30),
-                  _buildSectionTitle("TRAVEL STYLE"),
-                  _buildStyleGrid(),
-                  const SizedBox(height: 30),
-                  _buildSectionTitle("AVG TRIP DURATION"),
-                  _buildDurationSlider(),
-                  const SizedBox(height: 30),
-                  _buildSectionTitle("PREFERRED REGION"),
-                  _buildRegionWrap(),
-                  const SizedBox(height: 40),
-                  _buildActionButtons(),
-                ],
-              ),
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 30),
+                _buildSectionTitle("BUDGET RANGE (PER TRIP)"),
+                _buildBudgetSelector(),
+                const SizedBox(height: 30),
+                _buildSectionTitle("TRAVEL STYLE"),
+                _buildStyleGrid(),
+                const SizedBox(height: 30),
+                _buildSectionTitle("AVG TRIP DURATION"),
+                _buildDurationSlider(),
+                const SizedBox(height: 30),
+                _buildSectionTitle("PREFERRED REGION"),
+                _buildRegionWrap(),
+                const SizedBox(height: 40),
+                _buildActionButtons(),
+              ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  BoxDecoration _buildBackgroundDecoration() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFE0F2FE), Colors.white],
       ),
     );
   }
@@ -68,16 +56,16 @@ class _PreferencePageState extends State<PreferencesPage> {
       children: [
         const Text(
           "Set your preferences",
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              fontSize: 25, color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 8),
         Text(
           "Help us personalise your experience. You can change these anytime in Settings.",
           style: TextStyle(
             fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: Colors.grey[600],
-            letterSpacing: -0.5,
+            fontSize: 15,
+            color: Colors.grey.shade500,
           ),
           textAlign: TextAlign.justify,
         ),
@@ -90,12 +78,12 @@ class _PreferencePageState extends State<PreferencesPage> {
       children: [
         SizedBox(
           width: double.infinity,
-          height: 20,
+          height: 30,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              const Text("to",
-                  style: TextStyle(color: Colors.grey, fontSize: 16)),
+              Text("to",
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -103,7 +91,7 @@ class _PreferencePageState extends State<PreferencesPage> {
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF8B5CF6)),
+                      color: Color(0xFF1ABC9C)),
                 ),
               ),
               Align(
@@ -113,7 +101,7 @@ class _PreferencePageState extends State<PreferencesPage> {
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF8B5CF6)),
+                      color: Color(0xFF1ABC9C)),
                 ),
               ),
             ],
@@ -121,10 +109,11 @@ class _PreferencePageState extends State<PreferencesPage> {
         ),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
-            trackHeight: 6.0,
-            activeTrackColor: const Color(0xFF8B5CF6),
-            inactiveTrackColor: const Color(0xFF8B5CF6).withOpacity(0.15),
+            trackHeight: 4.0,
+            activeTrackColor: const Color(0xFF1ABC9C),
+            inactiveTrackColor: Colors.grey.shade800,
             thumbColor: Colors.white,
+            overlayColor: const Color(0xFF1ABC9C).withOpacity(0.2),
             trackShape: const RoundedRectSliderTrackShape(),
           ),
           child: RangeSlider(
@@ -160,12 +149,12 @@ class _PreferencePageState extends State<PreferencesPage> {
       children: [
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
-            trackHeight: 12.0,
-            activeTrackColor: const Color(0xFF8B5CF6),
-            inactiveTrackColor: Colors.white,
-            thumbColor: const Color(0xFF8B5CF6),
+            trackHeight: 8.0,
+            activeTrackColor: const Color(0xFF1ABC9C),
+            inactiveTrackColor: const Color(0xFF172234),
+            thumbColor: Colors.white,
             thumbShape: const RoundSliderThumbShape(
-                enabledThumbRadius: 14.0, elevation: 6),
+                enabledThumbRadius: 12.0, elevation: 4),
           ),
           child: Slider(
             value: _currentDuration,
@@ -175,26 +164,22 @@ class _PreferencePageState extends State<PreferencesPage> {
             onChanged: (value) => setState(() => _currentDuration = value),
           ),
         ),
+        const SizedBox(height: 10),
         Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.1),
-                    blurRadius: 15,
-                    spreadRadius: 2)
-              ],
+              color: const Color(0xFF1ABC9C).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               _currentDuration >= 31
                   ? "30+ days"
                   : "${_currentDuration.round()} days",
               style: const TextStyle(
-                  color: Color(0xFF8B5CF6),
+                  color: Color(0xFF1ABC9C),
                   fontWeight: FontWeight.bold,
-                  fontSize: 18),
+                  fontSize: 16),
             ),
           ),
         ),
@@ -205,7 +190,7 @@ class _PreferencePageState extends State<PreferencesPage> {
   Widget _buildRegionWrap() {
     return Wrap(
       spacing: 12,
-      runSpacing: 10,
+      runSpacing: 12,
       children: [
         _buildRegionChip("Asia"),
         _buildRegionChip("Europe"),
@@ -220,15 +205,14 @@ class _PreferencePageState extends State<PreferencesPage> {
   Widget _buildActionButtons() {
     return Column(
       children: [
-        _buildButton(
+        AppButton(
           label: "Save & Continue",
-          onPressed: () {},
-          isPrimary: true,
+          onTap: () {},
         ),
-        const SizedBox(height: 10),
-        _buildButton(
+        const SizedBox(height: 15),
+        AppButton(
           label: "Skip for now",
-          onPressed: () {},
+          onTap: () {},
           isPrimary: false,
         ),
       ],
@@ -237,38 +221,15 @@ class _PreferencePageState extends State<PreferencesPage> {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.only(bottom: 15, left: 4),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF64748B),
+            color: Colors.grey.shade500,
             fontSize: 12,
             letterSpacing: 1.2),
       ),
-    );
-  }
-
-  Widget _buildButton(
-      {required String label,
-      required VoidCallback onPressed,
-      required bool isPrimary}) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isPrimary ? const Color(0xFF8B5CF6) : Colors.white,
-        foregroundColor: isPrimary ? Colors.white : Colors.grey[700],
-        elevation: isPrimary ? 2 : 0,
-        minimumSize: const Size(double.infinity, 54),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: isPrimary
-              ? BorderSide.none
-              : BorderSide(color: Colors.grey[200]!),
-        ),
-      ),
-      onPressed: onPressed,
-      child: Text(label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
     );
   }
 
@@ -282,26 +243,26 @@ class _PreferencePageState extends State<PreferencesPage> {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF8B5CF6).withOpacity(0.1)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(15),
+              ? const Color(0xFF1ABC9C).withOpacity(0.1)
+              : const Color(0xFF172234),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-              color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey[200]!,
-              width: isSelected ? 2 : 1),
+              color: isSelected ? const Color(0xFF1ABC9C) : Colors.transparent,
+              width: 1.5),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon,
-                color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey[400]),
+                color: isSelected ? const Color(0xFF1ABC9C) : Colors.grey),
             const SizedBox(height: 8),
             Text(title,
                 style: TextStyle(
                     fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                    color: isSelected
-                        ? const Color(0xFF8B5CF6)
-                        : const Color(0xFF101828))),
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    color:
+                        isSelected ? const Color(0xFF1ABC9C) : Colors.white)),
           ],
         ),
       ),
@@ -318,14 +279,15 @@ class _PreferencePageState extends State<PreferencesPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF8B5CF6) : Colors.white,
-          borderRadius: BorderRadius.circular(30),
+          color: isSelected ? const Color(0xFF1ABC9C) : const Color(0xFF172234),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-              color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey[200]!),
+              color:
+                  isSelected ? const Color(0xFF1ABC9C) : Colors.grey.shade800),
         ),
         child: Text(label,
             style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF101828),
+                color: isSelected ? const Color(0xFF0B1423) : Colors.white,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 13)),
       ),

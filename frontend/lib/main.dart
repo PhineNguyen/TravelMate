@@ -4,5 +4,3 @@ import 'package:frontend/app.dart';
 void main() {
   runApp(const TravelMateApp());
 }
-
-

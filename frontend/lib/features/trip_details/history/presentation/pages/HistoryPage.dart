@@ -6,18 +6,18 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F5FF),
+      backgroundColor: const Color(0xFF0B1423),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF101828)),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Trip history",
           style: TextStyle(
-            color: Color(0xFF101828),
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -26,12 +26,13 @@ class HistoryPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 10),
+          const SizedBox(height: 15),
           _buildFilterRow(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 15),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              physics: const BouncingScrollPhysics(),
               children: [
                 _buildHistoryCard(
                   title: "Japan Discovery 2025",
@@ -39,9 +40,9 @@ class HistoryPage extends StatelessWidget {
                   date: "Apr 2025",
                   duration: "22 days",
                   cost: "\$4,180",
-                  topColor: const Color(0xFFEEF2FF),
+                  topColor: const Color(0xFF1ABC9C).withOpacity(0.1),
                   bannerIcon: Icons.explore_outlined,
-                  iconColor: const Color(0xFF2D68FF),
+                  iconColor: const Color(0xFF1ABC9C),
                 ),
                 const SizedBox(height: 20),
                 _buildHistoryCard(
@@ -50,9 +51,9 @@ class HistoryPage extends StatelessWidget {
                   date: "Aug 2024",
                   duration: "14 days",
                   cost: "\$3,600",
-                  topColor: const Color(0xFFFFFBEB),
+                  topColor: Colors.orangeAccent.withOpacity(0.1),
                   bannerIcon: Icons.fort_outlined,
-                  iconColor: const Color(0xFFD97706),
+                  iconColor: Colors.orangeAccent,
                 ),
                 const SizedBox(height: 20),
                 _buildHistoryCard(
@@ -61,9 +62,9 @@ class HistoryPage extends StatelessWidget {
                   date: "Nov 2024",
                   duration: "10 days",
                   cost: "\$2,100",
-                  topColor: const Color(0xFFE6F9F1),
+                  topColor: Colors.teal.withOpacity(0.1),
                   bannerIcon: Icons.beach_access_outlined,
-                  iconColor: const Color(0xFF12927F),
+                  iconColor: Colors.teal,
                 ),
                 const SizedBox(height: 20),
                 _buildHistoryCard(
@@ -72,11 +73,11 @@ class HistoryPage extends StatelessWidget {
                   date: "Mar 2024",
                   duration: "10 days",
                   cost: "\$1,900",
-                  topColor: const Color(0xFFF9F5FF),
+                  topColor: Colors.deepPurpleAccent.withOpacity(0.1),
                   bannerIcon: Icons.mosque_outlined,
-                  iconColor: const Color(0xFF8B5CF6),
+                  iconColor: Colors.deepPurpleAccent,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
               ],
             ),
           ),
@@ -89,31 +90,37 @@ class HistoryPage extends StatelessWidget {
     final filters = ["All trips", "2025", "2024", "Asia", "Europe"];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         children: filters.map((filter) {
           bool isActive = filter == "All trips";
           return Container(
-            margin: const EdgeInsets.only(right: 10),
-            child: ChoiceChip(
-              label: Text(
-                filter,
-                style: TextStyle(
-                  color: isActive ? Colors.white : const Color(0xFF98A2B3),
-                  fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+            margin: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () {},
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? const Color(0xFF1ABC9C)
+                      : const Color(0xFF172234),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isActive ? Colors.transparent : Colors.grey.shade800,
+                  ),
+                ),
+                child: Text(
+                  filter,
+                  style: TextStyle(
+                    color: isActive
+                        ? const Color(0xFF0B1423)
+                        : Colors.grey.shade500,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
-              selected: isActive,
-              selectedColor: const Color(0xFF2D68FF),
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color:
-                      isActive ? Colors.transparent : const Color(0xFFEAECF0),
-                ),
-              ),
-              onSelected: (bool selected) {},
             ),
           );
         }).toList(),
@@ -134,15 +141,9 @@ class HistoryPage extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF172234),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade800),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,25 +152,34 @@ class HistoryPage extends StatelessWidget {
             height: 120,
             width: double.infinity,
             color: topColor,
-            padding: const EdgeInsets.all(16),
             child: Stack(
               children: [
-                Align(
-                  alignment: Alignment.center,
+                Center(
                   child: Icon(
                     bannerIcon,
-                    size: 60,
-                    color: iconColor.withOpacity(0.1),
+                    size: 64,
+                    color: iconColor.withOpacity(0.2),
                   ),
                 ),
-                const Align(
-                  alignment: Alignment.topRight,
-                  child: Text(
-                    "Completed",
-                    style: TextStyle(
-                      color: Color(0xFF12927F),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1ABC9C).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: const Color(0xFF1ABC9C).withOpacity(0.3)),
+                    ),
+                    child: const Text(
+                      "Completed",
+                      style: TextStyle(
+                        color: Color(0xFF1ABC9C),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -186,32 +196,32 @@ class HistoryPage extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF101828),
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   locations,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF667085),
+                    color: Colors.grey.shade400,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Row(
                   children: [
-                    _buildInfoItem(Icons.calendar_today_outlined, date),
-                    const SizedBox(width: 12),
+                    _buildInfoItem(Icons.calendar_today, date),
+                    const SizedBox(width: 15),
                     _buildInfoItem(Icons.access_time, duration),
-                    const SizedBox(width: 12),
-                    _buildInfoItem(Icons.account_balance_wallet_outlined, cost),
+                    const SizedBox(width: 15),
+                    _buildInfoItem(Icons.account_balance_wallet, cost),
                     const Spacer(),
                     Row(
                       children: List.generate(
                         5,
                         (index) => const Icon(
-                          Icons.star_outline,
-                          size: 16,
+                          Icons.star,
+                          size: 14,
                           color: Color(0xFFF59E0B),
                         ),
                       ),
@@ -229,14 +239,14 @@ class HistoryPage extends StatelessWidget {
   Widget _buildInfoItem(IconData icon, String label) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: const Color(0xFF98A2B3)),
-        const SizedBox(width: 4),
+        Icon(icon, size: 14, color: Colors.grey.shade600),
+        const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
-            color: Color(0xFF98A2B3),
-            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],

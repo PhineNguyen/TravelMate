@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/ai_assistant/chat/presentation/pages/AiChatPage.dart';
+import 'package:frontend/features/trip_details/weather/presentation/pages/WeatherPage.dart';
+import 'package:frontend/features/trip_planning/create_trip/presentation/pages/CreateTripPage.dart';
+import 'package:frontend/features/trip_planning/templates/presentation/pages/TemplatesPage.dart';
+import 'package:frontend/features/user_profile/notifications/presentation/pages/NotificationsPage.dart';
+// ✅ Thêm import trang Profile của bạn (Hãy sửa lại đường dẫn này cho đúng với dự án)
+import 'package:frontend/features/user_profile/profile/presentation/pages/ProfilePage.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -6,23 +13,23 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: const Color(0xFF0B1423),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
-              const SizedBox(height: 20),
-              _buildSearchBar(),
-              const SizedBox(height: 25),
+              _buildHeader(context),
+              const SizedBox(height: 30),
+              _buildSearchBar(context),
+              const SizedBox(height: 30),
               _buildSummaryGrid(),
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
               _buildSectionHeader("QUICK ACTIONS", null),
               const SizedBox(height: 15),
-              _buildQuickActions(),
-              const SizedBox(height: 25),
+              _buildQuickActions(context),
+              const SizedBox(height: 20),
               _buildSectionHeader("CURRENT TRIPS", "See all"),
               const SizedBox(height: 15),
               _buildTripCard(
@@ -31,20 +38,20 @@ class HomePage extends StatelessWidget {
                 "Apr 12 – May 3  ·  2 pax  ·  \$4,200",
                 0.36,
                 "Active",
-                const Color(0xFF2D68FF),
+                const Color(0xFF1ABC9C),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
               _buildTripCard(
                 "Amalfi Weekend",
                 "Positano · Ravello · Capri",
                 "Jun 18 – 22  ·  4 pax  ·  \$2,800",
                 0.0,
                 "Upcoming",
-                Colors.orange,
+                Colors.orangeAccent,
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
               _buildSectionHeader("WEATHER ALERT", "Details"),
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
               _buildWeatherAlert(),
             ],
           ),
@@ -53,8 +60,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // --- 1. HEADER (Tên người dùng + Avatar) ---
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -62,51 +68,100 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Good morning, traveller",
-                style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
             const Text("Alex Johnson",
                 style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF101828))),
+                    color: Colors.white)),
           ],
         ),
-        const CircleAvatar(
-          radius: 25,
-          backgroundColor: Color(0xFF2D68FF),
-          child: Text("AJ",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        // ✅ ĐÃ SỬA: Bọc GestureDetector ngoài cùng và xóa bỏ ElevatedButton bị lỗi bên trong
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF1ABC9C), width: 2),
+            ),
+            child: const CircleAvatar(
+              radius: 22,
+              backgroundColor: Color(0xFF172234),
+              child: Text(
+                "AJ",
+                style: TextStyle(
+                  color: Color(0xFF1ABC9C),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
         )
       ],
     );
   }
 
-  Widget _buildSearchBar() {
+  // ✅ ĐÃ SỬA: Thêm kiểu dữ liệu BuildContext chính xác cho tham số truyền vào
+  Widget _buildSearchBar(BuildContext context) {
     return Row(
       children: [
         Expanded(
           child: Container(
-            height: 55,
+            height: 54,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)
-              ],
+              color: const Color(0xFF172234),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade800, width: 0.5),
             ),
-            child: const TextField(
+            child: TextField(
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: "Search destinations...",
-                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+                prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 15),
+                contentPadding: const EdgeInsets.symmetric(vertical: 15),
               ),
             ),
           ),
         ),
         const SizedBox(width: 15),
-        const Icon(Icons.notifications_none_rounded,
-            size: 30, color: Color(0xFF101828)),
+        Container(
+          height: 54,
+          width: 54,
+          decoration: BoxDecoration(
+            color: const Color(0xFF172234),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade800, width: 0.5),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NotificationsPage()),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: const Center(
+                child: Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -116,18 +171,20 @@ class HomePage extends StatelessWidget {
       children: [
         Row(
           children: [
-            _buildStatCard("ACTIVE TRIPS", "3", "↑ 1 this month", Colors.blue),
+            _buildStatCard(
+                "ACTIVE TRIPS", "3", "↑ 1 this month", const Color(0xFF1ABC9C)),
             const SizedBox(width: 15),
-            _buildStatCard("COUNTRIES", "24", "↑ 2 this year", Colors.purple),
+            _buildStatCard(
+                "COUNTRIES", "24", "↑ 2 this year", Colors.purpleAccent),
           ],
         ),
         const SizedBox(height: 15),
         Row(
           children: [
-            _buildStatCard(
-                "AI SAVINGS", "\$1.2k", "vs manual booking", Colors.green),
+            _buildStatCard("AI SAVINGS", "\$1.2k", "vs manual booking",
+                Colors.orangeAccent),
             const SizedBox(width: 15),
-            _buildStatCard("AI PICKS", "47", "81% accepted", Colors.red),
+            _buildStatCard("AI PICKS", "47", "81% accepted", Colors.blueAccent),
           ],
         ),
       ],
@@ -137,95 +194,108 @@ class HomePage extends StatelessWidget {
   Widget _buildStatCard(String title, String value, String sub, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: color.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: color.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title,
                 style: TextStyle(
-                    fontSize: 10, fontWeight: FontWeight.bold, color: color)),
-            const SizedBox(height: 4),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                    letterSpacing: 1.1)),
+            const SizedBox(height: 8),
             Text(value,
-                style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+                style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+            const SizedBox(height: 4),
             Text(sub,
-                style: TextStyle(fontSize: 10, color: color.withOpacity(0.7))),
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
           ],
         ),
       ),
     );
   }
 
-  // --- 4. QUICK ACTIONS (Nút bấm liên kết) ---
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildActionItem(Icons.add, "New trip", Colors.blue),
-        _buildActionItem(Icons.grid_view_rounded, "Templates", Colors.teal),
+        _buildActionItem(Icons.add, "New trip", const Color(0xFF1ABC9C), () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const CreateTripPage()));
+        }),
         _buildActionItem(
-            Icons.smart_toy_outlined, "AI chat", Colors.deepPurple),
-        _buildActionItem(Icons.cloud_queue_rounded, "Weather", Colors.red),
+            Icons.grid_view_rounded, "Templates", Colors.tealAccent, () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const TemplatesPage()));
+        }),
+        _buildActionItem(
+            Icons.smart_toy_outlined, "AI chat", Colors.deepPurpleAccent, () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const AiChatPage()));
+        }),
+        _buildActionItem(
+            Icons.cloud_queue_rounded, "Weather", Colors.orangeAccent, () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const WeatherPage()));
+        }),
       ],
     );
   }
 
-  Widget _buildActionItem(IconData icon, String label, Color color) {
+  Widget _buildActionItem(
+      IconData icon, String label, Color color, VoidCallback ontap) {
     return Column(
-      mainAxisSize: MainAxisSize.min, // chỉ lấy diện tích cần thiết
+      mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          elevation: 2,
-          shadowColor: color.withOpacity(0.2), //shadow theo màu của icon
-          child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                //logic here
-              },
-              //effect
-              child: SizedBox(
-                  height: 60,
-                  width: double.infinity, //lắp đầy expanded
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 26,
-                  ))),
+          color: Colors.transparent,
+          child: Ink(
+            width: 80,
+            height: 64,
+            decoration: BoxDecoration(
+              color: const Color(0xFF172234),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.grey.shade800),
+            ),
+            child: InkWell(
+              onTap: ontap,
+              borderRadius: BorderRadius.circular(18),
+              child: Center(
+                child: Icon(icon, color: color, size: 28),
+              ),
+            ),
+          ),
         ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        const SizedBox(height: 10),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        ),
       ],
     );
   }
 
-  // --- 5. TRIP CARD (Thẻ chuyến đi) ---
   Widget _buildTripCard(String title, String locations, String info,
       double progress, String status, Color themeColor) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
-        ],
+        color: const Color(0xFF172234),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade800, width: 0.5),
       ),
       child: Column(
         children: [
-          Container(
-              height: 4,
-              decoration: BoxDecoration(
-                  color: themeColor,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(15)))),
           Padding(
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -234,28 +304,50 @@ class HomePage extends StatelessWidget {
                   children: [
                     Text(title,
                         style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)),
                     _buildStatusBadge(status, themeColor),
                   ],
                 ),
+                const SizedBox(height: 4),
                 Text(locations,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                const SizedBox(height: 5),
-                Text(info,
-                    style: TextStyle(color: Colors.grey[400], fontSize: 11)),
+                    style:
+                        TextStyle(color: Colors.grey.shade400, fontSize: 13)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today,
+                        size: 12, color: Colors.grey.shade600),
+                    const SizedBox(width: 6),
+                    Text(info,
+                        style: TextStyle(
+                            color: Colors.grey.shade600, fontSize: 11)),
+                  ],
+                ),
                 if (progress > 0) ...[
-                  const SizedBox(height: 15),
-                  LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.grey[100],
-                      color: themeColor,
-                      minHeight: 6),
-                  const SizedBox(height: 5),
-                  Align(
-                      alignment: Alignment.centerRight,
-                      child: Text("Day 8 of 22 - ${(progress * 100).toInt()}%",
-                          style: const TextStyle(
-                              fontSize: 10, color: Colors.grey))),
+                  const SizedBox(height: 20),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: const Color(0xFF0B1423),
+                        color: themeColor,
+                        minHeight: 6),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("${(progress * 100).toInt()}% completed",
+                          style: TextStyle(
+                              fontSize: 10,
+                              color: themeColor,
+                              fontWeight: FontWeight.bold)),
+                      const Text("Day 8 of 22",
+                          style: TextStyle(fontSize: 10, color: Colors.grey)),
+                    ],
+                  ),
                 ]
               ],
             ),
@@ -269,39 +361,42 @@ class HomePage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10)),
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.3))),
       child: Text(text,
           style: TextStyle(
               color: color, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 
-  // --- 6. WEATHER ALERT ---
   Widget _buildWeatherAlert() {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.red.shade100),
+        color: Colors.redAccent.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.red),
-              const SizedBox(width: 10),
+              const Icon(Icons.warning_amber_rounded,
+                  color: Colors.redAccent, size: 22),
+              const SizedBox(width: 12),
               Expanded(
                   child: Text("Heavy rain — Kyoto Apr 16–17",
                       style: TextStyle(
-                          color: Colors.red[900],
-                          fontWeight: FontWeight.bold))),
+                          color: Colors.redAccent.shade100,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14))),
             ],
           ),
           const SizedBox(height: 5),
           Text("AI has rescheduled 3 outdoor activities automatically.",
-              style: TextStyle(color: Colors.red[700], fontSize: 12)),
+              style: TextStyle(
+                  color: Colors.grey.shade500, fontSize: 13, height: 1.4)),
         ],
       ),
     );
@@ -312,25 +407,20 @@ class HomePage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                color: Colors.grey.shade500,
                 letterSpacing: 1.2)),
         if (actionText != null)
           TextButton(
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              // tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
             onPressed: () {},
             child: Text(
               actionText,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blueAccent),
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1ABC9C)),
             ),
           ),
       ],

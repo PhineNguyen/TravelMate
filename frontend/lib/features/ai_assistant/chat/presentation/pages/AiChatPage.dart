@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AiChatPage extends StatefulWidget {
-  const AiChatPage({super.key});
+  final VoidCallback? onBackToHome;
+  const AiChatPage({super.key, this.onBackToHome});
 
   @override
   State<AiChatPage> createState() => _AiChatPageState();
@@ -13,132 +14,123 @@ class _AiChatPageState extends State<AiChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackground(), // Đồng bộ gradient nền
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Expanded(
-                child: ListView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  physics: const BouncingScrollPhysics(),
-                  children: [
-                    _buildAiMessage(
-                      "Hello Alex! I'm your AI travel assistant. I can help you plan, adjust, and optimise your Japan trip in real time. What can I help with?",
-                      "9:41 AM",
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: ListView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildAiMessage(
+                    "Hello Alex! I'm your AI travel assistant. I can help you plan, adjust, and optimise your Japan trip in real time. What can I help with?",
+                    "9:41 AM",
+                  ),
+                  _buildUserMessage(
+                    "Find vegetarian ramen near Shinjuku station",
+                    "9:42 AM",
+                  ),
+                  _buildAiRichMessage(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Top 3 vegetarian-friendly ramen spots within 5 min of Shinjuku:",
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 15),
+                        _buildSpotInfo(
+                            "T's TanTan",
+                            " — 100% vegan, inside the station. Sesame tantanmen is exceptional.",
+                            const Color(0xFF1ABC9C)),
+                        const SizedBox(height: 12),
+                        _buildSpotInfo(
+                            "Soranoiro NIPPON",
+                            " — Colourful vegetable broth options, open until 23:00.",
+                            Colors.blueAccent),
+                        const SizedBox(height: 12),
+                        _buildSpotInfo(
+                            "Afuri Harajuku",
+                            " — 20 min away, yuzu shio vegan ramen.",
+                            Colors.purpleAccent),
+                      ],
                     ),
-                    _buildUserMessage(
-                      "Find vegetarian ramen near Shinjuku station",
-                      "9:42 AM",
-                    ),
-                    _buildAiRichMessage(
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Top 3 vegetarian-friendly ramen spots within 5 min of Shinjuku:",
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF101828),
-                                fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 15),
-                          _buildSpotInfo(
-                              "T's TanTan",
-                              " — 100% vegan, inside the station. Sesame tantanmen is exceptional.",
-                              const Color(0xFF12927F)),
-                          const SizedBox(height: 12),
-                          _buildSpotInfo(
-                              "Soranoiro NIPPON",
-                              " — Colourful vegetable broth options, open until 23:00.",
-                              const Color(0xFF2D68FF)),
-                          const SizedBox(height: 12),
-                          _buildSpotInfo(
-                              "Afuri Harajuku",
-                              " — 20 min away, yuzu shio vegan ramen.",
-                              const Color(0xFF8B5CF6)),
-                        ],
-                      ),
-                      "9:42 AM",
-                    ),
-                    _buildUserMessage(
-                        "Add T's TanTan to Day 1 dinner", "9:43 AM"),
-                    _buildAiMessage(
-                      "Done! T's TanTan added at 19:00 on Day 1. Future dining suggestions will be filtered for vegetarian options automatically.",
-                      "9:43 AM",
-                    ),
-                  ],
-                ),
+                    "9:42 AM",
+                  ),
+                  _buildUserMessage(
+                      "Add T's TanTan to Day 1 dinner", "9:43 AM"),
+                  _buildAiMessage(
+                    "Done! T's TanTan added at 19:00 on Day 1. Future dining suggestions will be filtered for vegetarian options automatically.",
+                    "9:43 AM",
+                  ),
+                ],
               ),
-              _buildQuickActions(),
-              _buildInputArea(),
-            ],
-          ),
+            ),
+            _buildQuickActions(),
+            _buildInputArea(),
+          ],
         ),
       ),
     );
   }
 
-  // 1. Background đồng bộ
-  BoxDecoration _buildBackground() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFE0F2FE), Colors.white],
-      ),
-    );
-  }
-
-  // 2. Header đồng bộ
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Color(0xFF101828), size: 22),
+            onPressed: () {
+              if (widget.onBackToHome != null) {
+                widget.onBackToHome!();
+              } else {
+                Navigator.maybePop(context);
+              }
+            },
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              color: const Color(0xFF1ABC9C).withOpacity(0.1),
               shape: BoxShape.circle,
+              border:
+                  Border.all(color: const Color(0xFF1ABC9C).withOpacity(0.2)),
             ),
             child: const Icon(Icons.smart_toy_rounded,
-                color: Color(0xFF8B5CF6), size: 20),
+                color: Color(0xFF1ABC9C), size: 22),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 "TravelMate AI",
                 style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF101828)),
+                    color: Colors.white),
               ),
               Row(
                 children: [
                   Container(
-                      width: 6,
-                      height: 6,
+                      width: 8,
+                      height: 8,
                       decoration: const BoxDecoration(
-                          color: Color(0xFF12927F), shape: BoxShape.circle)),
-                  const SizedBox(width: 4),
+                          color: Color(0xFF1ABC9C), shape: BoxShape.circle)),
+                  const SizedBox(width: 6),
                   const Text("Online • GPT-4o",
                       style: TextStyle(
-                          color: Color(0xFF8B5CF6),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600)),
+                          color: Colors.grey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500)),
                 ],
               ),
             ],
@@ -146,14 +138,12 @@ class _AiChatPageState extends State<AiChatPage> {
           const Spacer(),
           IconButton(
               onPressed: () {},
-              icon: const Icon(Icons.more_horiz_rounded,
-                  color: Color(0xFF98A2B3))),
+              icon: const Icon(Icons.more_horiz_rounded, color: Colors.grey)),
         ],
       ),
     );
   }
 
-  // 3. AI Message Bubble (Trắng, Shadow mượt)
   Widget _buildAiMessage(String text, String time) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -164,36 +154,30 @@ class _AiChatPageState extends State<AiChatPage> {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              constraints: const BoxConstraints(maxWidth: 280),
+              constraints: const BoxConstraints(maxWidth: 300),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF172234),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                   bottomLeft: Radius.circular(5),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4))
-                ],
+                border: Border.all(color: Colors.grey.shade800),
               ),
               child: Text(text,
                   style: const TextStyle(
-                      fontSize: 14, color: Color(0xFF101828), height: 1.5)),
+                      fontSize: 14, color: Colors.white, height: 1.5)),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(time,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF98A2B3))),
+                style: const TextStyle(fontSize: 10, color: Colors.grey)),
           ],
         ),
       ),
     );
   }
 
-  // 4. AI Rich Message (Dùng cho danh sách điểm đến)
   Widget _buildAiRichMessage(Widget content, String time) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -204,27 +188,22 @@ class _AiChatPageState extends State<AiChatPage> {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              constraints: const BoxConstraints(maxWidth: 290),
+              constraints: const BoxConstraints(maxWidth: 300),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF172234),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                   bottomLeft: Radius.circular(5),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4))
-                ],
+                border: Border.all(color: Colors.grey.shade800),
               ),
               child: content,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(time,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF98A2B3))),
+                style: const TextStyle(fontSize: 10, color: Colors.grey)),
           ],
         ),
       ),
@@ -240,14 +219,12 @@ class _AiChatPageState extends State<AiChatPage> {
               text: "• $name",
               style: TextStyle(color: nameColor, fontWeight: FontWeight.bold)),
           TextSpan(
-              text: description,
-              style: const TextStyle(color: Color(0xFF475467))),
+              text: description, style: TextStyle(color: Colors.grey.shade400)),
         ],
       ),
     );
   }
 
-  // 5. User Message Bubble (Xanh Blue, bo góc đối xứng)
   Widget _buildUserMessage(String text, String time) {
     return Align(
       alignment: Alignment.centerRight,
@@ -260,8 +237,7 @@ class _AiChatPageState extends State<AiChatPage> {
               padding: const EdgeInsets.all(16),
               constraints: const BoxConstraints(maxWidth: 280),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                    colors: [Color(0xFF2D68FF), Color(0xFF0047FF)]),
+                color: const Color(0xFF1ABC9C),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -270,7 +246,7 @@ class _AiChatPageState extends State<AiChatPage> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF2D68FF).withOpacity(0.2),
+                      color: const Color(0xFF1ABC9C).withOpacity(0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 4))
                 ],
@@ -278,24 +254,23 @@ class _AiChatPageState extends State<AiChatPage> {
               child: Text(text,
                   style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.white,
+                      color: Color(0xFF0B1423),
                       height: 1.5,
-                      fontWeight: FontWeight.w500)),
+                      fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(time,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF98A2B3))),
+                style: const TextStyle(fontSize: 10, color: Colors.grey)),
           ],
         ),
       ),
     );
   }
 
-  // 6. Quick Action Chips (Màu tím đồng bộ Template)
   Widget _buildQuickActions() {
     return Container(
-      height: 38,
-      margin: const EdgeInsets.only(bottom: 15),
+      height: 40,
+      margin: const EdgeInsets.only(bottom: 20),
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -312,22 +287,21 @@ class _AiChatPageState extends State<AiChatPage> {
 
   Widget _buildActionChip(String label) {
     return Container(
-      margin: const EdgeInsets.only(right: 8),
-      child: InkWell(
+      margin: const EdgeInsets.only(right: 10),
+      child: GestureDetector(
         onTap: () {},
-        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF172234),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.3)),
+            border: Border.all(color: Colors.grey.shade800),
           ),
           alignment: Alignment.center,
           child: Text(
             label,
             style: const TextStyle(
-                color: Color(0xFF8B5CF6),
+                color: Color(0xFF1ABC9C),
                 fontSize: 12,
                 fontWeight: FontWeight.bold),
           ),
@@ -336,32 +310,40 @@ class _AiChatPageState extends State<AiChatPage> {
     );
   }
 
-  // 7. Input Area (Bo tròn, Glassmorphism style)
   Widget _buildInputArea() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        border: const Border(top: BorderSide(color: Color(0xFFEAECF0))),
+        color: const Color(0xFF172234),
+        border: Border(top: BorderSide(color: Colors.grey.shade800)),
       ),
       child: Row(
         children: [
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.add_circle_outline_rounded,
-                  color: Color(0xFF98A2B3))),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0B1423),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey.shade800),
+            ),
+            child: IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.add, color: Colors.grey, size: 22)),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 18),
               decoration: BoxDecoration(
-                color: const Color(0xFFF2F5FF),
+                color: const Color(0xFF0B1423),
                 borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: Colors.grey.shade800),
               ),
               child: TextField(
                 controller: _messageController,
+                style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   hintText: "Ask anything about your trip...",
-                  hintStyle: TextStyle(color: Color(0xFF98A2B3), fontSize: 13),
+                  hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                   border: InputBorder.none,
                 ),
               ),
@@ -369,16 +351,15 @@ class _AiChatPageState extends State<AiChatPage> {
           ),
           const SizedBox(width: 12),
           Container(
-            width: 45,
-            height: 45,
+            width: 48,
+            height: 48,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)]),
+              color: Color(0xFF1ABC9C),
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon:
-                  const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              icon: const Icon(Icons.send_rounded,
+                  color: Color(0xFF0B1423), size: 22),
               onPressed: () {},
             ),
           ),

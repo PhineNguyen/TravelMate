@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../../../core/widgets/app_button.dart';
+
 class OnboardPage extends StatefulWidget {
   const OnboardPage({super.key});
 
@@ -26,7 +28,6 @@ class _OnboardPageState extends State<OnboardPage>
       duration: const Duration(milliseconds: 500),
     );
 
-    // Khởi tạo giá trị mặc định để tránh lỗi 'late initialization'
     _animationX = const AlwaysStoppedAnimation(0.0);
     _animationY = const AlwaysStoppedAnimation(0.0);
 
@@ -57,36 +58,22 @@ class _OnboardPageState extends State<OnboardPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackgroundDecoration(),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
-                _buildAnimated3DCard(), // 1. Khối card 3D
-                const SizedBox(height: 30),
-                _buildTextContent(), // 2. Khối nội dung văn bản
-                const SizedBox(height: 40),
-                _buildActionButtons(), // 3. Khối các nút bấm
-                const SizedBox(height: 20),
-              ],
-            ),
+      backgroundColor: const Color(0xFF0B1423),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              _buildAnimated3DCard(),
+              const SizedBox(height: 40),
+              _buildTextContent(),
+              const SizedBox(height: 50),
+              _buildActionButtons(),
+              const SizedBox(height: 30),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  BoxDecoration _buildBackgroundDecoration() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFE0F2FE), Colors.white],
       ),
     );
   }
@@ -96,7 +83,6 @@ class _OnboardPageState extends State<OnboardPage>
       onPanUpdate: (details) {
         _controller.stop();
         setState(() {
-          // SỬA LỖI TRỤC XOAY: dx xoay quanh Y, dy xoay quanh X
           _rotateY += details.delta.dx * 0.01;
           _rotateX -= details.delta.dy * 0.01;
         });
@@ -115,17 +101,19 @@ class _OnboardPageState extends State<OnboardPage>
 
   Widget _buildCardUI() {
     return AspectRatio(
-      aspectRatio: 21 / 11.8,
+      aspectRatio: 16 / 9,
       child: Container(
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF172234),
           borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+              color: const Color(0xFF1ABC9C).withOpacity(0.1), width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.1),
-              blurRadius: 30,
+              color: const Color(0xFF1ABC9C).withOpacity(0.05),
+              blurRadius: 40,
               spreadRadius: 5,
             ),
           ],
@@ -146,17 +134,18 @@ class _OnboardPageState extends State<OnboardPage>
           textAlign: TextAlign.center,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 28,
-            letterSpacing: 0.5,
+            fontSize: 30,
+            color: Colors.white,
+            letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 20),
         Text(
           "Describe your dream trip in plain language. Our AI builds a complete, colour-coded itinerary in seconds - with local insights you won't find in a guidebook.",
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey[600],
-            height: 1.5,
+            color: Colors.grey.shade500,
+            height: 1.6,
           ),
           textAlign: TextAlign.center,
         ),
@@ -167,44 +156,17 @@ class _OnboardPageState extends State<OnboardPage>
   Widget _buildActionButtons() {
     return Column(
       children: [
-        _buildAppButton(
+        AppButton(
           label: "Get started",
-          onPressed: () {},
-          isPrimary: true,
+          onTap: () {},
         ),
-        const SizedBox(height: 12),
-        _buildAppButton(
+        const SizedBox(height: 16),
+        AppButton(
           label: "Sign in to existing account",
-          onPressed: () {},
           isPrimary: false,
+          onTap: () {},
         ),
       ],
-    );
-  }
-
-  Widget _buildAppButton({
-    required String label,
-    required VoidCallback onPressed,
-    required bool isPrimary,
-  }) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isPrimary ? Colors.blueAccent : Colors.white,
-        foregroundColor: isPrimary ? Colors.white : Colors.grey[700],
-        elevation: isPrimary ? 4 : 0,
-        minimumSize: const Size(double.infinity, 56),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: isPrimary
-              ? BorderSide.none
-              : BorderSide(color: Colors.grey[200]!),
-        ),
-      ),
-      onPressed: onPressed,
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
     );
   }
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/widgets/app_button.dart';
+
 class ItineraryPage extends StatelessWidget {
   const ItineraryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: const Color(0xFF0B1423),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -15,22 +17,22 @@ class ItineraryPage extends StatelessWidget {
               children: [
                 _buildHeader(context),
                 Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildRegenerateBar(),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 25),
                       _buildDayHeader("DAY 1 — TOKYO ARRIVAL"),
                       _buildTimelineItem(
                         title: "Narita Airport → Shinjuku",
                         description:
                             "N'EX express, 90 min. Hotel check-in Park Hyatt Tokyo.",
                         time: "14:00 · 90 min",
-                        dotColor: Colors.blue,
+                        dotColor: Colors.blueAccent,
                         chips: [
-                          _buildTag("Transport", Colors.blue),
-                          _buildTag("¥3,250", Colors.blue)
+                          _buildTag("Transport", Colors.blueAccent),
+                          _buildTag("¥3,250", Colors.blueAccent)
                         ],
                         isLast: false,
                       ),
@@ -39,10 +41,10 @@ class ItineraryPage extends StatelessWidget {
                         description:
                             "Cherry blossom viewing. Best light at golden hour.",
                         time: "16:30 · 2 hrs",
-                        dotColor: Colors.teal,
+                        dotColor: const Color(0xFF1ABC9C),
                         chips: [
-                          _buildTag("Outdoor", Colors.teal),
-                          _buildTag("Free", Colors.green)
+                          _buildTag("Outdoor", const Color(0xFF1ABC9C)),
+                          _buildTag("Free", Colors.tealAccent)
                         ],
                         isLast: false,
                       ),
@@ -51,107 +53,83 @@ class ItineraryPage extends StatelessWidget {
                         description:
                             "100% vegan ramen inside Shinjuku station. AI picked based on your vegetarian preference.",
                         time: "19:00 · 1hr",
-                        dotColor: Colors.red,
+                        dotColor: Colors.orangeAccent,
                         chips: [
-                          _buildTag("Dining", Colors.red),
-                          _buildTag("AI pick", Colors.purple)
+                          _buildTag("Dining", Colors.orangeAccent),
+                          _buildTag("AI pick", Colors.purpleAccent)
                         ],
                         isLast: true,
                       ),
+                      const SizedBox(height: 10),
                       _buildDayHeader("DAY 2 — ASAKUSA & AKIHABARA"),
                       _buildTimelineItem(
                         title: "Senso-ji Temple",
                         description:
                             "Tokyo's oldest temple. Arrive before 8am to avoid crowds.",
                         time: "07:30 · 2 hrs",
-                        dotColor: Colors.orange,
+                        dotColor: Colors.redAccent,
                         chips: [
-                          _buildTag("Cultural", Colors.orange),
-                          _buildTag("Historical", Colors.orange)
+                          _buildTag("Cultural", Colors.redAccent),
+                          _buildTag("Historical", Colors.redAccent)
                         ],
                         isLast: false,
                       ),
-                      _buildTimelineItem(
-                        title: "Senso-ji Temple",
-                        description:
-                            "Tokyo's oldest temple. Arrive before 8am to avoid crowds.",
-                        time: "07:30 · 2 hrs",
-                        dotColor: Colors.green,
-                        chips: [
-                          _buildTag("Cultural", Colors.orange),
-                          _buildTag("Historical", Colors.orange)
-                        ],
-                        isLast: false,
-                      ),
-                      _buildDayHeader("DAY 3 — ASAKUSA & AKIHABARA"),
-                      _buildTimelineItem(
-                        title: "Senso-ji Temple",
-                        description:
-                            "Tokyo's oldest temple. Arrive before 8am to avoid crowds.",
-                        time: "07:30 · 2 hrs",
-                        dotColor: Colors.orange,
-                        chips: [
-                          _buildTag("Cultural", Colors.orange),
-                          _buildTag("Historical", Colors.orange)
-                        ],
-                        isLast: false,
-                      ),
-                      const SizedBox(height: 10), // Khoảng trống cho bottom bar
+                      const SizedBox(height: 100), // Space for bottom bar
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          // Bottom Action Bar
           _buildBottomBar(),
         ],
       ),
     );
   }
 
-  // --- 1. HEADER ---
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      decoration: const BoxDecoration(
-        color: Color(0xFFE0F2FE),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1ABC9C).withOpacity(0.1),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+        border: Border(
+            bottom:
+                BorderSide(color: const Color(0xFF1ABC9C).withOpacity(0.2))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, size: 22),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 24),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 15),
               const Text("AI-GENERATED · JAPAN DISCOVERY",
                   style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                      letterSpacing: 1)),
+                      color: Color(0xFF1ABC9C),
+                      letterSpacing: 1.2)),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
           const Text("22-day itinerary",
               style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 34,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF101828))),
-          const SizedBox(height: 10),
+                  color: Colors.white)),
+          const SizedBox(height: 15),
           Row(
             children: [
-              _buildActionChip("Cultural", Colors.blue),
-              const SizedBox(width: 5),
-              _buildActionChip("Culinary", Colors.green),
-              const SizedBox(width: 5),
-              _buildActionChip("\$4,200", Colors.purple),
+              _buildActionChip("Cultural", Colors.blueAccent),
+              const SizedBox(width: 8),
+              _buildActionChip("Culinary", const Color(0xFF1ABC9C)),
+              const SizedBox(width: 8),
+              _buildActionChip("\$4,200", Colors.purpleAccent),
               const Spacer(),
               _buildButtonShare(),
             ],
@@ -161,50 +139,48 @@ class ItineraryPage extends StatelessWidget {
     );
   }
 
-  // --- 2. REGENERATE BAR ---
   Widget _buildRegenerateBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.purple.shade100),
+        color: const Color(0xFF172234),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.purpleAccent.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.refresh, color: Colors.purple, size: 20),
-          const SizedBox(width: 10),
+          const Icon(Icons.refresh, color: Colors.purpleAccent, size: 18),
+          const SizedBox(width: 12),
           const Text("Regenerate with new preferences",
               style: TextStyle(
-                  color: Colors.purple,
+                  color: Colors.purpleAccent,
                   fontWeight: FontWeight.bold,
                   fontSize: 13)),
           const Spacer(),
           Text("GPT-4o",
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+              style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  // --- 3. TIMELINE ITEM ---
   Widget _buildDayHeader(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 20, left: 4),
       child: Text(
         text,
         style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
             color: Colors.grey.shade500,
-            letterSpacing: 1),
+            letterSpacing: 1.2),
       ),
     );
   }
 
-// Widget _buildButton{
-//     return ElevatedButton(onPressed: (){}, child: Row(const Icons(Icon(Icons.)),),),
-// }
   Widget _buildTimelineItem({
     required String title,
     required String description,
@@ -213,105 +189,92 @@ class ItineraryPage extends StatelessWidget {
     required List<Widget> chips,
     required bool isLast,
   }) {
-    return Column(
-      children: [
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.stretch, // Ép các con cao bằng nhau
-            children: [
-              // --- CỘT CHỨA ĐƯỜNG KẺ LIỀN MẠCH ---
-              SizedBox(
-                width: 15, // Độ rộng cố định cho vùng timeline
-                child: Column(
-                  children: [
-                    // Dấu chấm (Dot)
-                    Container(
-                      width: 12,
-                      height: 12,
-                      margin: const EdgeInsets.only(
-                          top: 0), // Căn chỉnh dot khớp với dòng đầu của text
-                      decoration: BoxDecoration(
-                        color: dotColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 20,
+            child: Column(
+              children: [
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: dotColor,
+                    shape: BoxShape.circle,
+                    border:
+                        Border.all(color: const Color(0xFF0B1423), width: 3),
+                  ),
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      color: Colors.grey.shade800,
                     ),
-                    // Đường kẻ nối
-                    if (!isLast)
-                      Expanded(
-                        child: Container(
-                          width: 2,
-                          color: Colors.grey.shade300,
-                        ),
-                      ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF172234),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade800),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            color: Colors.white)),
+                    const SizedBox(height: 8),
+                    Text(description,
+                        style: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontSize: 14,
+                            height: 1.5)),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time,
+                            size: 14, color: Colors.grey.shade600),
+                        const SizedBox(width: 6),
+                        Text(time,
+                            style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Row(children: chips),
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
-
-              // --- CỘT CHỨA NỘI DUNG CARD ---
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      bottom: 20), // Tạo khoảng trống giữa các item ở đây
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4))
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                        const SizedBox(height: 5),
-                        Text(description,
-                            style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 13,
-                                height: 1.4)),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                size: 14, color: Colors.grey.shade400),
-                            const SizedBox(width: 4),
-                            Text(time,
-                                style: TextStyle(
-                                    color: Colors.grey.shade400, fontSize: 12)),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(children: chips),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        )
-      ],
+        ],
+      ),
     );
   }
 
-  // Helper Widgets
   Widget _buildTag(String label, Color color) {
     return Container(
-      margin: const EdgeInsets.only(right: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(6)),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.2))),
       child: Text(label,
           style: TextStyle(
               color: color, fontSize: 10, fontWeight: FontWeight.bold)),
@@ -319,125 +282,73 @@ class ItineraryPage extends StatelessWidget {
   }
 
   Widget _buildButtonShare() {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: () {
-          //tap to share
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: SizedBox(
-          height: 46,
-          width: 80,
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.share_outlined, size: 18, color: Colors.black87),
-              Text("Share",
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87)),
-            ],
-          ),
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF172234),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade800),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.ios_share, size: 16, color: Colors.white),
+            SizedBox(width: 8),
+            Text("Share",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildActionChip(String label, Color color, {IconData? icon}) {
+  Widget _buildActionChip(String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: icon == null ? color.withOpacity(0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: icon != null ? Border.all(color: Colors.grey.shade200) : null,
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
-      child: Row(
-        children: [
-          if (icon != null) Icon(icon, size: 14, color: Colors.grey),
-          if (icon != null) const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                  color: icon == null ? color : Colors.grey.shade700,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold)),
-        ],
-      ),
+      child: Text(label,
+          style: TextStyle(
+              color: color, fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
 
-  // --- 4. BOTTOM BAR ---
   Widget _buildBottomBar() {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
+          color: const Color(0xFF0B1423).withOpacity(0.95),
           border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1),
+            top: BorderSide(color: Colors.grey.shade800, width: 1),
           ),
         ),
         child: Row(
           children: [
-            // Nút Save Itinerary
             Expanded(
               flex: 3,
-              child: ElevatedButton(
-                onPressed: () {
-                  //logic here
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2D68FF),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.check_rounded, size: 20),
-                    SizedBox(width: 8),
-                    Text("Save itinerary",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                  ],
-                ),
+              child: AppButton(
+                label: "Save itinerary",
+                icon: Icon(Icons.check_circle_outline),
+                onTap: () {},
               ),
             ),
-            const SizedBox(width: 12),
-            // Nút View Map
+            const SizedBox(width: 15),
             Expanded(
               flex: 1,
-              child: Material(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  onTap: () {
-                    //tap to open google map
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: SizedBox(
-                    height: 56,
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.map_outlined,
-                            size: 20, color: Colors.black87),
-                        Text("View map",
-                            style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87)),
-                      ],
-                    ),
-                  ),
-                ),
+              child: AppButton(
+                label: "Map",
+                icon: Icon(Icons.map_outlined),
+                isPrimary: false,
+                onTap: () {},
               ),
             ),
           ],

@@ -1,31 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/widgets/app_button.dart';
+
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: _buildBackgroundDecoration(),
-        child: Stack(
-          children: [
-            ..._buildBackgroundBlobs(),
-            _buildMainContent(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  BoxDecoration _buildBackgroundDecoration() {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFEBF1FF), Colors.white],
+      backgroundColor: const Color(0xFF0B1423),
+      body: Stack(
+        children: [
+          ..._buildBackgroundBlobs(),
+          _buildMainContent(context),
+        ],
       ),
     );
   }
@@ -33,19 +21,14 @@ class SplashPage extends StatelessWidget {
   List<Widget> _buildBackgroundBlobs() {
     return [
       Positioned(
-        top: -50,
+        top: -100,
         left: -50,
-        child: _buildBlob(250, const Color(0xFFD9E5FF).withOpacity(0.5)),
+        child: _buildBlob(300, const Color(0xFF1ABC9C).withOpacity(0.05)),
       ),
       Positioned(
-        bottom: 100,
-        right: -80,
-        child: _buildBlob(200, const Color(0xFFD9E5FF).withOpacity(0.6)),
-      ),
-      Positioned(
-        top: 200,
-        right: -20,
-        child: _buildBlob(100, const Color(0xFFD9E5FF).withOpacity(0.4)),
+        bottom: 50,
+        right: -100,
+        child: _buildBlob(250, const Color(0xFF1ABC9C).withOpacity(0.08)),
       ),
     ];
   }
@@ -57,15 +40,22 @@ class SplashPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Spacer(),
             _buildLogo(),
-            const SizedBox(height: 24),
-            _buildAppTitle(),
-            const SizedBox(height: 5),
-            _buildSlogan(),
             const SizedBox(height: 30),
+            _buildAppTitle(),
+            const SizedBox(height: 8),
+            _buildSlogan(),
+            const Spacer(),
             _buildPageIndicators(),
             const SizedBox(height: 40),
-            _buildGetStartedButton(context),
+            AppButton(
+              label: "Get Started",
+              onTap: () {
+                // Navigation logic
+              },
+            ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -74,19 +64,22 @@ class SplashPage extends StatelessWidget {
 
   Widget _buildLogo() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D68FF),
-        borderRadius: BorderRadius.circular(28),
+        color: const Color(0xFF1ABC9C).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+            color: const Color(0xFF1ABC9C).withOpacity(0.3), width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2D68FF).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF1ABC9C).withOpacity(0.1),
+            blurRadius: 40,
+            spreadRadius: 5,
           ),
         ],
       ),
-      child: const Icon(Icons.public_rounded, color: Colors.white, size: 48),
+      child:
+          const Icon(Icons.public_rounded, color: Color(0xFF1ABC9C), size: 64),
     );
   }
 
@@ -94,21 +87,21 @@ class SplashPage extends StatelessWidget {
     return const Text(
       "TravelMate",
       style: TextStyle(
-        fontWeight: FontWeight.w900,
-        fontSize: 40,
-        color: Color(0xFF0F172A),
+        fontWeight: FontWeight.bold,
+        fontSize: 42,
+        color: Colors.white,
         letterSpacing: -1,
       ),
     );
   }
 
   Widget _buildSlogan() {
-    return const Text(
+    return Text(
       "AI-powered travel intelligence",
       style: TextStyle(
-        fontSize: 15,
-        color: Colors.grey,
-        fontWeight: FontWeight.w500,
+        fontSize: 16,
+        color: Colors.grey.shade500,
+        fontWeight: FontWeight.w400,
       ),
     );
   }
@@ -118,39 +111,21 @@ class SplashPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildDash(true),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
+        _buildDash(false),
+        const SizedBox(width: 8),
         _buildDash(false),
       ],
-    );
-  }
-
-  Widget _buildGetStartedButton(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        elevation: 8,
-        shadowColor: Colors.blueAccent.withOpacity(0.4),
-        minimumSize: const Size(double.infinity, 56),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      ),
-      onPressed: () {
-        // Logic chuyển trang
-      },
-      child: const Text(
-        "Get Started",
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
     );
   }
 
   Widget _buildDash(bool isActive) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      width: isActive ? 32 : 12,
+      width: isActive ? 32 : 8,
       height: 6,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF2D68FF) : const Color(0xFFD1D5DB),
+        color: isActive ? const Color(0xFF1ABC9C) : Colors.grey.shade800,
         borderRadius: BorderRadius.circular(10),
       ),
     );
