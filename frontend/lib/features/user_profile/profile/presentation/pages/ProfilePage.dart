@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
+import 'package:frontend/features/user_profile/profile/presentation/pages/HelpCentrePage.dart';
+import 'package:frontend/features/user_profile/profile/presentation/pages/PersonalInformationPage.dart';
+import 'package:frontend/features/user_profile/profile/presentation/pages/PrivacyAndDataPage.dart';
+
+import '../../../../../core/widgets/app_header.dart';
 
 class ProfilePage extends StatelessWidget {
   final VoidCallback? onBackToHome;
@@ -13,6 +19,11 @@ class ProfilePage extends StatelessWidget {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
+              AppHeader(
+                title: "Profile",
+                onBack: onBackToHome,
+              ),
+              const SizedBox(height: 30),
               _buildHeader(context),
               const SizedBox(height: 40),
               _buildSectionTitle("ACCOUNT"),
@@ -21,6 +32,8 @@ class ProfilePage extends StatelessWidget {
                   icon: Icons.person_outline_rounded,
                   label: "Personal information",
                   color: const Color(0xFF1ABC9C),
+                  context: context,
+                  page: PersonalInformationPage(),
                 ),
                 _buildMenuItem(
                   icon: Icons.favorite_border_rounded,
@@ -69,6 +82,8 @@ class ProfilePage extends StatelessWidget {
                   icon: Icons.security_outlined,
                   label: "Privacy & data",
                   color: const Color(0xFF1ABC9C),
+                  context: context,
+                  page: const PrivacyAndDataPage(),
                 ),
                 _buildMenuItem(
                   icon: Icons.bar_chart_rounded,
@@ -83,12 +98,16 @@ class ProfilePage extends StatelessWidget {
                   icon: Icons.help_outline_rounded,
                   label: "Help centre",
                   color: Colors.blueAccent,
+                  context: context,
+                  page: const HelpCentrePage(),
                 ),
                 _buildMenuItem(
                   icon: Icons.logout_rounded,
                   label: "Sign out",
                   color: Colors.redAccent,
                   isDestructive: true,
+                  context: context,
+                  page: const LoginPage(),
                 ),
               ]),
               const SizedBox(height: 40),
@@ -102,44 +121,6 @@ class ProfilePage extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
-        // Thanh thanh điều hướng trên cùng (Back + Title)
-        Row(
-          children: [
-            GestureDetector(
-              // ✅ ĐÃ SỬA: Xóa từ khóa 'widget.' vì đây là StatelessWidget
-              onTap: () {
-                if (onBackToHome != null) {
-                  onBackToHome!();
-                } else {
-                  Navigator.maybePop(context);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF172234),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade800),
-                ),
-                child:
-                    const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-              ),
-            ),
-            const SizedBox(width: 15),
-            // ✅ ĐÃ SỬA: Đổi tên thành Profile
-            const Text(
-              "Profile",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 30),
-
-        // ✅ ĐÃ SỬA: Đưa các phần này ra khỏi Row để xếp dọc chuẩn UI
         Stack(
           alignment: Alignment.bottomRight,
           children: [
@@ -248,11 +229,20 @@ class ProfilePage extends StatelessWidget {
     required IconData icon,
     required String label,
     required Color color,
+    BuildContext? context,
+    Widget? page,
     String? trailingText,
     bool isDestructive = false,
   }) {
     return ListTile(
-      onTap: () {},
+      onTap: page != null
+          ? () => Navigator.push(
+                context!,
+                MaterialPageRoute(
+                  builder: (context) => page,
+                ),
+              )
+          : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(10),

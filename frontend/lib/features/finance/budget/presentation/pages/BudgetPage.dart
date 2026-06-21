@@ -1,66 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/finance/expense/presentation/pages/AddExpensePage.dart';
+
+import '../../../../../core/widgets/app_header.dart';
 
 class BudgetPage extends StatelessWidget {
-  const BudgetPage({super.key});
+  final VoidCallback? onBackToHome;
+  const BudgetPage({super.key, this.onBackToHome});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B1423),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 30),
-              _buildSummaryCard(),
-              const SizedBox(height: 30),
-              _buildSectionHeader("BY CATEGORY", "Add expense"),
-              const SizedBox(height: 15),
-              _buildCategoryList(),
-              const SizedBox(height: 30),
-            ],
-          ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: AppHeader(
+                title: "Budget Tracker",
+                onBack: onBackToHome,
+                trailing: Row(
+                  children: [
+                    _buildCircleAddButton(context),
+                    const SizedBox(width: 12),
+                    PopupMenuButton<String>(
+                      offset: const Offset(0, 50),
+                      color: const Color(0xFF172234),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      itemBuilder: (context) => [
+                        _buildPopupItem(
+                            Icons.analytics_outlined, "View reports"),
+                        _buildPopupItem(
+                            Icons.file_download_outlined, "Export CSV"),
+                        _buildPopupItem(
+                            Icons.settings_outlined, "Budget limits"),
+                      ],
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF172234),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade800),
+                        ),
+                        child: const Icon(Icons.more_vert_rounded,
+                            color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  children: [
+                    _buildSummaryCard(),
+                    const SizedBox(height: 30),
+                    _buildSectionHeader("BY CATEGORY", "Add expense"),
+                    const SizedBox(height: 15),
+                    _buildCategoryList(),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade800),
-            ),
-            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-          ),
-        ),
-        const SizedBox(width: 15),
-        const Text(
-          "Budget Tracker",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const Spacer(),
-        _buildCircleAddButton(),
-      ],
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label) {
+    return PopupMenuItem(
+      value: label,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
+        ],
+      ),
     );
   }
 
-  Widget _buildCircleAddButton() {
+  Widget _buildCircleAddButton(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AddExpensePage()));
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(

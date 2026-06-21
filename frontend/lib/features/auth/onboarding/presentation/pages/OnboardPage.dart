@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
+import 'package:frontend/features/auth/register/presentation/pages/RegisterPage.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../../core/widgets/app_button.dart';
@@ -158,13 +160,19 @@ class _OnboardPageState extends State<OnboardPage>
       children: [
         AppButton(
           label: "Get started",
-          onTap: () {},
+          onTap: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const RegisterPage()));
+          },
         ),
         const SizedBox(height: 16),
         AppButton(
           label: "Sign in to existing account",
           isPrimary: false,
-          onTap: () {},
+          onTap: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const LoginPage()));
+          },
         ),
       ],
     );

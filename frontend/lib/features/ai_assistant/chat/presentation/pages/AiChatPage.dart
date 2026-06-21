@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/widgets/app_header.dart';
+
 class AiChatPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
   const AiChatPage({super.key, this.onBackToHome});
@@ -18,11 +20,56 @@ class _AiChatPageState extends State<AiChatPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+              child: AppHeader(
+                title: "TravelMate AI",
+                onBack: widget.onBackToHome,
+                trailing: PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  color: const Color(0xFF172234),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  itemBuilder: (context) => [
+                    _buildPopupItem(Icons.delete_outline, "Clear conversation"),
+                    _buildPopupItem(Icons.settings_outlined, "AI Settings"),
+                    _buildPopupItem(Icons.history, "Chat history"),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF172234),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade800),
+                    ),
+                    child: const Icon(Icons.more_horiz_rounded,
+                        color: Colors.grey, size: 20),
+                  ),
+                ),
+                bottom: [
+                  Row(
+                    children: [
+                      Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                              color: Color(0xFF1ABC9C),
+                              shape: BoxShape.circle)),
+                      const SizedBox(width: 8),
+                      const Text("Online • GPT-4o",
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             Expanded(
               child: ListView(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 physics: const BouncingScrollPhysics(),
                 children: [
                   _buildAiMessage(
@@ -80,65 +127,15 @@ class _AiChatPageState extends State<AiChatPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label) {
+    return PopupMenuItem(
+      value: label,
       child: Row(
         children: [
-          IconButton(
-            onPressed: () {
-              if (widget.onBackToHome != null) {
-                widget.onBackToHome!();
-              } else {
-                Navigator.maybePop(context);
-              }
-            },
-            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1ABC9C).withOpacity(0.1),
-              shape: BoxShape.circle,
-              border:
-                  Border.all(color: const Color(0xFF1ABC9C).withOpacity(0.2)),
-            ),
-            child: const Icon(Icons.smart_toy_rounded,
-                color: Color(0xFF1ABC9C), size: 22),
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "TravelMate AI",
-                style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
-              ),
-              Row(
-                children: [
-                  Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                          color: Color(0xFF1ABC9C), shape: BoxShape.circle)),
-                  const SizedBox(width: 6),
-                  const Text("Online • GPT-4o",
-                      style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ],
-          ),
-          const Spacer(),
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.more_horiz_rounded, color: Colors.grey)),
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
         ],
       ),
     );
@@ -273,7 +270,7 @@ class _AiChatPageState extends State<AiChatPage> {
       margin: const EdgeInsets.only(bottom: 20),
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         physics: const BouncingScrollPhysics(),
         children: [
           _buildActionChip("Weather tomorrow?"),

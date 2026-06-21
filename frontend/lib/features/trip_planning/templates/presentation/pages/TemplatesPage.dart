@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:frontend/features/trip_details/trip_detail/presentation/pages/TripDetailPage.dart';
 
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/app_header.dart';
 
 class TemplatesPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
-
   const TemplatesPage({super.key, this.onBackToHome});
 
   @override
@@ -25,7 +25,34 @@ class _TripTemplatesState extends State<TemplatesPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context),
+              AppHeader(
+                title: "Trip Templates",
+                onBack: widget.onBackToHome,
+                trailing: PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  color: const Color(0xFF172234),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  onSelected: (value) {},
+                  itemBuilder: (context) => [
+                    _buildPopupItem(Icons.sort_rounded, "Sort by usage"),
+                    _buildPopupItem(
+                        Icons.star_outline_rounded, "Highest rated"),
+                    _buildPopupItem(
+                        Icons.monetization_on_outlined, "Budget friendly"),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF172234),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade800),
+                    ),
+                    child: const Icon(Icons.tune_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
               const SizedBox(height: 30),
               _buildSearchBar(),
               const SizedBox(height: 25),
@@ -76,47 +103,17 @@ class _TripTemplatesState extends State<TemplatesPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () {
-            if (widget.onBackToHome != null) {
-              widget.onBackToHome!();
-            } else {
-              Navigator.maybePop(context);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade800),
-            ),
-            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-          ),
-        ),
-        const SizedBox(width: 15),
-        const Text(
-          "Trip Templates",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF172234),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade800),
-          ),
-          child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-        ),
-      ],
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label) {
+    return PopupMenuItem(
+      value: label,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
+        ],
+      ),
     );
   }
 
@@ -203,7 +200,7 @@ class _TripTemplatesState extends State<TemplatesPage> {
             onTap: () {},
             child: Text(
               actionText,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1ABC9C)),

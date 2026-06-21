@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/app_header.dart';
 
 class ItineraryPage extends StatelessWidget {
-  const ItineraryPage({super.key});
+  final VoidCallback? onBackToHome;
+  const ItineraryPage({super.key, this.onBackToHome});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,49 @@ class ItineraryPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(context),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
+                  child: AppHeader(
+                    title: "22-day itinerary",
+                    onBack: onBackToHome,
+                    trailing: PopupMenuButton<String>(
+                      offset: const Offset(0, 50),
+                      color: const Color(0xFF172234),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      onSelected: (value) {},
+                      itemBuilder: (context) => [
+                        _buildPopupItem(Icons.edit_outlined, "Edit itinerary"),
+                        _buildPopupItem(Icons.ios_share, "Share itinerary"),
+                        _buildPopupItem(
+                            Icons.picture_as_pdf_outlined, "Export to PDF"),
+                        _buildPopupItem(Icons.delete_outline, "Reset schedule",
+                            isDestructive: true),
+                      ],
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF172234),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade800),
+                        ),
+                        child: const Icon(Icons.more_horiz_rounded,
+                            color: Colors.white, size: 20),
+                      ),
+                    ),
+                    bottom: [
+                      Row(
+                        children: [
+                          _buildActionChip("Cultural", Colors.blueAccent),
+                          const SizedBox(width: 8),
+                          _buildActionChip("Culinary", const Color(0xFF1ABC9C)),
+                          const SizedBox(width: 8),
+                          _buildActionChip("\$4,200", Colors.purpleAccent),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
@@ -87,53 +131,19 @@ class ItineraryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1ABC9C).withOpacity(0.1),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
-        border: Border(
-            bottom:
-                BorderSide(color: const Color(0xFF1ABC9C).withOpacity(0.2))),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label,
+      {bool isDestructive = false}) {
+    return PopupMenuItem(
+      value: label,
+      child: Row(
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child:
-                    const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 15),
-              const Text("AI-GENERATED · JAPAN DISCOVERY",
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1ABC9C),
-                      letterSpacing: 1.2)),
-            ],
-          ),
-          const SizedBox(height: 25),
-          const Text("22-day itinerary",
+          Icon(icon,
+              color: isDestructive ? Colors.redAccent : Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
               style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white)),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              _buildActionChip("Cultural", Colors.blueAccent),
-              const SizedBox(width: 8),
-              _buildActionChip("Culinary", const Color(0xFF1ABC9C)),
-              const SizedBox(width: 8),
-              _buildActionChip("\$4,200", Colors.purpleAccent),
-              const Spacer(),
-              _buildButtonShare(),
-            ],
-          )
+                  color: isDestructive ? Colors.redAccent : Colors.white,
+                  fontSize: 14)),
         ],
       ),
     );
@@ -278,31 +288,6 @@ class ItineraryPage extends StatelessWidget {
       child: Text(label,
           style: TextStyle(
               color: color, fontSize: 10, fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildButtonShare() {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFF172234),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade800),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.ios_share, size: 16, color: Colors.white),
-            SizedBox(width: 8),
-            Text("Share",
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-          ],
-        ),
-      ),
     );
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/widgets/app_header.dart';
+
 class AnalyticsPage extends StatelessWidget {
   final VoidCallback? onBackToHome;
   const AnalyticsPage({super.key, this.onBackToHome});
@@ -11,14 +13,21 @@ class AnalyticsPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: AppHeader(
+                title: "Travel insights",
+                onBack: onBackToHome,
+              ),
+            ),
+            const SizedBox(height: 10),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildHeader(context),
                     const SizedBox(height: 10),
                     _buildSummaryGrid(),
                     const SizedBox(height: 30),
@@ -35,40 +44,6 @@ class AnalyticsPage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () {
-            if (onBackToHome != null) {
-              onBackToHome!();
-            } else {
-              Navigator.maybePop(context);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade800),
-            ),
-            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-          ),
-        ),
-        const SizedBox(width: 15),
-        const Text(
-          "Travel insight",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ],
     );
   }
 

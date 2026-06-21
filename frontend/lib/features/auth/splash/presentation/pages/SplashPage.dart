@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/auth/onboarding/presentation/pages/OnboardPage.dart';
 
 import '../../../../../core/widgets/app_button.dart';
 
@@ -52,7 +53,10 @@ class SplashPage extends StatelessWidget {
             AppButton(
               label: "Get Started",
               onTap: () {
-                // Navigation logic
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const OnboardPage()));
               },
             ),
             const SizedBox(height: 30),

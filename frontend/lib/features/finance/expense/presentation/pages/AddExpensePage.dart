@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/finance/budget/presentation/pages/BudgetPage.dart';
 
 class AddExpensePage extends StatefulWidget {
   const AddExpensePage({super.key});
@@ -269,7 +270,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   Widget _buildSaveButton() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const BudgetPage()));
+      },
       child: Container(
         width: double.infinity,
         height: 58,

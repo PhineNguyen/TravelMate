@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/features/trip_planning/create_trip/presentation/pages/CreateTripManunal.dart';
 
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/app_header.dart';
+import '../widgets/planning_mode_selector.dart';
+import 'CreateTripManunal.dart';
 
 class CreateTripPage extends StatefulWidget {
   const CreateTripPage({super.key});
@@ -11,9 +13,8 @@ class CreateTripPage extends StatefulWidget {
 }
 
 class _CreateTripPageState extends State<CreateTripPage> {
-  // --- BIẾN TRẠNG THÁI (STATE) ---
   String _selectedMode = "AI-Assisted";
-  int _manualStep = 1; // Quản lý bước cho chế độ Manual
+  int _manualStep = 1;
 
   double _budget = 2100;
   final Set<String> _selectedStyles = {"Cultural", "Culinary"};
@@ -36,15 +37,19 @@ class _CreateTripPageState extends State<CreateTripPage> {
     super.dispose();
   }
 
-  // --- HÀM LOGIC ĐIỀU HƯỚNG NỘI BỘ ---
-  void _nextManualStep() => setState(() => _manualStep++);
-  void _prevManualStep() => setState(() => _manualStep--);
+  void _nextManualStep() {
+    if (_manualStep < 5) setState(() => _manualStep++);
+  }
+
+  void _prevManualStep() {
+    if (_manualStep > 1) setState(() => _manualStep--);
+  }
+
   void _switchToAI() => setState(() {
         _selectedMode = "AI-Assisted";
         _manualStep = 1;
       });
 
-  // --- HÀM XỬ LÝ NGÀY THÁNG ---
   Future<void> _selectDate(BuildContext context, bool isDeparture) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -96,25 +101,92 @@ class _CreateTripPageState extends State<CreateTripPage> {
 
   @override
   Widget build(BuildContext context) {
+    String headerTitle =
+        _selectedMode == "Manual" ? "Plan your trip" : "Create new trip";
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B1423),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 25),
-              _buildPlanningModeSelector(),
-              const SizedBox(height: 25),
-              _buildBodyContent(),
-              const SizedBox(height: 30),
-            ],
-          ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: AppHeader(
+                title: headerTitle,
+                trailing: PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  color: const Color(0xFF172234),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  onSelected: (value) {},
+                  itemBuilder: (context) => [
+                    _buildPopupItem(Icons.save_outlined, "Save draft"),
+                    _buildPopupItem(Icons.refresh, "Reset form"),
+                    _buildPopupItem(Icons.help_outline, "Help"),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF172234),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade800),
+                    ),
+                    child: const Icon(Icons.tune_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 25),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: PlanningModeSelector(
+                selectedMode: _selectedMode,
+                onModeChanged: (mode) {
+                  setState(() {
+                    _selectedMode = mode;
+                    _manualStep = 1;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 25),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: _buildBodyContent(),
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label) {
+    return PopupMenuItem(
+      value: label,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBodyContent() {
+    if (_selectedMode == "Manual") {
+      return CreateTripManualContent(
+        currentStep: _manualStep,
+        onNext: _nextManualStep,
+        onBack: _prevManualStep,
+        onUseAI: _switchToAI,
+      );
+    }
+    return _buildAIContent();
   }
 
   Widget _buildAIContent() {
@@ -176,107 +248,13 @@ class _CreateTripPageState extends State<CreateTripPage> {
         const SizedBox(height: 40),
         AppButton(
           label: "Generate AI itinerary",
-          icon: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+          icon: Icon(
+            Icons.auto_awesome,
+          ),
           onTap: () {},
         ),
+        const SizedBox(height: 30),
       ],
-    );
-  }
-
-  Widget _buildBodyContent() {
-    switch (_selectedMode) {
-      case "Manual":
-        return CreateTripManualContent(
-          currentStep: _manualStep,
-          onNext: _nextManualStep,
-          onBack: _prevManualStep,
-          onUseAI: _switchToAI,
-        );
-      case "AI-Assisted":
-      default:
-        return _buildAIContent();
-    }
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade800),
-            ),
-            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-          ),
-        ),
-        const SizedBox(width: 15),
-        const Text("Create Trip",
-            style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white)),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF172234),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade800),
-          ),
-          child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlanningModeSelector() {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-          color: const Color(0xFF172234),
-          borderRadius: BorderRadius.circular(18)),
-      child: Row(
-        children: ["AI-Assisted", "Manual"]
-            .map((mode) => _buildModeItem(mode))
-            .toList(),
-      ),
-    );
-  }
-
-  Widget _buildModeItem(String title) {
-    bool isSelected = _selectedMode == title;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedMode = title;
-            _manualStep = 1;
-          });
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF1ABC9C) : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Center(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color:
-                    isSelected ? const Color(0xFF0B1423) : Colors.grey.shade500,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -325,8 +303,9 @@ class _CreateTripPageState extends State<CreateTripPage> {
   Widget _buildCustomTextField({required String hint, int maxLines = 1}) {
     return Container(
       decoration: BoxDecoration(
-          color: const Color(0xFF172234),
-          borderRadius: BorderRadius.circular(16)),
+        color: const Color(0xFF172234),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: TextFormField(
         maxLines: maxLines,
         style: const TextStyle(fontSize: 15, color: Colors.white),
@@ -348,17 +327,20 @@ class _CreateTripPageState extends State<CreateTripPage> {
         height: 58,
         padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
-            color: const Color(0xFF172234),
-            borderRadius: BorderRadius.circular(16)),
+          color: const Color(0xFF172234),
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Row(
           children: [
             Icon(Icons.calendar_today_rounded,
                 size: 18, color: Colors.grey.shade500),
             const SizedBox(width: 12),
-            Text(date != null ? _formatDate(date) : hint,
-                style: TextStyle(
-                    color: date != null ? Colors.white : Colors.grey.shade600,
-                    fontSize: 15)),
+            Text(
+              date != null ? _formatDate(date) : hint,
+              style: TextStyle(
+                  color: date != null ? Colors.white : Colors.grey.shade600,
+                  fontSize: 15),
+            ),
           ],
         ),
       ),
@@ -369,8 +351,9 @@ class _CreateTripPageState extends State<CreateTripPage> {
     return Container(
       height: 58,
       decoration: BoxDecoration(
-          color: const Color(0xFF172234),
-          borderRadius: BorderRadius.circular(16)),
+        color: const Color(0xFF172234),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Row(
         children: [
           IconButton(

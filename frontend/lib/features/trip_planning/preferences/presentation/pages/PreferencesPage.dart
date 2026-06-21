@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/app_header.dart';
 
 class PreferencesPage extends StatefulWidget {
-  const PreferencesPage({super.key});
+  final VoidCallback? onBackToHome;
+  const PreferencesPage({super.key, this.onBackToHome});
 
   @override
   State<PreferencesPage> createState() => _PreferencePageState();
 }
 
 class _PreferencePageState extends State<PreferencesPage> {
-  // --- STATE VARIABLES ---
   RangeValues _currentRangeValues = const RangeValues(500, 10000);
   double _currentDuration = 14.0;
   final Set<String> _selectedRegions = {};
@@ -27,7 +28,20 @@ class _PreferencePageState extends State<PreferencesPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(),
+                AppHeader(
+                  title: "Set your preferences",
+                  onBack: widget.onBackToHome,
+                  bottom: [
+                    Text(
+                      "Help us personalise your experience. You can change these anytime in Settings.",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 15,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 30),
                 _buildSectionTitle("BUDGET RANGE (PER TRIP)"),
                 _buildBudgetSelector(),
@@ -47,29 +61,6 @@ class _PreferencePageState extends State<PreferencesPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Set your preferences",
-          style: TextStyle(
-              fontSize: 25, color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          "Help us personalise your experience. You can change these anytime in Settings.",
-          style: TextStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 15,
-            color: Colors.grey.shade500,
-          ),
-          textAlign: TextAlign.justify,
-        ),
-      ],
     );
   }
 

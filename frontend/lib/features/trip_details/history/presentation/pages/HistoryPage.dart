@@ -1,86 +1,117 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/widgets/app_header.dart';
+
 class HistoryPage extends StatelessWidget {
-  const HistoryPage({super.key});
+  final VoidCallback? onBackToHome;
+  const HistoryPage({super.key, this.onBackToHome});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B1423),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Trip history",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        centerTitle: false,
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 15),
-          _buildFilterRow(),
-          const SizedBox(height: 15),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildHistoryCard(
-                  title: "Japan Discovery 2025",
-                  locations: "Tokyo · Kyoto · Osaka · Hiroshima",
-                  date: "Apr 2025",
-                  duration: "22 days",
-                  cost: "\$4,180",
-                  topColor: const Color(0xFF1ABC9C).withOpacity(0.1),
-                  bannerIcon: Icons.explore_outlined,
-                  iconColor: const Color(0xFF1ABC9C),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: AppHeader(
+                title: "Trip history",
+                onBack: onBackToHome,
+                trailing: PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  color: const Color(0xFF172234),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  itemBuilder: (context) => [
+                    _buildPopupItem(Icons.sort_rounded, "Sort by date"),
+                    _buildPopupItem(
+                        Icons.filter_list_rounded, "Filter by region"),
+                    _buildPopupItem(Icons.download_rounded, "Export history"),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF172234),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade800),
+                    ),
+                    child: const Icon(Icons.more_vert_rounded,
+                        color: Colors.white, size: 20),
+                  ),
                 ),
-                const SizedBox(height: 20),
-                _buildHistoryCard(
-                  title: "Paris & Côte d'Azur",
-                  locations: "Paris · Nice · Monaco · Cannes",
-                  date: "Aug 2024",
-                  duration: "14 days",
-                  cost: "\$3,600",
-                  topColor: Colors.orangeAccent.withOpacity(0.1),
-                  bannerIcon: Icons.fort_outlined,
-                  iconColor: Colors.orangeAccent,
-                ),
-                const SizedBox(height: 20),
-                _buildHistoryCard(
-                  title: "Bali Sanctuary",
-                  locations: "Ubud · Seminyak · Uluwatu",
-                  date: "Nov 2024",
-                  duration: "10 days",
-                  cost: "\$2,100",
-                  topColor: Colors.teal.withOpacity(0.1),
-                  bannerIcon: Icons.beach_access_outlined,
-                  iconColor: Colors.teal,
-                ),
-                const SizedBox(height: 20),
-                _buildHistoryCard(
-                  title: "Morocco Cultural Tour",
-                  locations: "Marrakech · Fez · Sahara · Chefchaouen",
-                  date: "Mar 2024",
-                  duration: "10 days",
-                  cost: "\$1,900",
-                  topColor: Colors.deepPurpleAccent.withOpacity(0.1),
-                  bannerIcon: Icons.mosque_outlined,
-                  iconColor: Colors.deepPurpleAccent,
-                ),
-                const SizedBox(height: 30),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 15),
+            _buildFilterRow(),
+            const SizedBox(height: 15),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildHistoryCard(
+                    title: "Japan Discovery 2025",
+                    locations: "Tokyo · Kyoto · Osaka · Hiroshima",
+                    date: "Apr 2025",
+                    duration: "22 days",
+                    cost: "\$4,180",
+                    topColor: const Color(0xFF1ABC9C).withOpacity(0.1),
+                    bannerIcon: Icons.explore_outlined,
+                    iconColor: const Color(0xFF1ABC9C),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildHistoryCard(
+                    title: "Paris & Côte d'Azur",
+                    locations: "Paris · Nice · Monaco · Cannes",
+                    date: "Aug 2024",
+                    duration: "14 days",
+                    cost: "\$3,600",
+                    topColor: Colors.orangeAccent.withOpacity(0.1),
+                    bannerIcon: Icons.fort_outlined,
+                    iconColor: Colors.orangeAccent,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildHistoryCard(
+                    title: "Bali Sanctuary",
+                    locations: "Ubud · Seminyak · Uluwatu",
+                    date: "Nov 2024",
+                    duration: "10 days",
+                    cost: "\$2,100",
+                    topColor: Colors.teal.withOpacity(0.1),
+                    bannerIcon: Icons.beach_access_outlined,
+                    iconColor: Colors.teal,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildHistoryCard(
+                    title: "Morocco Cultural Tour",
+                    locations: "Marrakech · Fez · Sahara · Chefchaouen",
+                    date: "Mar 2024",
+                    duration: "10 days",
+                    cost: "\$1,900",
+                    topColor: Colors.deepPurpleAccent.withOpacity(0.1),
+                    bannerIcon: Icons.mosque_outlined,
+                    iconColor: Colors.deepPurpleAccent,
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label) {
+    return PopupMenuItem(
+      value: label,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
         ],
       ),
     );

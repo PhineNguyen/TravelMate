@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/chat/presentation/pages/ChatPage.dart';
+import 'package:frontend/features/finance/budget/presentation/pages/BudgetPage.dart';
+import 'package:frontend/features/finance/expense/presentation/pages/AddExpensePage.dart';
+import 'package:frontend/features/trip_details/itinerary/presentation/pages/ItineraryPage.dart';
+import 'package:frontend/features/trip_details/map/presentation/pages/MapPage.dart';
+import 'package:frontend/features/trip_details/share/presentation/pages/ShareTripPage.dart';
 
 class TripDetailPage extends StatelessWidget {
   const TripDetailPage({super.key});
@@ -16,13 +22,13 @@ class TripDetailPage extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildQuickActions(),
+                  _buildQuickActions(context),
                   const SizedBox(height: 30),
                   _buildTripInfoCard(),
                   const SizedBox(height: 20),
-                  _buildCollaboratorsCard(),
+                  _buildCollaboratorsCard(context),
                   const SizedBox(height: 20),
-                  _buildBudgetOverviewCard(),
+                  _buildBudgetOverviewCard(context),
                   const SizedBox(height: 20),
                   _buildWeatherAlertCard(),
                   const SizedBox(height: 40),
@@ -61,7 +67,29 @@ class TripDetailPage extends StatelessWidget {
                 children: [
                   _buildCircleActionIcon(Icons.ios_share, () {}),
                   const SizedBox(width: 12),
-                  _buildCircleActionIcon(Icons.more_horiz, () {}),
+                  PopupMenuButton<String>(
+                    offset: const Offset(0, 50),
+                    color: const Color(0xFF172234),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    onSelected: (value) {},
+                    itemBuilder: (context) => [
+                      _buildPopupItem(Icons.edit_outlined, "Edit trip"),
+                      _buildPopupItem(Icons.copy_outlined, "Duplicate"),
+                      _buildPopupItem(Icons.delete_outline, "Delete trip",
+                          isDestructive: true),
+                    ],
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF172234),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade800),
+                      ),
+                      child: const Icon(Icons.more_horiz,
+                          color: Colors.white, size: 20),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -100,6 +128,25 @@ class TripDetailPage extends StatelessWidget {
     );
   }
 
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label,
+      {bool isDestructive = false}) {
+    return PopupMenuItem(
+      //Burger list
+      value: label,
+      child: Row(
+        children: [
+          Icon(icon,
+              color: isDestructive ? Colors.redAccent : Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
+              style: TextStyle(
+                  color: isDestructive ? Colors.redAccent : Colors.white,
+                  fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCircleActionIcon(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -133,37 +180,64 @@ class TripDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildActionItem(
-            Icons.list_alt_rounded, "Itinerary", const Color(0xFF1ABC9C)),
+            Icons.list_alt_rounded, "Itinerary", const Color(0xFF1ABC9C), () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const ItineraryPage()));
+        }),
         _buildActionItem(
-            Icons.account_balance_wallet_outlined, "Budget", Colors.tealAccent),
-        _buildActionItem(Icons.map_outlined, "Map", Colors.deepPurpleAccent),
+            Icons.account_balance_wallet_outlined, "Budget", Colors.tealAccent,
+            () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const BudgetPage()));
+        }),
+        _buildActionItem(Icons.map_outlined, "Map", Colors.deepPurpleAccent,
+            () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const MapPage()));
+        }),
         _buildActionItem(
-            Icons.chat_bubble_outline_rounded, "Chat", Colors.orangeAccent),
+            Icons.chat_bubble_outline_rounded, "Chat", Colors.orangeAccent, () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const ChatPage()));
+        }),
       ],
     );
   }
 
-  Widget _buildActionItem(IconData icon, String label, Color color) {
+  Widget _buildActionItem(
+      IconData icon, String label, Color color, VoidCallback ontap) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 68,
-          height: 68,
-          decoration: BoxDecoration(
-            color: const Color(0xFF172234),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade800),
+        Material(
+          color: Colors.transparent,
+          child: Ink(
+            width: 80,
+            height: 64,
+            decoration: BoxDecoration(
+              color: const Color(0xFF172234),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.grey.shade800),
+            ),
+            child: InkWell(
+              onTap: ontap,
+              borderRadius: BorderRadius.circular(18),
+              child: Center(
+                child: Icon(icon, color: color, size: 28),
+              ),
+            ),
           ),
-          child: Icon(icon, color: color, size: 28),
         ),
         const SizedBox(height: 10),
-        Text(label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        ),
       ],
     );
   }
@@ -233,7 +307,7 @@ class TripDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCollaboratorsCard() {
+  Widget _buildCollaboratorsCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -247,7 +321,11 @@ class TripDetailPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildSectionLabel("COLLABORATORS"),
-              _buildTextButton("Invite"),
+              _buildTextButton(
+                "Invite",
+                context: context,
+                page: const ShareTripPage(),
+              ),
             ],
           ),
           const SizedBox(height: 15),
@@ -295,7 +373,7 @@ class TripDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBudgetOverviewCard() {
+  Widget _buildBudgetOverviewCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -310,7 +388,8 @@ class TripDetailPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildSectionLabel("BUDGET OVERVIEW"),
-              _buildTextButton("Add expense"),
+              _buildTextButton("Add expense",
+                  context: context, page: const AddExpensePage()),
             ],
           ),
           const SizedBox(height: 15),
@@ -375,9 +454,16 @@ class TripDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextButton(String title) {
+  Widget _buildTextButton(String title, {Widget? page, BuildContext? context}) {
     return GestureDetector(
-      onTap: () {},
+      onTap: (page != null && context != null)
+          ? () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => page!,
+                ),
+              )
+          : null,
       child: Text(
         title,
         style: const TextStyle(

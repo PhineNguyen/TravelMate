@@ -25,7 +25,12 @@ class RegisterPage extends StatelessWidget {
                 const SizedBox(height: 40),
                 AppButton(
                   label: "Create account",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()));
+                  },
                 ),
                 const SizedBox(height: 20),
                 _buildFooter(context),

@@ -14,6 +14,8 @@ class AppButton extends StatelessWidget {
     this.isPrimary = true,
     this.icon,
     this.height = 58,
+    BuildContext? context,
+    Widget? page,
   });
 
   @override

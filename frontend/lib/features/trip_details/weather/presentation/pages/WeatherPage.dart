@@ -1,80 +1,103 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/widgets/app_header.dart';
+
 class WeatherPage extends StatelessWidget {
-  const WeatherPage({super.key});
+  final VoidCallback? onBackToHome;
+  const WeatherPage({super.key, this.onBackToHome});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B1423),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 30),
-              _buildCurrentWeatherCard(),
-              const SizedBox(height: 30),
-              _buildSectionHeader("ACTIVE ALERTS", null),
-              const SizedBox(height: 15),
-              _buildAlertCard(
-                icon: Icons.warning_amber_rounded,
-                title: "Heavy rain — Apr 16–17",
-                message:
-                    "120mm expected. AI rescheduled 3 outdoor activities automatically.",
-                color: Colors.redAccent,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: AppHeader(
+                title: "Weather Alerts",
+                onBack: onBackToHome,
+                trailing: PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  color: const Color(0xFF172234),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  itemBuilder: (context) => [
+                    _buildPopupItem(Icons.refresh, "Refresh data"),
+                    _buildPopupItem(
+                        Icons.location_on_outlined, "Change location"),
+                    _buildPopupItem(Icons.settings_outlined, "Alert settings"),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF172234),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade800),
+                    ),
+                    child: const Icon(Icons.more_vert_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildAlertCard(
-                icon: Icons.air_rounded,
-                title: "Wind advisory — Apr 19",
-                message:
-                    "Gusts 60 km/h near coastal areas. Miyajima ferry postponed.",
-                color: Colors.orangeAccent,
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCurrentWeatherCard(),
+                    const SizedBox(height: 30),
+                    _buildSectionHeader("ACTIVE ALERTS", null),
+                    const SizedBox(height: 15),
+                    _buildAlertCard(
+                      icon: Icons.warning_amber_rounded,
+                      title: "Heavy rain — Apr 16–17",
+                      message:
+                          "120mm expected. AI rescheduled 3 outdoor activities automatically.",
+                      color: Colors.redAccent,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildAlertCard(
+                      icon: Icons.air_rounded,
+                      title: "Wind advisory — Apr 19",
+                      message:
+                          "Gusts 60 km/h near coastal areas. Miyajima ferry postponed.",
+                      color: Colors.orangeAccent,
+                    ),
+                    const SizedBox(height: 30),
+                    _buildSectionHeader("7-DAY FORECAST", "Details"),
+                    const SizedBox(height: 15),
+                    _buildForecastList(),
+                    const SizedBox(height: 30),
+                    _buildSectionHeader("PRECIPITATION PROBABILITY", null),
+                    const SizedBox(height: 15),
+                    _buildPrecipitationChart(),
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
-              const SizedBox(height: 30),
-              _buildSectionHeader("7-DAY FORECAST", "Details"),
-              const SizedBox(height: 15),
-              _buildForecastList(),
-              const SizedBox(height: 30),
-              _buildSectionHeader("PRECIPITATION PROBABILITY", null),
-              const SizedBox(height: 15),
-              _buildPrecipitationChart(),
-              const SizedBox(height: 30),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade800),
-            ),
-            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-          ),
-        ),
-        const SizedBox(width: 15),
-        const Text(
-          "Weather Alerts",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ],
+  PopupMenuItem<String> _buildPopupItem(IconData icon, String label) {
+    return PopupMenuItem(
+      value: label,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 12),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
+        ],
+      ),
     );
   }
 
@@ -175,7 +198,7 @@ class WeatherPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: Colors.white)),

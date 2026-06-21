@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:frontend/features/ai_assistant/chat/presentation/pages/AiChatPage.dart';
-// import 'package:frontend/features/auth/forgot_password/presentation/pages/ResetPwPage.dart';
-import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
+import 'package:frontend/features/auth/splash/presentation/pages/SplashPage.dart';
 // import 'package:frontend/features/auth/onboarding/presentation/pages/OnboardPage.dart';
 // import 'package:frontend/features/auth/register/presentation/pages/RegisterPage.dart';
 // import 'package:frontend/features/auth/splash/presentation/pages/SplashPage.dart';
@@ -35,7 +33,7 @@ class TravelMateApp extends StatelessWidget {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0B1423),
       ),
-      home: const LoginPage(),
+      home: const SplashPage(),
     );
   }
 }

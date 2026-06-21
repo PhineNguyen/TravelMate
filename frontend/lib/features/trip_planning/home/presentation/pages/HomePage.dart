@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:frontend/features/ai_assistant/chat/presentation/pages/AiChatPage.dart';
 import 'package:frontend/features/trip_details/weather/presentation/pages/WeatherPage.dart';
 import 'package:frontend/features/trip_planning/create_trip/presentation/pages/CreateTripPage.dart';
+import 'package:frontend/features/trip_planning/home/presentation/pages/AllTripPage.dart';
 import 'package:frontend/features/trip_planning/templates/presentation/pages/TemplatesPage.dart';
 import 'package:frontend/features/user_profile/notifications/presentation/pages/NotificationsPage.dart';
-// ✅ Thêm import trang Profile của bạn (Hãy sửa lại đường dẫn này cho đúng với dự án)
 import 'package:frontend/features/user_profile/profile/presentation/pages/ProfilePage.dart';
 
 class HomePage extends StatelessWidget {
@@ -26,11 +26,16 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 30),
               _buildSummaryGrid(),
               const SizedBox(height: 20),
-              _buildSectionHeader("QUICK ACTIONS", null),
+              _buildSectionHeader("QUICK ACTIONS"),
               const SizedBox(height: 15),
               _buildQuickActions(context),
               const SizedBox(height: 20),
-              _buildSectionHeader("CURRENT TRIPS", "See all"),
+              _buildSectionHeader(
+                "CURRENT TRIPS",
+                actionText: "See all",
+                context: context,
+                page: const AllTripsPage(),
+              ),
               const SizedBox(height: 15),
               _buildTripCard(
                 "Japan Discovery",
@@ -50,7 +55,12 @@ class HomePage extends StatelessWidget {
                 Colors.orangeAccent,
               ),
               const SizedBox(height: 10),
-              _buildSectionHeader("WEATHER ALERT", "Details"),
+              _buildSectionHeader(
+                "WEATHER ALERT",
+                actionText: "Details",
+                context: context,
+                page: const WeatherPage(),
+              ),
               const SizedBox(height: 10),
               _buildWeatherAlert(),
             ],
@@ -402,7 +412,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, String? actionText) {
+  Widget _buildSectionHeader(String title,
+      {String? actionText, BuildContext? context, Widget? page}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -414,7 +425,14 @@ class HomePage extends StatelessWidget {
                 letterSpacing: 1.2)),
         if (actionText != null)
           TextButton(
-            onPressed: () {},
+            onPressed: (page != null && context != null)
+                ? () => Navigator.push(
+                      context!,
+                      MaterialPageRoute(
+                        builder: (context) => page,
+                      ),
+                    )
+                : null,
             child: Text(
               actionText,
               style: const TextStyle(
