@@ -8,7 +8,7 @@ class PrivacyAndDataPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -28,14 +28,14 @@ class PrivacyAndDataPage extends StatelessWidget {
                   icon: Icons.analytics_outlined,
                   label: "Personalized experiences",
                   subtitle: "Use my travel history to improve AI suggestions.",
-                  color: Colors.blueAccent,
+                  color: Colors.blue.shade700,
                   value: true,
                 ),
                 _buildToggleItem(
                   icon: Icons.ads_click_outlined,
                   label: "Ad personalization",
                   subtitle: "Show ads relevant to your travel interests.",
-                  color: Colors.orangeAccent,
+                  color: Colors.orange.shade700,
                   value: false,
                 ),
               ]),
@@ -46,13 +46,13 @@ class PrivacyAndDataPage extends StatelessWidget {
                   icon: Icons.download_outlined,
                   label: "Export your data",
                   subtitle: "Get a copy of your trips and profile info.",
-                  color: const Color(0xFF1ABC9C),
+                  color: const Color(0xFF2D7132),
                 ),
                 _buildMenuItem(
                   icon: Icons.history_outlined,
                   label: "Clear search history",
                   subtitle: "Remove all previous destination searches.",
-                  color: Colors.grey,
+                  color: const Color(0xFF71768E),
                 ),
               ]),
               const SizedBox(height: 30),
@@ -62,7 +62,7 @@ class PrivacyAndDataPage extends StatelessWidget {
                   icon: Icons.delete_forever_outlined,
                   label: "Delete account",
                   subtitle: "Permanently remove your account and data.",
-                  color: Colors.redAccent,
+                  color: Colors.red.shade600,
                   isDestructive: true,
                 ),
               ]),
@@ -70,10 +70,10 @@ class PrivacyAndDataPage extends StatelessWidget {
               Center(
                 child: TextButton(
                   onPressed: () {},
-                  child: Text(
+                  child: const Text(
                     "Read our full Privacy Policy",
                     style: TextStyle(
-                      color: const Color(0xFF1ABC9C),
+                      color: Color(0xFF2D7132),
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       decoration: TextDecoration.underline,
@@ -93,30 +93,36 @@ class PrivacyAndDataPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: const Color(0xFF1ABC9C).withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFF2D7132).withOpacity(0.1)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.shield_outlined, color: Color(0xFF1ABC9C), size: 32),
+          const Icon(Icons.shield_outlined, color: Color(0xFF2D7132), size: 32),
           const SizedBox(width: 16),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Your privacy matters",
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontSize: 16,
                       fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   "We encrypt your travel data and never sell it to third parties.",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  style: TextStyle(color: Color(0xFF71768E), fontSize: 13),
                 ),
               ],
             ),
@@ -131,10 +137,10 @@ class PrivacyAndDataPage extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 12),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: Colors.grey.shade500,
+            color: Color(0xFF71768E),
             letterSpacing: 1.2),
       ),
     );
@@ -143,9 +149,15 @@ class PrivacyAndDataPage extends StatelessWidget {
   Widget _buildMenuCard(List<Widget> items) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(children: items),
     );
@@ -164,7 +176,7 @@ class PrivacyAndDataPage extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12)),
         child: Icon(icon, color: color, size: 20),
       ),
@@ -173,15 +185,15 @@ class PrivacyAndDataPage extends StatelessWidget {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.bold,
-          color: isDestructive ? Colors.redAccent : Colors.white,
+          color: isDestructive ? Colors.red.shade600 : const Color(0xFF1A1D2D),
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+        style: const TextStyle(color: Color(0xFF71768E), fontSize: 12),
       ),
       trailing: Icon(Icons.chevron_right_rounded,
-          color: isDestructive ? Colors.redAccent : Colors.grey.shade700),
+          color: isDestructive ? Colors.red.shade600 : const Color(0xFFB0B3C1)),
     );
   }
 
@@ -197,24 +209,26 @@ class PrivacyAndDataPage extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12)),
         child: Icon(icon, color: color, size: 20),
       ),
       title: Text(
         label,
         style: const TextStyle(
-            fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1D2D)),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+        style: const TextStyle(color: Color(0xFF71768E), fontSize: 12),
       ),
       trailing: Switch(
         value: value,
         onChanged: (v) {},
         activeColor: Colors.white,
-        activeTrackColor: const Color(0xFF1ABC9C),
+        activeTrackColor: const Color(0xFF2D7132),
       ),
     );
   }

@@ -1,26 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/auth/splash/presentation/pages/SplashPage.dart';
-// import 'package:frontend/features/auth/onboarding/presentation/pages/OnboardPage.dart';
-// import 'package:frontend/features/auth/register/presentation/pages/RegisterPage.dart';
-// import 'package:frontend/features/auth/splash/presentation/pages/SplashPage.dart';
-// import 'package:frontend/features/finance/budget/presentation/pages/BudgetPage.dart';
-// import 'package:frontend/features/finance/expense/presentation/pages/AddExpensePage.dart';
-// import 'package:frontend/features/trip_details/history/presentation/pages/HistoryPage.dart';
-// import 'package:frontend/features/trip_details/itinerary/presentation/pages/ItineraryPage.dart';
-// import 'package:frontend/features/trip_details/map/presentation/pages/MapPage.dart';
-// import 'package:frontend/features/trip_details/share/presentation/pages/ShareTripPage.dart';
-// import 'package:frontend/features/trip_details/trip_detail/presentation/pages/TripDetailPage.dart';
-// import 'package:frontend/features/trip_details/weather/presentation/pages/WeatherPage.dart';
-// import 'package:frontend/features/trip_planning/create_trip/presentation/pages/CreateTripManunal.dart';
-// import 'package:frontend/features/trip_planning/create_trip/presentation/pages/CreateTripPage.dart';
-// import 'package:frontend/features/trip_planning/home/presentation/pages/HomePage.dart';
-// import 'package:frontend/features/trip_planning/preferences/presentation/pages/PreferencesPage.dart';
-// import 'package:frontend/features/trip_planning/templates/presentation/pages/TemplatesPage.dart';
-// import 'package:frontend/features/user_profile/analytics/presentation/pages/AnalyticsPage.dart';
-// import 'package:frontend/features/user_profile/notifications/presentation/pages/NotificationsPage.dart';
-// import 'package:frontend/features/user_profile/profile/presentation/pages/ProfilePage.dart';
-//import 'package:frontend/features/navigation/MainNavigator.dart';
-//import 'package:frontend/features/trip_planning/home/presentation/pages/HomePage.dart';
 
 class TravelMateApp extends StatelessWidget {
   const TravelMateApp({super.key});
@@ -30,8 +9,24 @@ class TravelMateApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B1423),
+        useMaterial3: true,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: const Color(0xFFF3F5F9),
+        // Thống nhất mã màu xanh lục chủ đạo toàn hệ thống
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6BB04D),
+          primary: const Color(0xFF6BB04D),
+          surface: Colors.white,
+          background: const Color(0xFFF3F5F9),
+        ),
+        // Cấu hình font chữ mặc định (Yêu cầu cài đặt Google Fonts Inter)
+        fontFamily: 'Inter',
+        textTheme: const TextTheme(
+          displayLarge:
+              TextStyle(color: Color(0xFF1A1D2D), fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(color: Color(0xFF1A1D2D)),
+          bodyMedium: TextStyle(color: Color(0xFF1A1D2D)),
+        ),
       ),
       home: const SplashPage(),
     );

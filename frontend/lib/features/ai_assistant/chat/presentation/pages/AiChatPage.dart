@@ -16,7 +16,7 @@ class _AiChatPageState extends State<AiChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
@@ -27,7 +27,8 @@ class _AiChatPageState extends State<AiChatPage> {
                 onBack: widget.onBackToHome,
                 trailing: PopupMenuButton<String>(
                   offset: const Offset(0, 50),
-                  color: const Color(0xFF172234),
+                  color: Colors.white,
+                  surfaceTintColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                   itemBuilder: (context) => [
@@ -38,12 +39,18 @@ class _AiChatPageState extends State<AiChatPage> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF172234),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade800),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Icon(Icons.more_horiz_rounded,
-                        color: Colors.grey, size: 20),
+                        color: Color(0xFF1A1D2D), size: 20),
                   ),
                 ),
                 bottom: [
@@ -53,12 +60,12 @@ class _AiChatPageState extends State<AiChatPage> {
                           width: 8,
                           height: 8,
                           decoration: const BoxDecoration(
-                              color: Color(0xFF1ABC9C),
+                              color: Color(0xFF2D7132),
                               shape: BoxShape.circle)),
                       const SizedBox(width: 8),
                       const Text("Online • GPT-4o",
                           style: TextStyle(
-                              color: Colors.grey,
+                              color: Color(0xFF71768E),
                               fontSize: 12,
                               fontWeight: FontWeight.w500)),
                     ],
@@ -88,24 +95,24 @@ class _AiChatPageState extends State<AiChatPage> {
                           "Top 3 vegetarian-friendly ramen spots within 5 min of Shinjuku:",
                           style: TextStyle(
                               fontSize: 14,
-                              color: Colors.white,
+                              color: Color(0xFF1A1D2D),
                               fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 15),
                         _buildSpotInfo(
                             "T's TanTan",
                             " — 100% vegan, inside the station. Sesame tantanmen is exceptional.",
-                            const Color(0xFF1ABC9C)),
+                            const Color(0xFF2D7132)),
                         const SizedBox(height: 12),
                         _buildSpotInfo(
                             "Soranoiro NIPPON",
                             " — Colourful vegetable broth options, open until 23:00.",
-                            Colors.blueAccent),
+                            Colors.blue.shade700),
                         const SizedBox(height: 12),
                         _buildSpotInfo(
                             "Afuri Harajuku",
                             " — 20 min away, yuzu shio vegan ramen.",
-                            Colors.purpleAccent),
+                            Colors.purple.shade700),
                       ],
                     ),
                     "9:42 AM",
@@ -132,10 +139,10 @@ class _AiChatPageState extends State<AiChatPage> {
       value: label,
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 18),
+          Icon(icon, color: const Color(0xFF1A1D2D), size: 18),
           const SizedBox(width: 12),
           Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 14)),
+              style: const TextStyle(color: Color(0xFF1A1D2D), fontSize: 14)),
         ],
       ),
     );
@@ -153,22 +160,28 @@ class _AiChatPageState extends State<AiChatPage> {
               padding: const EdgeInsets.all(16),
               constraints: const BoxConstraints(maxWidth: 300),
               decoration: BoxDecoration(
-                color: const Color(0xFF172234),
+                color: Colors.white,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                   bottomLeft: Radius.circular(5),
                 ),
-                border: Border.all(color: Colors.grey.shade800),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Text(text,
                   style: const TextStyle(
-                      fontSize: 14, color: Colors.white, height: 1.5)),
+                      fontSize: 14, color: Color(0xFF1A1D2D), height: 1.5)),
             ),
             const SizedBox(height: 8),
             Text(time,
-                style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                style: const TextStyle(fontSize: 10, color: Color(0xFFB0B3C1))),
           ],
         ),
       ),
@@ -187,20 +200,26 @@ class _AiChatPageState extends State<AiChatPage> {
               padding: const EdgeInsets.all(16),
               constraints: const BoxConstraints(maxWidth: 300),
               decoration: BoxDecoration(
-                color: const Color(0xFF172234),
+                color: Colors.white,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                   bottomLeft: Radius.circular(5),
                 ),
-                border: Border.all(color: Colors.grey.shade800),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: content,
             ),
             const SizedBox(height: 8),
             Text(time,
-                style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                style: const TextStyle(fontSize: 10, color: Color(0xFFB0B3C1))),
           ],
         ),
       ),
@@ -216,7 +235,7 @@ class _AiChatPageState extends State<AiChatPage> {
               text: "• $name",
               style: TextStyle(color: nameColor, fontWeight: FontWeight.bold)),
           TextSpan(
-              text: description, style: TextStyle(color: Colors.grey.shade400)),
+              text: description, style: TextStyle(color: Color(0xFF71768E))),
         ],
       ),
     );
@@ -234,7 +253,7 @@ class _AiChatPageState extends State<AiChatPage> {
               padding: const EdgeInsets.all(16),
               constraints: const BoxConstraints(maxWidth: 280),
               decoration: BoxDecoration(
-                color: const Color(0xFF1ABC9C),
+                color: const Color(0xFF2D7132),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -243,7 +262,7 @@ class _AiChatPageState extends State<AiChatPage> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF1ABC9C).withOpacity(0.2),
+                      color: const Color(0xFF2D7132).withOpacity(0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 4))
                 ],
@@ -251,13 +270,13 @@ class _AiChatPageState extends State<AiChatPage> {
               child: Text(text,
                   style: const TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF0B1423),
+                      color: Colors.white,
                       height: 1.5,
                       fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 8),
             Text(time,
-                style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                style: const TextStyle(fontSize: 10, color: Color(0xFFB0B3C1))),
           ],
         ),
       ),
@@ -290,15 +309,21 @@ class _AiChatPageState extends State<AiChatPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
-            color: const Color(0xFF172234),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade800),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           alignment: Alignment.center,
           child: Text(
             label,
             style: const TextStyle(
-                color: Color(0xFF1ABC9C),
+                color: Color(0xFF2D7132),
                 fontSize: 12,
                 fontWeight: FontWeight.bold),
           ),
@@ -310,37 +335,42 @@ class _AiChatPageState extends State<AiChatPage> {
   Widget _buildInputArea() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
-      decoration: BoxDecoration(
-        color: const Color(0xFF172234),
-        border: Border(top: BorderSide(color: Colors.grey.shade800)),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0B1423),
+              color: const Color(0xFFF1F4FA),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade800),
             ),
             child: IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.add, color: Colors.grey, size: 22)),
+                icon:
+                    const Icon(Icons.add, color: Color(0xFF71768E), size: 22)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               decoration: BoxDecoration(
-                color: const Color(0xFF0B1423),
+                color: const Color(0xFFF1F4FA),
                 borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.grey.shade800),
               ),
               child: TextField(
                 controller: _messageController,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Color(0xFF1A1D2D)),
                 decoration: const InputDecoration(
                   hintText: "Ask anything about your trip...",
-                  hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+                  hintStyle: TextStyle(color: Color(0xFFB0B3C1), fontSize: 13),
                   border: InputBorder.none,
                 ),
               ),
@@ -351,12 +381,12 @@ class _AiChatPageState extends State<AiChatPage> {
             width: 48,
             height: 48,
             decoration: const BoxDecoration(
-              color: Color(0xFF1ABC9C),
+              color: Color(0xFF2D7132),
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.send_rounded,
-                  color: Color(0xFF0B1423), size: 22),
+              icon:
+                  const Icon(Icons.send_rounded, color: Colors.white, size: 22),
               onPressed: () {},
             ),
           ),

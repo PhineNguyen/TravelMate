@@ -9,7 +9,7 @@ class WeatherPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
@@ -20,7 +20,8 @@ class WeatherPage extends StatelessWidget {
                 onBack: onBackToHome,
                 trailing: PopupMenuButton<String>(
                   offset: const Offset(0, 50),
-                  color: const Color(0xFF172234),
+                  color: Colors.white,
+                  surfaceTintColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                   itemBuilder: (context) => [
@@ -32,12 +33,18 @@ class WeatherPage extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF172234),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade800),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Icon(Icons.more_vert_rounded,
-                        color: Colors.white, size: 20),
+                        color: Color(0xFF1A1D2D), size: 20),
                   ),
                 ),
               ),
@@ -58,7 +65,7 @@ class WeatherPage extends StatelessWidget {
                       title: "Heavy rain — Apr 16–17",
                       message:
                           "120mm expected. AI rescheduled 3 outdoor activities automatically.",
-                      color: Colors.redAccent,
+                      color: const Color(0xFFD32F2F),
                     ),
                     const SizedBox(height: 12),
                     _buildAlertCard(
@@ -66,7 +73,7 @@ class WeatherPage extends StatelessWidget {
                       title: "Wind advisory — Apr 19",
                       message:
                           "Gusts 60 km/h near coastal areas. Miyajima ferry postponed.",
-                      color: Colors.orangeAccent,
+                      color: Colors.orange.shade800,
                     ),
                     const SizedBox(height: 30),
                     _buildSectionHeader("7-DAY FORECAST", "Details"),
@@ -92,10 +99,10 @@ class WeatherPage extends StatelessWidget {
       value: label,
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 18),
+          Icon(icon, color: const Color(0xFF1A1D2D), size: 18),
           const SizedBox(width: 12),
           Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 14)),
+              style: const TextStyle(color: Color(0xFF1A1D2D), fontSize: 14)),
         ],
       ),
     );
@@ -106,10 +113,10 @@ class WeatherPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade500,
+                color: Color(0xFF71768E),
                 letterSpacing: 1.2)),
         if (actionText != null)
           GestureDetector(
@@ -119,7 +126,7 @@ class WeatherPage extends StatelessWidget {
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1ABC9C)),
+                  color: Color(0xFF2D7132)),
             ),
           ),
       ],
@@ -131,9 +138,15 @@ class WeatherPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -143,13 +156,13 @@ class WeatherPage extends StatelessWidget {
               Row(
                 children: [
                   const Icon(Icons.location_on_rounded,
-                      size: 16, color: Color(0xFF1ABC9C)),
+                      size: 16, color: Color(0xFF2D7132)),
                   const SizedBox(width: 8),
-                  Text("Kyoto, Japan",
+                  const Text("Kyoto, Japan",
                       style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade500)),
+                          color: Color(0xFF71768E))),
                 ],
               ),
               const SizedBox(height: 15),
@@ -157,19 +170,19 @@ class WeatherPage extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 72,
                       fontWeight: FontWeight.w200,
-                      color: Colors.white)),
+                      color: Color(0xFF1A1D2D))),
               const Text("Partly cloudy",
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+                      color: Color(0xFF1A1D2D))),
             ],
           ),
-          const Positioned(
+          Positioned(
             right: 0,
             top: 10,
             child: Icon(Icons.wb_twilight_rounded,
-                size: 100, color: Colors.orangeAccent),
+                size: 100, color: Colors.orange.shade400),
           )
         ],
       ),
@@ -186,7 +199,7 @@ class WeatherPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withOpacity(0.1)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,13 +214,11 @@ class WeatherPage extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white)),
+                        color: Color(0xFF1A1D2D))),
                 const SizedBox(height: 6),
                 Text(message,
-                    style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade500,
-                        height: 1.5)),
+                    style: const TextStyle(
+                        fontSize: 13, color: Color(0xFF71768E), height: 1.5)),
               ],
             ),
           ),
@@ -261,11 +272,17 @@ class WeatherPage extends StatelessWidget {
             margin: const EdgeInsets.only(right: 15),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             decoration: BoxDecoration(
-              color:
-                  isActive ? const Color(0xFF1ABC9C) : const Color(0xFF172234),
+              color: isActive ? const Color(0xFF2D7132) : Colors.white,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                  color: isActive ? Colors.transparent : Colors.grey.shade800),
+              boxShadow: isActive
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
             ),
             child: Column(
               children: [
@@ -273,14 +290,11 @@ class WeatherPage extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: isActive
-                            ? const Color(0xFF0B1423)
-                            : Colors.grey.shade500)),
+                        color:
+                            isActive ? Colors.white : const Color(0xFFB0B3C1))),
                 const SizedBox(height: 15),
                 Icon(item['icon'],
-                    color: isActive
-                        ? const Color(0xFF0B1423)
-                        : Colors.orangeAccent,
+                    color: isActive ? Colors.white : Colors.orange.shade700,
                     size: 32),
                 const SizedBox(height: 15),
                 Text(item['high'],
@@ -288,13 +302,13 @@ class WeatherPage extends StatelessWidget {
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color:
-                            isActive ? const Color(0xFF0B1423) : Colors.white)),
+                            isActive ? Colors.white : const Color(0xFF1A1D2D))),
                 Text(item['low'],
                     style: TextStyle(
                         fontSize: 12,
                         color: isActive
-                            ? const Color(0xFF0B1423).withOpacity(0.6)
-                            : Colors.grey.shade600)),
+                            ? Colors.white.withOpacity(0.7)
+                            : const Color(0xFFB0B3C1))),
               ],
             ),
           );
@@ -317,9 +331,15 @@ class WeatherPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -334,8 +354,8 @@ class WeatherPage extends StatelessWidget {
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: isHigh
-                          ? const Color(0xFF1ABC9C)
-                          : Colors.grey.shade600)),
+                          ? const Color(0xFF2D7132)
+                          : const Color(0xFFB0B3C1))),
               const SizedBox(height: 10),
               Container(
                 width: 32,
@@ -345,17 +365,17 @@ class WeatherPage extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: isHigh
-                        ? [const Color(0xFF1ABC9C), Colors.tealAccent]
-                        : [const Color(0xFF0B1423), Colors.grey.shade800],
+                        ? [const Color(0xFF2D7132), const Color(0xFF8BC34A)]
+                        : [const Color(0xFFF1F4FA), const Color(0xFFE2E4EB)],
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
               const SizedBox(height: 10),
               Text(item['day'],
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 10,
-                      color: Colors.grey.shade600,
+                      color: Color(0xFFB0B3C1),
                       fontWeight: FontWeight.bold)),
             ],
           );

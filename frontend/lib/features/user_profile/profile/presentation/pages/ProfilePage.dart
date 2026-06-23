@@ -13,7 +13,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -31,19 +31,19 @@ class ProfilePage extends StatelessWidget {
                 _buildMenuItem(
                   icon: Icons.person_outline_rounded,
                   label: "Personal information",
-                  color: const Color(0xFF1ABC9C),
+                  color: const Color(0xFF2D7132),
                   context: context,
-                  page: PersonalInformationPage(),
+                  page: const PersonalInformationPage(),
                 ),
                 _buildMenuItem(
                   icon: Icons.favorite_border_rounded,
                   label: "Travel preferences",
-                  color: Colors.purpleAccent,
+                  color: Colors.purple.shade600,
                 ),
                 _buildMenuItem(
                   icon: Icons.workspace_premium_outlined,
                   label: "Subscription — Pro",
-                  color: Colors.orangeAccent,
+                  color: Colors.orange.shade700,
                   trailingText: "\$12/mo",
                 ),
               ]),
@@ -53,19 +53,19 @@ class ProfilePage extends StatelessWidget {
                 _buildToggleItem(
                   icon: Icons.dark_mode_outlined,
                   label: "Dark mode",
-                  color: Colors.indigoAccent,
-                  value: true,
+                  color: Colors.indigo.shade600,
+                  value: false,
                 ),
                 _buildToggleItem(
                   icon: Icons.notifications_none_rounded,
                   label: "Notifications",
-                  color: Colors.redAccent,
+                  color: Colors.red.shade600,
                   value: true,
                 ),
                 _buildMenuItem(
                   icon: Icons.translate_rounded,
                   label: "Language",
-                  color: Colors.cyanAccent,
+                  color: Colors.cyan.shade700,
                   trailingText: "English",
                 ),
               ]),
@@ -75,20 +75,20 @@ class ProfilePage extends StatelessWidget {
                 _buildMenuItem(
                   icon: Icons.auto_awesome_outlined,
                   label: "AI model",
-                  color: Colors.purpleAccent,
+                  color: Colors.purple.shade600,
                   trailingText: "GPT-4o",
                 ),
                 _buildMenuItem(
                   icon: Icons.security_outlined,
                   label: "Privacy & data",
-                  color: const Color(0xFF1ABC9C),
+                  color: const Color(0xFF2D7132),
                   context: context,
                   page: const PrivacyAndDataPage(),
                 ),
                 _buildMenuItem(
                   icon: Icons.bar_chart_rounded,
                   label: "Travel analytics",
-                  color: Colors.blueAccent,
+                  color: Colors.blue.shade700,
                 ),
               ]),
               const SizedBox(height: 30),
@@ -97,14 +97,14 @@ class ProfilePage extends StatelessWidget {
                 _buildMenuItem(
                   icon: Icons.help_outline_rounded,
                   label: "Help centre",
-                  color: Colors.blueAccent,
+                  color: Colors.blue.shade700,
                   context: context,
                   page: const HelpCentrePage(),
                 ),
                 _buildMenuItem(
                   icon: Icons.logout_rounded,
                   label: "Sign out",
-                  color: Colors.redAccent,
+                  color: Colors.red.shade600,
                   isDestructive: true,
                   context: context,
                   page: const LoginPage(),
@@ -127,31 +127,32 @@ class ProfilePage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: const Color(0xFF1ABC9C),
+                color: Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1ABC9C).withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 20,
                   )
                 ],
               ),
               child: const CircleAvatar(
                 radius: 48,
-                backgroundColor: Color(0xFF172234),
+                backgroundColor: Color(0xFF2D7132),
                 child: Text("AJ",
                     style: TextStyle(
-                        color: Color(0xFF1ABC9C),
+                        color: Colors.white,
                         fontSize: 34,
                         fontWeight: FontWeight.bold)),
               ),
             ),
             Container(
               padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                  color: Color(0xFF1ABC9C), shape: BoxShape.circle),
-              child:
-                  const Icon(Icons.check, color: Color(0xFF0B1423), size: 14),
+              decoration: BoxDecoration(
+                  color: const Color(0xFF1ABC9C),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2)),
+              child: const Icon(Icons.check, color: Colors.white, size: 14),
             )
           ],
         ),
@@ -159,22 +160,24 @@ class ProfilePage extends StatelessWidget {
         const Text(
           "Alex Johnson",
           style: TextStyle(
-              fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D2D)),
         ),
         const SizedBox(height: 6),
-        Text(
+        const Text(
           "Member since Jan 2022 · Pro plan",
-          style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+          style: TextStyle(fontSize: 14, color: Color(0xFF71768E)),
         ),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildBadge("24 countries", const Color(0xFF1ABC9C)),
+            _buildBadge("24 countries", const Color(0xFF2D7132)),
             const SizedBox(width: 8),
-            _buildBadge("Explorer", Colors.purpleAccent),
+            _buildBadge("Explorer", Colors.purple.shade600),
             const SizedBox(width: 8),
-            _buildBadge("AI power user", Colors.blueAccent),
+            _buildBadge("AI power user", Colors.blue.shade700),
           ],
         ),
       ],
@@ -187,7 +190,6 @@ class ProfilePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Text(
         label,
@@ -204,10 +206,10 @@ class ProfilePage extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade500,
+              color: Color(0xFF71768E),
               letterSpacing: 1.2),
         ),
       ),
@@ -217,9 +219,15 @@ class ProfilePage extends StatelessWidget {
   Widget _buildMenuCard(List<Widget> items) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(children: items),
     );
@@ -256,7 +264,7 @@ class ProfilePage extends StatelessWidget {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.bold,
-          color: isDestructive ? Colors.redAccent : Colors.white,
+          color: isDestructive ? Colors.red.shade600 : const Color(0xFF1A1D2D),
         ),
       ),
       trailing: Row(
@@ -264,13 +272,15 @@ class ProfilePage extends StatelessWidget {
         children: [
           if (trailingText != null)
             Text(trailingText,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade500,
+                    color: Color(0xFF71768E),
                     fontWeight: FontWeight.bold)),
           const SizedBox(width: 8),
           Icon(Icons.chevron_right_rounded,
-              color: isDestructive ? Colors.redAccent : Colors.grey.shade700),
+              color: isDestructive
+                  ? Colors.red.shade600
+                  : const Color(0xFFB0B3C1)),
         ],
       ),
     );
@@ -294,13 +304,15 @@ class ProfilePage extends StatelessWidget {
       title: Text(
         label,
         style: const TextStyle(
-            fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1D2D)),
       ),
       trailing: Switch(
         value: value,
         onChanged: (v) {},
         activeColor: Colors.white,
-        activeTrackColor: const Color(0xFF1ABC9C),
+        activeTrackColor: const Color(0xFF2D7132),
       ),
     );
   }

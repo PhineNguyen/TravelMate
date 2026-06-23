@@ -21,16 +21,13 @@ class _MainNavigatorState extends State<MainNavigator> {
     });
   }
 
-  // ✅ ĐÃ ĐỔI: Chuyển từ 'final List' thành một danh sách động để truyền callback quay về Home
   List<Widget> _getPages() {
     return [
       const HomePage(),
-      TemplatesPage(
-          onBackToHome: () => _onItemTapped(0)), // Truyền lệnh về Home
-      AiChatPage(onBackToHome: () => _onItemTapped(0)), // Truyền lệnh về Home
-      AnalyticsPage(
-          onBackToHome: () => _onItemTapped(0)), // Truyền lệnh về Home
-      ProfilePage(onBackToHome: () => _onItemTapped(0)), // Truyền lệnh về Home
+      TemplatesPage(onBackToHome: () => _onItemTapped(0)),
+      AiChatPage(onBackToHome: () => _onItemTapped(0)),
+      AnalyticsPage(onBackToHome: () => _onItemTapped(0)),
+      ProfilePage(onBackToHome: () => _onItemTapped(0)),
     ];
   }
 
@@ -47,21 +44,25 @@ class _MainNavigatorState extends State<MainNavigator> {
       child: Scaffold(
         body: IndexedStack(
           index: _selectedIndex,
-          children: _getPages(), // Gọi hàm lấy danh sách trang
+          children: _getPages(),
         ),
         bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: Colors.grey.shade900, width: 0.5),
-            ),
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              ),
+            ],
           ),
           child: BottomNavigationBar(
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
             type: BottomNavigationBarType.fixed,
-            backgroundColor: const Color(0xFF0B1423),
-            selectedItemColor: const Color(0xFF1ABC9C),
-            unselectedItemColor: Colors.grey.shade600,
+            backgroundColor: Colors.white,
+            selectedItemColor: const Color(0xFF2D7132),
+            unselectedItemColor: const Color(0xFFB0B3C1),
             showSelectedLabels: true,
             showUnselectedLabels: true,
             selectedLabelStyle:
@@ -80,13 +81,13 @@ class _MainNavigatorState extends State<MainNavigator> {
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.smart_toy_outlined),
-                activeIcon: Icon(Icons.luggage),
+                activeIcon: Icon(Icons.smart_toy),
                 label: 'AI',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.luggage_outlined),
-                activeIcon: Icon(Icons.luggage),
-                label: 'In Sight',
+                icon: Icon(Icons.analytics_outlined),
+                activeIcon: Icon(Icons.analytics),
+                label: 'Analytics',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_outline),

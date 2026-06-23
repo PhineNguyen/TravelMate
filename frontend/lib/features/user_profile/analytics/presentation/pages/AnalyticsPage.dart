@@ -9,7 +9,7 @@ class AnalyticsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
@@ -60,28 +60,28 @@ class AnalyticsPage extends StatelessWidget {
           "COUNTRIES",
           "24",
           "↑ 2 this year",
-          const Color(0xFF1ABC9C),
+          const Color(0xFF2D7132),
           Icons.public_rounded,
         ),
         _buildStatCard(
           "DAYS ABROAD",
           "62",
           "↑ 18 vs 2024",
-          Colors.blueAccent,
+          Colors.blue.shade700,
           Icons.calendar_today_rounded,
         ),
         _buildStatCard(
           "TOTAL 2025",
           "\$12.4k",
           "↓ 8% vs 2024",
-          Colors.purpleAccent,
+          Colors.purple.shade700,
           Icons.account_balance_wallet_rounded,
         ),
         _buildStatCard(
           "AI SAVINGS",
           "\$1.2k",
           "vs manual",
-          Colors.orangeAccent,
+          Colors.orange.shade700,
           Icons.auto_awesome_rounded,
         ),
       ],
@@ -93,9 +93,15 @@ class AnalyticsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,10 +111,10 @@ class AnalyticsPage extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500,
+                  color: Color(0xFF71768E),
                   letterSpacing: 1.1,
                 ),
               ),
@@ -121,7 +127,7 @@ class AnalyticsPage extends StatelessWidget {
             style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF1A1D2D),
             ),
           ),
           const SizedBox(height: 4),
@@ -142,9 +148,15 @@ class AnalyticsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +166,7 @@ class AnalyticsPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: Color(0xFF71768E),
               letterSpacing: 1.2,
             ),
           ),
@@ -165,12 +177,12 @@ class AnalyticsPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _buildBar("\$820", 0.3, "Jan", Colors.grey.shade800),
-                _buildBar("-", 0.05, "Feb", Colors.grey.shade900),
-                _buildBar("\$1.1k", 0.45, "Mar", Colors.teal.shade700),
-                _buildBar("\$4.2k", 0.9, "Apr", const Color(0xFF1ABC9C)),
-                _buildBar("-", 0.05, "May", Colors.grey.shade900),
-                _buildBar("\$2.8k", 0.65, "Jun", Colors.teal.shade800),
+                _buildBar("\$820", 0.3, "Jan", Colors.grey.shade200),
+                _buildBar("-", 0.05, "Feb", Colors.grey.shade100),
+                _buildBar("\$1.1k", 0.45, "Mar", Colors.teal.shade200),
+                _buildBar("\$4.2k", 0.9, "Apr", const Color(0xFF2D7132)),
+                _buildBar("-", 0.05, "May", Colors.grey.shade100),
+                _buildBar("\$2.8k", 0.65, "Jun", Colors.teal.shade400),
               ],
             ),
           ),
@@ -187,10 +199,10 @@ class AnalyticsPage extends StatelessWidget {
         if (value != "-")
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade400),
+                color: Color(0xFF71768E)),
           ),
         const SizedBox(height: 10),
         Container(
@@ -204,9 +216,9 @@ class AnalyticsPage extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           month,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 11,
-              color: Colors.grey.shade600,
+              color: Color(0xFFB0B3C1),
               fontWeight: FontWeight.bold),
         ),
       ],
@@ -217,9 +229,15 @@ class AnalyticsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,15 +247,16 @@ class AnalyticsPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: Color(0xFF71768E),
               letterSpacing: 1.2,
             ),
           ),
           const SizedBox(height: 30),
-          _buildRegionRow("Asia", 0.8, "9 countries", const Color(0xFF1ABC9C)),
-          _buildRegionRow("Europe", 0.7, "8 countries", Colors.blueAccent),
-          _buildRegionRow("Americas", 0.4, "5 countries", Colors.purpleAccent),
-          _buildRegionRow("Oceania", 0.15, "2 countries", Colors.grey.shade800),
+          _buildRegionRow("Asia", 0.8, "9 countries", const Color(0xFF2D7132)),
+          _buildRegionRow("Europe", 0.7, "8 countries", Colors.blue.shade700),
+          _buildRegionRow(
+              "Americas", 0.4, "5 countries", Colors.purple.shade700),
+          _buildRegionRow("Oceania", 0.15, "2 countries", Colors.grey.shade300),
         ],
       ),
     );
@@ -255,7 +274,7 @@ class AnalyticsPage extends StatelessWidget {
               Text(name,
                   style: const TextStyle(
                       fontSize: 15,
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontWeight: FontWeight.bold)),
               Text(count,
                   style: TextStyle(
@@ -267,7 +286,7 @@ class AnalyticsPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: const Color(0xFF0B1423),
+              backgroundColor: const Color(0xFFF1F4FA),
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 8,
             ),
@@ -281,9 +300,15 @@ class AnalyticsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,7 +318,7 @@ class AnalyticsPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: Color(0xFF71768E),
               letterSpacing: 1.2,
             ),
           ),
@@ -305,7 +330,7 @@ class AnalyticsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1ABC9C),
+                  color: Color(0xFF2D7132),
                 ),
               ),
               const SizedBox(width: 25),
@@ -313,21 +338,19 @@ class AnalyticsPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "38 of 47 AI suggestions accepted this year",
                       style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade400,
-                          height: 1.5),
+                          fontSize: 13, color: Color(0xFF71768E), height: 1.5),
                     ),
                     const SizedBox(height: 15),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: const LinearProgressIndicator(
                         value: 0.81,
-                        backgroundColor: Color(0xFF0B1423),
+                        backgroundColor: Color(0xFFF1F4FA),
                         valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF1ABC9C)),
+                            AlwaysStoppedAnimation<Color>(Color(0xFF2D7132)),
                         minHeight: 10,
                       ),
                     ),

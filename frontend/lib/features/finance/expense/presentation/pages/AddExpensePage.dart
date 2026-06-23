@@ -15,18 +15,18 @@ class _AddExpensePageState extends State<AddExpensePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D2D)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Add expense",
           style: TextStyle(
-            color: Colors.white,
+            color: Color(0xFF1A1D2D),
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -74,18 +74,24 @@ class _AddExpensePageState extends State<AddExpensePage> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 40),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Text(
+          const Text(
             "AMOUNT",
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade500,
+              color: Color(0xFF71768E),
               letterSpacing: 1.2,
             ),
           ),
@@ -99,7 +105,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1ABC9C).withOpacity(0.5),
+                  color: const Color(0xFF2D7132).withOpacity(0.5),
                   height: 1.6,
                 ),
               ),
@@ -108,7 +114,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 style: TextStyle(
                   fontSize: 64,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Color(0xFF1A1D2D),
                 ),
               ),
             ],
@@ -123,10 +129,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
-          color: Colors.grey.shade500,
+          color: Color(0xFF71768E),
           letterSpacing: 1.2,
         ),
       ),
@@ -138,24 +144,24 @@ class _AddExpensePageState extends State<AddExpensePage> {
       {
         "name": "Flights",
         "icon": Icons.flight_takeoff_rounded,
-        "color": Colors.deepPurpleAccent
+        "color": Colors.deepPurple.shade600
       },
-      {"name": "Hotel", "icon": Icons.hotel_rounded, "color": Colors.teal},
+      {"name": "Hotel", "icon": Icons.hotel_rounded, "color": Colors.teal.shade600},
       {
         "name": "Food",
         "icon": Icons.restaurant_rounded,
-        "color": Colors.orangeAccent
+        "color": Colors.orange.shade700
       },
       {
         "name": "Activities",
         "icon": Icons.confirmation_number_rounded,
-        "color": Colors.redAccent
+        "color": Colors.red.shade600
       },
-      {"name": "Transport", "icon": Icons.train_rounded, "color": Colors.cyan},
+      {"name": "Transport", "icon": Icons.train_rounded, "color": Colors.cyan.shade700},
       {
         "name": "Shopping",
         "icon": Icons.shopping_bag_rounded,
-        "color": Colors.pinkAccent
+        "color": Colors.pink.shade600
       },
     ];
 
@@ -178,11 +184,18 @@ class _AddExpensePageState extends State<AddExpensePage> {
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
               color: isSelected
-                  ? category['color'].withOpacity(0.15)
-                  : const Color(0xFF172234),
+                  ? category['color'].withOpacity(0.1)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(20),
+              boxShadow: isSelected ? null : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
               border: Border.all(
-                color: isSelected ? category['color'] : Colors.grey.shade800,
+                color: isSelected ? category['color'] : Colors.transparent,
                 width: 1.5,
               ),
             ),
@@ -190,7 +203,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(category['icon'],
-                    color: isSelected ? category['color'] : Colors.grey,
+                    color: isSelected ? category['color'] : const Color(0xFFB0B3C1),
                     size: 26),
                 const SizedBox(height: 10),
                 Text(
@@ -198,7 +211,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected ? Colors.white : Colors.grey.shade500,
+                    color: isSelected ? category['color'] : const Color(0xFF71768E),
                   ),
                 ),
               ],
@@ -215,18 +228,24 @@ class _AddExpensePageState extends State<AddExpensePage> {
       IconData? suffixIcon}) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextField(
         keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: Color(0xFF1A1D2D)),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          hintStyle: const TextStyle(color: Color(0xFFB0B3C1), fontSize: 14),
           suffixIcon: suffixIcon != null
-              ? Icon(suffixIcon, color: Colors.grey.shade600, size: 20)
+              ? Icon(suffixIcon, color: const Color(0xFFB0B3C1), size: 20)
               : null,
           contentPadding: const EdgeInsets.all(18),
           border: InputBorder.none,
@@ -239,13 +258,19 @@ class _AddExpensePageState extends State<AddExpensePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          const Icon(Icons.people_outline, color: Color(0xFF1ABC9C)),
+          const Icon(Icons.people_outline, color: Color(0xFF2D7132)),
           const SizedBox(width: 15),
           const Expanded(
             child: Text(
@@ -253,7 +278,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color: Color(0xFF1A1D2D),
               ),
             ),
           ),
@@ -261,7 +286,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             value: isShared,
             onChanged: (value) => setState(() => isShared = value),
             activeColor: Colors.white,
-            activeTrackColor: const Color(0xFF1ABC9C),
+            activeTrackColor: const Color(0xFF2D7132),
           ),
         ],
       ),
@@ -278,11 +303,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
         width: double.infinity,
         height: 58,
         decoration: BoxDecoration(
-          color: const Color(0xFF1ABC9C),
+          color: const Color(0xFF2D7132),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1ABC9C).withOpacity(0.2),
+              color: const Color(0xFF2D7132).withOpacity(0.2),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -292,12 +317,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check, size: 22, color: Color(0xFF0B1423)),
+              Icon(Icons.check, size: 22, color: Colors.white),
               SizedBox(width: 12),
               Text(
                 "Save expense",
                 style: TextStyle(
-                  color: Color(0xFF0B1423),
+                  color: Colors.white,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),

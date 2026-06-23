@@ -1,4 +1,3 @@
-// lib/features/user_profile/profile/presentation/pages/PersonalInformationPage.dart
 import 'package:flutter/material.dart';
 
 import '../../../../../core/widgets/app_header.dart';
@@ -9,7 +8,7 @@ class PersonalInformationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -39,15 +38,24 @@ class PersonalInformationPage extends StatelessWidget {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
-        const CircleAvatar(
-            radius: 50,
-            backgroundColor: Color(0xFF172234),
-            child: Icon(Icons.person, size: 50, color: Color(0xFF1ABC9C))),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const CircleAvatar(
+              radius: 50,
+              backgroundColor: Color(0xFF2D7132),
+              child: Icon(Icons.person, size: 50, color: Colors.white)),
+        ),
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-              color: Color(0xFF1ABC9C), shape: BoxShape.circle),
-          child: const Icon(Icons.camera_alt, size: 16, color: Colors.black),
+          decoration: BoxDecoration(
+              color: const Color(0xFF2D7132),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2)),
+          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
         )
       ],
     );
@@ -59,17 +67,22 @@ class PersonalInformationPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(label,
+              style: const TextStyle(
+                  color: Color(0xFF71768E),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           TextField(
             controller: TextEditingController(text: value),
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: Color(0xFF1A1D2D)),
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFF172234),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.all(18),
             ),
           ),
         ],
@@ -80,37 +93,39 @@ class PersonalInformationPage extends StatelessWidget {
   Widget _buildEditButton() {
     return SizedBox(
       width: double.infinity,
-      height: 55,
+      height: 58,
       child: ElevatedButton(
         onPressed: () {},
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF172234),
-          foregroundColor: const Color(0xFF1ABC9C),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1A1D2D),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey.shade700, width: 1),
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(color: Color(0xFFE2E4EB), width: 1),
           ),
         ),
         child: const Text("Edit",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ),
     );
   }
-}
 
-Widget _buildSaveButton() {
-  return SizedBox(
-    width: double.infinity,
-    height: 55,
-    child: ElevatedButton(
-      onPressed: () {},
-      style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1ABC9C),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-      child: const Text("Save Changes",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-    ),
-  );
+  Widget _buildSaveButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 58,
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2D7132),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18))),
+        child: const Text("Save Changes",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+      ),
+    );
+  }
 }

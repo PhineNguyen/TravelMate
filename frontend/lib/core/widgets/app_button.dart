@@ -14,30 +14,35 @@ class AppButton extends StatelessWidget {
     this.isPrimary = true,
     this.icon,
     this.height = 58,
-    BuildContext? context,
-    Widget? page,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         width: double.infinity,
         height: height,
         decoration: BoxDecoration(
-          color: isPrimary ? const Color(0xFF1ABC9C) : Colors.transparent,
+          color: isPrimary ? const Color(0xFF6BB04D) : Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: isPrimary ? null : Border.all(color: Colors.grey.shade800),
+          border: isPrimary ? null : Border.all(color: const Color(0xFFE2E4EB)),
           boxShadow: isPrimary
               ? [
                   BoxShadow(
-                    color: const Color(0xFF1ABC9C).withOpacity(0.2),
+                    color: const Color(0xFF6BB04D).withOpacity(0.2),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Center(
           child: Row(
@@ -50,7 +55,7 @@ class AppButton extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: isPrimary ? const Color(0xFF0B1423) : Colors.white,
+                  color: isPrimary ? Colors.white : const Color(0xFF1A1D2D),
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),

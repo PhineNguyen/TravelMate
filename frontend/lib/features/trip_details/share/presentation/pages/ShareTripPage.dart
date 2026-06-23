@@ -6,18 +6,18 @@ class ShareTripPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D2D)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Share trip",
           style: TextStyle(
-            color: Colors.white,
+            color: Color(0xFF1A1D2D),
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -29,23 +29,23 @@ class ShareTripPage extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            Text(
+            const Text(
               "Invite friends to view or collaborate on your Japan Discovery trip.",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade400,
+                color: Color(0xFF71768E),
                 height: 1.5,
               ),
             ),
             const SizedBox(height: 30),
             _buildQRCodeSection(),
             const SizedBox(height: 25),
-            Text(
+            const Text(
               "Or share via invite code",
               style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade600,
+                  color: Color(0xFFB0B3C1),
                   fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -56,19 +56,19 @@ class ShareTripPage extends StatelessWidget {
             _buildShareOption(
               icon: Icons.link_rounded,
               label: "Copy link",
-              color: const Color(0xFF1ABC9C),
+              color: const Color(0xFF2D7132),
             ),
             const SizedBox(height: 12),
             _buildShareOption(
               icon: Icons.phone_android_outlined,
               label: "WhatsApp",
               color: const Color(0xFF12927F),
-            ),//dđ
+            ),
             const SizedBox(height: 12),
             _buildShareOption(
               icon: Icons.email_outlined,
               label: "Email invitation",
-              color: Colors.deepPurpleAccent,
+              color: Colors.deepPurple.shade600,
             ),
             const SizedBox(height: 40),
             _buildSectionHeader("CURRENT COLLABORATORS"),
@@ -77,20 +77,20 @@ class ShareTripPage extends StatelessWidget {
               name: "Alex Johnson",
               role: "Owner",
               initials: "AJ",
-              color: const Color(0xFF1ABC9C),
+              color: const Color(0xFF2D7132),
               badgeLabel: "Owner",
-              badgeColor: const Color(0xFF1ABC9C).withOpacity(0.1),
-              badgeTextColor: const Color(0xFF1ABC9C),
+              badgeColor: const Color(0xFF2D7132).withOpacity(0.1),
+              badgeTextColor: const Color(0xFF2D7132),
             ),
             const SizedBox(height: 12),
             _buildCollaboratorItem(
               name: "Sarah Kim",
               role: "Collaborator",
               initials: "SK",
-              color: Colors.deepPurpleAccent,
+              color: Colors.deepPurple.shade600,
               badgeLabel: "Collab",
-              badgeColor: Colors.deepPurpleAccent.withOpacity(0.1),
-              badgeTextColor: Colors.deepPurpleAccent,
+              badgeColor: Colors.deepPurple.shade600.withOpacity(0.1),
+              badgeTextColor: Colors.deepPurple.shade600,
             ),
             const SizedBox(height: 40),
           ],
@@ -105,12 +105,11 @@ class ShareTripPage extends StatelessWidget {
       height: 200,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.grey.shade800),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -122,11 +121,11 @@ class ShareTripPage extends StatelessWidget {
           _buildCorner(top: 0, right: 0, isTop: true, isLeft: false),
           _buildCorner(bottom: 0, left: 0, isTop: false, isLeft: true),
           _buildCorner(bottom: 0, right: 0, isTop: false, isLeft: false),
-          Center(
+          const Center(
             child: Icon(
               Icons.qr_code_2_rounded,
               size: 110,
-              color: Colors.white.withOpacity(0.9),
+              color: Color(0xFF1A1D2D),
             ),
           ),
         ],
@@ -152,16 +151,16 @@ class ShareTripPage extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             top: isTop
-                ? const BorderSide(color: Color(0xFF1ABC9C), width: 4)
+                ? const BorderSide(color: Color(0xFF2D7132), width: 4)
                 : BorderSide.none,
             bottom: !isTop
-                ? const BorderSide(color: Color(0xFF1ABC9C), width: 4)
+                ? const BorderSide(color: Color(0xFF2D7132), width: 4)
                 : BorderSide.none,
             left: isLeft
-                ? const BorderSide(color: Color(0xFF1ABC9C), width: 4)
+                ? const BorderSide(color: Color(0xFF2D7132), width: 4)
                 : BorderSide.none,
             right: !isLeft
-                ? const BorderSide(color: Color(0xFF1ABC9C), width: 4)
+                ? const BorderSide(color: Color(0xFF2D7132), width: 4)
                 : BorderSide.none,
           ),
         ),
@@ -173,9 +172,15 @@ class ShareTripPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -185,7 +190,7 @@ class ShareTripPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF1A1D2D),
               letterSpacing: 1.5,
             ),
           ),
@@ -194,13 +199,13 @@ class ShareTripPage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF1ABC9C),
+                color: const Color(0xFF2D7132),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Text(
                 "Copy",
                 style: TextStyle(
-                  color: Color(0xFF0B1423),
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -216,10 +221,10 @@ class ShareTripPage extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.grey.shade500,
+          color: Color(0xFF71768E),
           letterSpacing: 1.2,
         ),
       ),
@@ -231,18 +236,23 @@ class ShareTripPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withOpacity(0.3)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
@@ -253,11 +263,11 @@ class ShareTripPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Color(0xFF1A1D2D),
               ),
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: Colors.grey.shade600),
+          const Icon(Icons.chevron_right_rounded, color: Color(0xFFB0B3C1)),
         ],
       ),
     );
@@ -275,9 +285,15 @@ class ShareTripPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -292,7 +308,7 @@ class ShareTripPage extends StatelessWidget {
             child: Text(
               initials,
               style: const TextStyle(
-                  color: Color(0xFF0B1423),
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 16),
             ),
@@ -307,7 +323,7 @@ class ShareTripPage extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF1A1D2D),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -315,7 +331,7 @@ class ShareTripPage extends StatelessWidget {
                   role,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade500,
+                    color: Color(0xFF71768E),
                   ),
                 ),
               ],

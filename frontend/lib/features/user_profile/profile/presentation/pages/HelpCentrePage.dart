@@ -8,7 +8,7 @@ class HelpCentrePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -41,17 +41,23 @@ class HelpCentrePage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: const TextField(
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: Color(0xFF1A1D2D)),
         decoration: InputDecoration(
           hintText: "Search for help...",
-          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+          hintStyle: TextStyle(color: Color(0xFFB0B3C1), fontSize: 14),
           border: InputBorder.none,
-          icon: Icon(Icons.search, color: Color(0xFF1ABC9C)),
+          icon: Icon(Icons.search, color: Color(0xFF2D7132)),
         ),
       ),
     );
@@ -62,10 +68,10 @@ class HelpCentrePage extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 16),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: Colors.grey.shade500,
+            color: Color(0xFF71768E),
             letterSpacing: 1.2),
       ),
     );
@@ -92,20 +98,26 @@ class HelpCentrePage extends StatelessWidget {
       itemBuilder: (context, index) {
         return Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF172234),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade800),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(topics[index]['icon'] as IconData,
-                  color: const Color(0xFF1ABC9C), size: 28),
+                  color: const Color(0xFF2D7132), size: 28),
               const SizedBox(height: 12),
               Text(
                 topics[index]['label'] as String,
                 style: const TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFF1A1D2D),
                     fontWeight: FontWeight.bold,
                     fontSize: 14),
               ),
@@ -126,9 +138,15 @@ class HelpCentrePage extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: faqs.map((faq) {
@@ -136,13 +154,14 @@ class HelpCentrePage extends StatelessWidget {
             children: [
               ListTile(
                 title: Text(faq,
-                    style: const TextStyle(color: Colors.white, fontSize: 14)),
-                trailing: Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey.shade700),
+                    style: const TextStyle(
+                        color: Color(0xFF1A1D2D), fontSize: 14)),
+                trailing: const Icon(Icons.chevron_right_rounded,
+                    color: Color(0xFFB0B3C1)),
                 onTap: () {},
               ),
               if (faq != faqs.last)
-                Divider(color: Colors.grey.shade800, height: 1),
+                const Divider(color: Color(0xFFF1F4FA), height: 1),
             ],
           );
         }).toList(),
@@ -154,33 +173,33 @@ class HelpCentrePage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF1ABC9C).withValues(alpha: 0.1),
-            const Color(0xFF172234),
-          ],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border:
-            Border.all(color: const Color(0xFF1ABC9C).withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Still need help?",
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontSize: 18,
                       fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   "Our team is available 24/7",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  style: TextStyle(color: Color(0xFF71768E), fontSize: 13),
                 ),
               ],
             ),
@@ -188,8 +207,9 @@ class HelpCentrePage extends StatelessWidget {
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1ABC9C),
-              foregroundColor: const Color(0xFF0B1423),
+              backgroundColor: const Color(0xFF2D7132),
+              foregroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

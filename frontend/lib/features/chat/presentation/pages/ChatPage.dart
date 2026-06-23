@@ -13,21 +13,18 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
-    _messageController.dispose(); // Quan trọng: Giải phóng bộ nhớ
+    _messageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
-            // --- HEADER ---
             _buildHeader(context),
-
-            // --- DANH SÁCH TIN NHẮN ---
             Expanded(
               child: ListView(
                 padding:
@@ -39,20 +36,18 @@ class _ChatPageState extends State<ChatPage> {
                     text:
                         "Hey team — quick heads up. I updated Day 3 with an evening activity.",
                     initials: "AJ",
-                    avatarColor: Color(0xFF1ABC9C),
+                    avatarColor: Color(0xFF2D7132),
                   ),
                   _MemberMessage(
                     name: "Sarah Kim",
                     time: "9:41 AM",
                     text: "Looks good — can we shift lunch earlier?",
                     initials: "SK",
-                    avatarColor: Colors.deepPurpleAccent,
+                    avatarColor: Color(0xFF673AB7),
                   ),
                 ],
               ),
             ),
-
-            // --- INPUT AREA ---
             _buildInputArea(),
           ],
         ),
@@ -64,14 +59,14 @@ class _ChatPageState extends State<ChatPage> {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFF1ABC9C).withValues(alpha: 0.15),
-            const Color(0xFF0B1423),
-          ],
-        ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -89,14 +84,14 @@ class _ChatPageState extends State<ChatPage> {
                     Text(
                       "Group Chat - Japan Discovery",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF1A1D2D),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       "Collaborators • 2 members",
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                      style: TextStyle(color: Color(0xFF71768E), fontSize: 12),
                     ),
                   ],
                 ),
@@ -105,7 +100,6 @@ class _ChatPageState extends State<ChatPage> {
             ],
           ),
           const SizedBox(height: 12),
-          Divider(color: Colors.grey.shade800, thickness: 0.5),
         ],
       ),
     );
@@ -114,7 +108,8 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildPopupMenu() {
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
-      color: const Color(0xFF172234),
+      color: Colors.white,
+      surfaceTintColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       onSelected: (value) {},
       itemBuilder: (context) => [
@@ -126,11 +121,17 @@ class _ChatPageState extends State<ChatPage> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF172234),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade800),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: const Icon(Icons.more_horiz, color: Colors.white, size: 20),
+        child: const Icon(Icons.more_horiz, color: Color(0xFF1A1D2D), size: 20),
       ),
     );
   }
@@ -142,11 +143,15 @@ class _ChatPageState extends State<ChatPage> {
       child: Row(
         children: [
           Icon(icon,
-              color: isDestructive ? Colors.redAccent : Colors.white, size: 18),
+              color:
+                  isDestructive ? Colors.red.shade600 : const Color(0xFF1A1D2D),
+              size: 18),
           const SizedBox(width: 12),
           Text(label,
               style: TextStyle(
-                  color: isDestructive ? Colors.redAccent : Colors.white,
+                  color: isDestructive
+                      ? Colors.red.shade600
+                      : const Color(0xFF1A1D2D),
                   fontSize: 14)),
         ],
       ),
@@ -159,11 +164,17 @@ class _ChatPageState extends State<ChatPage> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF172234),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade800),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Icon(icon, color: Colors.white, size: 20),
+        child: Icon(icon, color: const Color(0xFF1A1D2D), size: 20),
       ),
     );
   }
@@ -171,54 +182,56 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildInputArea() {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 30),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B1423),
-        border: Border(top: BorderSide(color: Colors.grey.shade800)),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           const CircleAvatar(
             radius: 16,
-            backgroundColor: Color(0xFF1ABC9C),
+            backgroundColor: Color(0xFF2D7132),
             child: Text("AJ",
                 style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0B1423))),
+                    color: Colors.white)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFF172234),
+                color: const Color(0xFFF1F4FA),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade800),
               ),
               child: TextField(
                 controller: _messageController,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Color(0xFF1A1D2D)),
                 decoration: const InputDecoration(
                   hintText: "Message collaborators...",
-                  hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+                  hintStyle: TextStyle(color: Color(0xFFB0B3C1), fontSize: 13),
                   border: InputBorder.none,
                 ),
               ),
             ),
           ),
           const SizedBox(width: 12),
-          // Nút gửi (Sử dụng IconButton để có hiệu ứng feedback tốt hơn)
           Container(
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
-                color: Color(0xFF1ABC9C), shape: BoxShape.circle),
+                color: Color(0xFF2D7132), shape: BoxShape.circle),
             child: IconButton(
-              icon: const Icon(Icons.send_rounded,
-                  color: Color(0xFF0B1423), size: 18),
-              onPressed: () {
-                // Xử lý gửi tin nhắn
-              },
+              icon:
+                  const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+              onPressed: () {},
             ),
           ),
         ],
@@ -227,7 +240,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-// Tách Widget tin nhắn để tối ưu hóa render
 class _MemberMessage extends StatelessWidget {
   final String name;
   final String time;
@@ -256,7 +268,7 @@ class _MemberMessage extends StatelessWidget {
             child: Text(
               initials,
               style: const TextStyle(
-                  color: Color(0xFF0B1423),
+                  color: Colors.white,
                   fontSize: 13,
                   fontWeight: FontWeight.bold),
             ),
@@ -270,32 +282,37 @@ class _MemberMessage extends StatelessWidget {
                   children: [
                     Text(name,
                         style: const TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF1A1D2D),
                             fontSize: 14,
                             fontWeight: FontWeight.bold)),
                     const SizedBox(width: 8),
-                    Text(time,
-                        style: TextStyle(
-                            color: Colors.grey.shade500, fontSize: 11)),
+                    const Text("9:40 AM",
+                        style:
+                            TextStyle(color: Color(0xFFB0B3C1), fontSize: 11)),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF172234),
+                    color: Colors.white,
                     borderRadius: const BorderRadius.only(
                       topRight: Radius.circular(16),
                       bottomLeft: Radius.circular(16),
                       bottomRight: Radius.circular(16),
                     ),
-                    border: Border.all(
-                        color: Colors.grey.shade800.withValues(alpha: 0.5)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
                     text,
                     style: const TextStyle(
-                        color: Colors.white, fontSize: 14, height: 1.4),
+                        color: Color(0xFF1A1D2D), fontSize: 14, height: 1.4),
                   ),
                 ),
               ],

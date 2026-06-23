@@ -11,7 +11,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF3F5F9),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -40,11 +40,11 @@ class LoginPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF1ABC9C).withOpacity(0.1),
+            color: const Color(0xFF2D7132).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(Icons.explore_rounded,
-              color: Color(0xFF1ABC9C), size: 32),
+              color: Color(0xFF2D7132), size: 32),
         ),
         const SizedBox(width: 12),
         RichText(
@@ -55,9 +55,10 @@ class LoginPage extends StatelessWidget {
               letterSpacing: 0.5,
             ),
             children: [
-              TextSpan(text: "Travel", style: TextStyle(color: Colors.white)),
               TextSpan(
-                  text: "Mate", style: TextStyle(color: Color(0xFF1ABC9C))),
+                  text: "Travel", style: TextStyle(color: Color(0xFF1A1D2D))),
+              TextSpan(
+                  text: "Mate", style: TextStyle(color: Color(0xFF2D7132))),
             ],
           ),
         ),
@@ -66,18 +67,20 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget _buildWelcomeText() {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Welcome Back",
           style: TextStyle(
-              fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D2D)),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           "Sign in to continue planning your world",
-          style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+          style: TextStyle(fontSize: 15, color: Color(0xFF71768E)),
         ),
       ],
     );
@@ -102,7 +105,7 @@ class LoginPage extends StatelessWidget {
             child: const Text(
               "Forgot password ?",
               style: TextStyle(
-                  color: Color(0xFF1ABC9C), fontWeight: FontWeight.w500),
+                  color: Color(0xFF2D7132), fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -124,10 +127,10 @@ class LoginPage extends StatelessWidget {
         padding: const EdgeInsets.only(left: 4, bottom: 8),
         child: Text(
           text,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: Colors.grey.shade500,
+            color: Color(0xFF71768E),
             letterSpacing: 1.1,
           ),
         ),
@@ -136,15 +139,22 @@ class LoginPage extends StatelessWidget {
   Widget _buildInputField(String hint, bool isPassword) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextFormField(
         obscureText: isPassword,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: Color(0xFF1A1D2D)),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          hintStyle: const TextStyle(color: Color(0xFFB0B3C1), fontSize: 14),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(18),
         ),
@@ -157,15 +167,17 @@ class LoginPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Divider(thickness: 1, color: Colors.grey.shade800)),
+            Expanded(
+                child: Divider(thickness: 1, color: const Color(0xFFE2E4EB))),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 "or continue with",
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                style: TextStyle(color: const Color(0xFFB0B3C1), fontSize: 13),
               ),
             ),
-            Expanded(child: Divider(thickness: 1, color: Colors.grey.shade800)),
+            Expanded(
+                child: Divider(thickness: 1, color: const Color(0xFFE2E4EB))),
           ],
         ),
         const SizedBox(height: 24),
@@ -193,8 +205,8 @@ class LoginPage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("No account?",
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+        const Text("No account?",
+            style: TextStyle(fontSize: 14, color: Color(0xFF71768E))),
         TextButton(
           onPressed: () {
             Navigator.push(context,
@@ -203,7 +215,7 @@ class LoginPage extends StatelessWidget {
           child: const Text(
             "Create one",
             style: TextStyle(
-                color: Color(0xFF1ABC9C), fontWeight: FontWeight.bold),
+                color: Color(0xFF2D7132), fontWeight: FontWeight.bold),
           ),
         ),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
+import 'package:frontend/features/trip_planning/preferences/presentation/pages/PreferencesPage.dart';
 
 import '../../../../../core/widgets/app_button.dart';
 
@@ -9,7 +10,7 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF3F5F9),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -26,10 +27,11 @@ class RegisterPage extends StatelessWidget {
                 AppButton(
                   label: "Create account",
                   onTap: () {
+                    // Chuyển đến trang Preferences sau khi đăng ký thành công
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const LoginPage()));
+                            builder: (context) => const PreferencesPage()));
                   },
                 ),
                 const SizedBox(height: 20),
@@ -48,11 +50,11 @@ class RegisterPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF1ABC9C).withOpacity(0.1),
+            color: const Color(0xFF2D7132).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(Icons.explore_rounded,
-              color: Color(0xFF1ABC9C), size: 32),
+              color: Color(0xFF2D7132), size: 32),
         ),
         const SizedBox(width: 12),
         RichText(
@@ -63,9 +65,10 @@ class RegisterPage extends StatelessWidget {
               letterSpacing: 0.5,
             ),
             children: [
-              TextSpan(text: "Travel", style: TextStyle(color: Colors.white)),
               TextSpan(
-                  text: "Mate", style: TextStyle(color: Color(0xFF1ABC9C))),
+                  text: "Travel", style: TextStyle(color: Color(0xFF1A1D2D))),
+              TextSpan(
+                  text: "Mate", style: TextStyle(color: Color(0xFF2D7132))),
             ],
           ),
         ),
@@ -74,18 +77,20 @@ class RegisterPage extends StatelessWidget {
   }
 
   Widget _buildTitle() {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Create account",
           style: TextStyle(
-              fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D2D)),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           "Start planning smarter trips today",
-          style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
+          style: TextStyle(fontSize: 16, color: Color(0xFF71768E)),
         ),
       ],
     );
@@ -116,25 +121,33 @@ class RegisterPage extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade500,
+                color: Color(0xFF71768E),
                 letterSpacing: 1.1),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF172234),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: TextFormField(
             obscureText: isPassword,
             keyboardType: type,
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: Color(0xFF1A1D2D)),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              hintStyle:
+                  const TextStyle(color: Color(0xFFB0B3C1), fontSize: 14),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(18),
             ),
@@ -148,8 +161,8 @@ class RegisterPage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Already have an account?",
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+        const Text("Already have an account?",
+            style: TextStyle(fontSize: 14, color: Color(0xFF71768E))),
         TextButton(
           onPressed: () {
             Navigator.push(context,
@@ -159,7 +172,7 @@ class RegisterPage extends StatelessWidget {
             "Sign in",
             style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF1ABC9C),
+                color: Color(0xFF2D7132),
                 fontWeight: FontWeight.bold),
           ),
         ),

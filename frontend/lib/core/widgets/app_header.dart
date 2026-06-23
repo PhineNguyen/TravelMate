@@ -29,12 +29,18 @@ class AppHeader extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF172234),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade800),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: const Icon(Icons.arrow_back,
-                      color: Colors.white, size: 20),
+                      color: Color(0xFF1A1D2D), size: 20),
                 ),
               ),
             if (showBackButton) const SizedBox(width: 15),
@@ -44,7 +50,7 @@ class AppHeader extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Color(0xFF1A1D2D),
                 ),
               ),
             ),

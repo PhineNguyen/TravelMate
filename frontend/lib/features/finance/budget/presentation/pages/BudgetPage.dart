@@ -10,7 +10,7 @@ class BudgetPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
@@ -25,7 +25,8 @@ class BudgetPage extends StatelessWidget {
                     const SizedBox(width: 12),
                     PopupMenuButton<String>(
                       offset: const Offset(0, 50),
-                      color: const Color(0xFF172234),
+                      color: Colors.white,
+                      surfaceTintColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                       itemBuilder: (context) => [
@@ -39,12 +40,18 @@ class BudgetPage extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF172234),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade800),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: const Icon(Icons.more_vert_rounded,
-                            color: Colors.white, size: 20),
+                            color: Color(0xFF1A1D2D), size: 20),
                       ),
                     ),
                   ],
@@ -78,10 +85,10 @@ class BudgetPage extends StatelessWidget {
       value: label,
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 18),
+          Icon(icon, color: const Color(0xFF1A1D2D), size: 18),
           const SizedBox(width: 12),
           Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 14)),
+              style: const TextStyle(color: Color(0xFF1A1D2D), fontSize: 14)),
         ],
       ),
     );
@@ -96,11 +103,11 @@ class BudgetPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF1ABC9C),
+          color: const Color(0xFF2D7132),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1ABC9C).withOpacity(0.2),
+              color: const Color(0xFF2D7132).withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             )
@@ -108,12 +115,12 @@ class BudgetPage extends StatelessWidget {
         ),
         child: const Row(
           children: [
-            Icon(Icons.add, size: 18, color: Color(0xFF0B1423)),
+            Icon(Icons.add, size: 18, color: Colors.white),
             SizedBox(width: 6),
             Text(
               "Add",
               style: TextStyle(
-                  color: Color(0xFF0B1423),
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 14),
             ),
@@ -128,20 +135,20 @@ class BudgetPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade500,
+                color: Color(0xFF71768E),
                 letterSpacing: 1.2)),
         if (actionText != null)
           GestureDetector(
             onTap: () {},
             child: Text(
               actionText,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1ABC9C)),
+                  color: Color(0xFF2D7132)),
             ),
           ),
       ],
@@ -153,15 +160,21 @@ class BudgetPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Text(
+          const Text(
             "Total spent — Japan Discovery",
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: 14, color: Color(0xFF71768E)),
           ),
           const SizedBox(height: 15),
           Row(
@@ -174,29 +187,29 @@ class BudgetPage extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1ABC9C).withOpacity(0.5))),
+                        color: const Color(0xFF2D7132).withOpacity(0.5))),
               ),
               const Text("1,842",
                   style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+                      color: Color(0xFF1A1D2D))),
             ],
           ),
           const SizedBox(height: 5),
-          Text("of \$4,200 · 26 days remaining",
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+          const Text("of \$4,200 · 26 days remaining",
+              style: TextStyle(fontSize: 13, color: Color(0xFFB0B3C1))),
           const SizedBox(height: 40),
           _buildDonutChart(),
           const SizedBox(height: 40),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildLegendItem("Spent", const Color(0xFF1ABC9C)),
+              _buildLegendItem("Spent", const Color(0xFF2D7132)),
               const SizedBox(width: 20),
-              _buildLegendItem("Committed", Colors.tealAccent.withOpacity(0.4)),
+              _buildLegendItem("Committed", Colors.teal.shade300),
               const SizedBox(width: 20),
-              _buildLegendItem("Remaining", const Color(0xFF0B1423)),
+              _buildLegendItem("Remaining", const Color(0xFFF1F4FA)),
             ],
           ),
         ],
@@ -215,8 +228,8 @@ class BudgetPage extends StatelessWidget {
             value: 0.44,
             strokeWidth: 16,
             strokeCap: StrokeCap.round,
-            backgroundColor: const Color(0xFF0B1423),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF1ABC9C)),
+            backgroundColor: const Color(0xFFF1F4FA),
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2D7132)),
           ),
         ),
         SizedBox(
@@ -228,18 +241,18 @@ class BudgetPage extends StatelessWidget {
             strokeCap: StrokeCap.round,
             backgroundColor: Colors.transparent,
             valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.tealAccent.withOpacity(0.4)),
+                Colors.teal.shade300.withOpacity(0.6)),
           ),
         ),
-        Column(
+        const Column(
           children: [
-            const Text("44%",
+            Text("44%",
                 style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white)),
+                    color: Color(0xFF1A1D2D))),
             Text("used",
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                style: TextStyle(fontSize: 12, color: Color(0xFFB0B3C1))),
           ],
         ),
       ],
@@ -255,7 +268,7 @@ class BudgetPage extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 8),
         Text(label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF71768E))),
       ],
     );
   }
@@ -264,13 +277,13 @@ class BudgetPage extends StatelessWidget {
     return Column(
       children: [
         _buildCategoryItem(Icons.flight, "Flights", "1,200", "1,200", 1.0,
-            Colors.deepPurpleAccent),
-        _buildCategoryItem(
-            Icons.hotel, "Accommodation", "340", "1,200", 0.28, Colors.teal),
+            Colors.deepPurple.shade600),
+        _buildCategoryItem(Icons.hotel, "Accommodation", "340", "1,200", 0.28,
+            Colors.teal.shade600),
         _buildCategoryItem(Icons.restaurant, "Food & dining", "192", "800",
-            0.24, Colors.orangeAccent),
+            0.24, Colors.orange.shade700),
         _buildCategoryItem(Icons.confirmation_number, "Activities", "110",
-            "1,000", 0.11, Colors.redAccent),
+            "1,000", 0.11, Colors.red.shade600),
       ],
     );
   }
@@ -281,9 +294,15 @@ class BudgetPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -307,7 +326,7 @@ class BudgetPage extends StatelessWidget {
                         style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white)),
+                            color: Color(0xFF1A1D2D))),
                     Text("\$$spent",
                         style: TextStyle(
                             fontSize: 16,
@@ -325,15 +344,15 @@ class BudgetPage extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 6,
-                          backgroundColor: const Color(0xFF0B1423),
+                          backgroundColor: const Color(0xFFF1F4FA),
                           valueColor: AlwaysStoppedAnimation<Color>(color),
                         ),
                       ),
                     ),
                     const SizedBox(width: 15),
                     Text("of \$$total",
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade600)),
+                        style: const TextStyle(
+                            fontSize: 11, color: Color(0xFFB0B3C1))),
                   ],
                 ),
               ],

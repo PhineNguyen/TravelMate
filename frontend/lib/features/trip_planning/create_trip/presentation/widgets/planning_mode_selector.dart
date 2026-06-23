@@ -15,7 +15,7 @@ class PlanningModeSelector extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -28,8 +28,7 @@ class PlanningModeSelector extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color:
-                      isSelected ? const Color(0xFF1ABC9C) : Colors.transparent,
+                  color: isSelected ? const Color(0xFF2D7132) : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
@@ -39,9 +38,8 @@ class PlanningModeSelector extends StatelessWidget {
                       fontSize: 14,
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.w500,
-                      color: isSelected
-                          ? const Color(0xFF0B1423)
-                          : Colors.grey.shade500,
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF1A1D2D),
                     ),
                   ),
                 ),

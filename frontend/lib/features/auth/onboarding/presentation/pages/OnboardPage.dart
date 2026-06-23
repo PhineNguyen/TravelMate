@@ -14,7 +14,6 @@ class OnboardPage extends StatefulWidget {
 
 class _OnboardPageState extends State<OnboardPage>
     with SingleTickerProviderStateMixin {
-  // --- STATE VARIABLES ---
   double _rotateX = 0;
   double _rotateY = 0;
 
@@ -60,7 +59,7 @@ class _OnboardPageState extends State<OnboardPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF3F5F9),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -108,15 +107,13 @@ class _OnboardPageState extends State<OnboardPage>
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: const Color(0xFF172234),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-              color: const Color(0xFF1ABC9C).withOpacity(0.1), width: 2),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1ABC9C).withOpacity(0.05),
-              blurRadius: 40,
-              spreadRadius: 5,
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
@@ -137,16 +134,16 @@ class _OnboardPageState extends State<OnboardPage>
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 30,
-            color: Colors.white,
+            color: Color(0xFF1A1D2D),
             letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: 20),
-        Text(
+        const Text(
           "Describe your dream trip in plain language. Our AI builds a complete, colour-coded itinerary in seconds - with local insights you won't find in a guidebook.",
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey.shade500,
+            color: Color(0xFF71768E),
             height: 1.6,
           ),
           textAlign: TextAlign.center,

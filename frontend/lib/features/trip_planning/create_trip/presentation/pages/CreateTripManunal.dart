@@ -45,7 +45,6 @@ class CreateTripManualContent extends StatelessWidget {
     }
   }
 
-  // --- Step 1: Info ---
   Widget _buildStep1Info() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,43 +95,55 @@ class CreateTripManualContent extends StatelessWidget {
     return Wrap(
       spacing: 8,
       children: styles.map((style) {
-        bool isSelected = style == "Adventure"; // Demo selection
+        bool isSelected = style == "Adventure";
         return ChoiceChip(
           label: Text(style),
           selected: isSelected,
           onSelected: (val) {},
-          selectedColor: const Color(0xFF1ABC9C),
-          backgroundColor: const Color(0xFF172234),
+          selectedColor: const Color(0xFF2D7132),
+          backgroundColor: Colors.white,
           labelStyle: TextStyle(
-            color: isSelected ? Colors.black : Colors.white,
-            fontSize: 12,
-          ),
+              color: isSelected ? Colors.white : const Color(0xFF71768E),
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                  color: isSelected
+                      ? Colors.transparent
+                      : const Color(0xFFE2E4EB))),
         );
       }).toList(),
     );
   }
 
-  // --- Step 2: Dates ---
   Widget _buildStep2Dates() {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(20)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                )
+              ]),
           child: Column(
             children: [
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.chevron_left, color: Colors.white),
+                  Icon(Icons.chevron_left, color: Color(0xFF1A1D2D)),
                   Text("September 2026",
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Color(0xFF1A1D2D),
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
-                  Icon(Icons.chevron_right, color: Colors.white),
+                  Icon(Icons.chevron_right, color: Color(0xFF1A1D2D)),
                 ],
               ),
               const SizedBox(height: 20),
@@ -141,12 +152,12 @@ class CreateTripManualContent extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildLegend(const Color(0xFF1ABC9C), "Selected"),
+                  _buildLegend(const Color(0xFF2D7132), "Selected"),
                   const SizedBox(width: 15),
-                  _buildLegend(const Color(0xFF1ABC9C), "Range",
+                  _buildLegend(const Color(0xFF2D7132), "Range",
                       isOutline: true),
                   const SizedBox(width: 15),
-                  _buildLegend(const Color(0xFF1ABC9C), "Today"),
+                  _buildLegend(const Color(0xFF2D7132), "Today"),
                 ],
               ),
             ],
@@ -159,14 +170,13 @@ class CreateTripManualContent extends StatelessWidget {
           label: "Back",
           onTap: onBack,
           isPrimary: false,
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D2D)),
         ),
         const SizedBox(height: 30),
       ],
     );
   }
 
-  // --- Step 3: Schedule ---
   Widget _buildStep3Schedule() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,14 +184,24 @@ class CreateTripManualContent extends StatelessWidget {
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           _buildSectionTitle("DAY-BY-DAY SCHEDULE"),
           const Text("Expand all",
-              style: TextStyle(color: Color(0xFF1ABC9C), fontSize: 12))
+              style: TextStyle(
+                  color: Color(0xFF2D7132),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold))
         ]),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(20)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                )
+              ]),
           child: Column(
             children: [
               Row(
@@ -194,13 +214,14 @@ class CreateTripManualContent extends StatelessWidget {
                           children: [
                         Text("Day 1",
                             style: TextStyle(
-                                color: Colors.white,
+                                color: Color(0xFF1A1D2D),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16)),
                         Text("Add activities below",
-                            style: TextStyle(color: Colors.grey, fontSize: 12))
+                            style: TextStyle(
+                                color: Color(0xFFB0B3C1), fontSize: 12))
                       ])),
-                  const Icon(Icons.keyboard_arrow_up, color: Colors.grey),
+                  const Icon(Icons.keyboard_arrow_up, color: Color(0xFFB0B3C1)),
                 ],
               ),
               const SizedBox(height: 20),
@@ -229,40 +250,49 @@ class CreateTripManualContent extends StatelessWidget {
           label: "Back",
           onTap: onBack,
           isPrimary: false,
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D2D)),
         ),
         const SizedBox(height: 30),
       ],
     );
   }
 
-  // --- Step 4: Budget ---
   Widget _buildStep4Budget() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(20)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                )
+              ]),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text("ESTIMATED TOTAL",
-                  style: TextStyle(color: Colors.grey, fontSize: 11)),
+                  style: TextStyle(
+                      color: Color(0xFF71768E),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold)),
               const Text("\$4",
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontSize: 32,
                       fontWeight: FontWeight.bold)),
               const SizedBox(height: 15),
               _buildProgressBar(),
               const SizedBox(height: 15),
               Wrap(spacing: 8, children: [
-                _buildBudgetTag("Flights \$1", Colors.deepPurpleAccent),
-                _buildBudgetTag("Accommodation \$2", Colors.teal),
-                _buildBudgetTag("Food & Dining \$1", Colors.orange)
+                _buildBudgetTag("Flights \$1", Colors.deepPurple.shade600),
+                _buildBudgetTag("Accommodation \$2", Colors.teal.shade600),
+                _buildBudgetTag("Food & Dining \$1", Colors.orange.shade700)
               ]),
             ],
           ),
@@ -271,11 +301,14 @@ class CreateTripManualContent extends StatelessWidget {
         _buildSectionTitle("TOTAL BUDGET (USD)"),
         _buildTextField("4000"),
         const SizedBox(height: 25),
-        _buildBudgetItem(Icons.flight, "Flights", "1", Colors.deepPurpleAccent),
-        _buildBudgetItem(Icons.hotel, "Accommodation", "2", Colors.teal),
-        _buildBudgetItem(Icons.restaurant, "Food & Dining", "1", Colors.orange),
         _buildBudgetItem(
-            Icons.confirmation_number, "Activities", "0", Colors.redAccent),
+            Icons.flight, "Flights", "1", Colors.deepPurple.shade600),
+        _buildBudgetItem(
+            Icons.hotel, "Accommodation", "2", Colors.teal.shade600),
+        _buildBudgetItem(
+            Icons.restaurant, "Food & Dining", "1", Colors.orange.shade700),
+        _buildBudgetItem(
+            Icons.confirmation_number, "Activities", "0", Colors.red.shade600),
         const SizedBox(height: 40),
         AppButton(label: "Review trip →", onTap: onNext),
         const SizedBox(height: 15),
@@ -283,13 +316,12 @@ class CreateTripManualContent extends StatelessWidget {
           label: "Back",
           onTap: onBack,
           isPrimary: false,
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D2D)),
         ),
       ],
     );
   }
 
-  // --- Step 5: Review ---
   Widget _buildStep5Review(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,14 +329,21 @@ class CreateTripManualContent extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(20)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                )
+              ]),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text("-",
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontSize: 24,
                       fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
@@ -325,14 +364,15 @@ class CreateTripManualContent extends StatelessWidget {
           Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                  color: const Color(0xFF1ABC9C).withOpacity(0.2),
+                  color: const Color(0xFF2D7132).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4)),
               child: const Text("1",
                   style: TextStyle(
-                      color: Color(0xFF1ABC9C), fontWeight: FontWeight.bold))),
+                      color: Color(0xFF2D7132), fontWeight: FontWeight.bold))),
           const SizedBox(width: 12),
           const Text("No activities planned",
-              style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic))
+              style: TextStyle(
+                  color: Color(0xFFB0B3C1), fontStyle: FontStyle.italic))
         ]),
         const SizedBox(height: 30),
         _buildTipBox(
@@ -344,20 +384,19 @@ class CreateTripManualContent extends StatelessWidget {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const ItineraryPage()));
           },
-          icon: Icon(Icons.check),
+          icon: const Icon(Icons.check, color: Colors.white),
         ),
         const SizedBox(height: 15),
         AppButton(
           label: "Back",
           onTap: onBack,
           isPrimary: false,
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D2D)),
         ),
       ],
     );
   }
 
-  // --- Helper Widgets ---
   Widget _buildStepper() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -379,8 +418,8 @@ class CreateTripManualContent extends StatelessWidget {
     bool isCompleted = currentStep > number;
     bool isActive = currentStep == number;
     Color color = (isCompleted || isActive)
-        ? const Color(0xFF1ABC9C)
-        : Colors.grey.shade700;
+        ? const Color(0xFF2D7132)
+        : const Color(0xFFE2E4EB);
     return Column(
       children: [
         Container(
@@ -393,14 +432,18 @@ class CreateTripManualContent extends StatelessWidget {
           child: Center(
               child: Text("$number",
                   style: TextStyle(
-                      color: isActive ? const Color(0xFF0B1423) : color,
+                      color: isActive
+                          ? Colors.white
+                          : (isCompleted ? color : const Color(0xFFB0B3C1)),
                       fontSize: 12,
                       fontWeight: FontWeight.bold))),
         ),
         const SizedBox(height: 8),
         Text(label,
             style: TextStyle(
-                color: (isCompleted || isActive) ? color : Colors.grey.shade600,
+                color: (isCompleted || isActive)
+                    ? const Color(0xFF1A1D2D)
+                    : const Color(0xFFB0B3C1),
                 fontSize: 11,
                 fontWeight: FontWeight.bold)),
       ],
@@ -411,30 +454,38 @@ class CreateTripManualContent extends StatelessWidget {
     bool isPassed = currentStep > stepAfter;
     return Expanded(
         child: Container(
-            height: 1,
-            color: isPassed ? const Color(0xFF1ABC9C) : Colors.grey.shade800,
+            height: 2,
+            color: isPassed ? const Color(0xFF2D7132) : const Color(0xFFE2E4EB),
             margin: const EdgeInsets.only(bottom: 20)));
   }
 
   Widget _buildSectionTitle(String title) => Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(title,
-          style: TextStyle(
-              color: Colors.grey.shade500,
+          style: const TextStyle(
+              color: Color(0xFF71768E),
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.1)));
 
   Widget _buildTextField(String hint, {int maxLines = 1}) => Container(
       decoration: BoxDecoration(
-          color: const Color(0xFF172234),
-          borderRadius: BorderRadius.circular(12)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            )
+          ]),
       child: TextField(
           maxLines: maxLines,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Color(0xFF1A1D2D)),
           decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              hintStyle:
+                  const TextStyle(color: Color(0xFFB0B3C1), fontSize: 14),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16))));
 
@@ -444,11 +495,11 @@ class CreateTripManualContent extends StatelessWidget {
         Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-                color: const Color(0xFF1ABC9C),
+                color: const Color(0xFF2D7132),
                 borderRadius: BorderRadius.circular(12)),
             child: const Text("+ Add",
                 style: TextStyle(
-                    color: Color(0xFF0B1423), fontWeight: FontWeight.bold)))
+                    color: Colors.white, fontWeight: FontWeight.bold)))
       ]);
 
   Widget _buildLegend(Color color, String label, {bool isOutline = false}) =>
@@ -461,26 +512,26 @@ class CreateTripManualContent extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: color))),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12))
+        Text(label,
+            style: const TextStyle(color: Color(0xFF71768E), fontSize: 12))
       ]);
 
   Widget _buildD1Icon() => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-          color: const Color(0xFF1ABC9C).withOpacity(0.2),
+          color: const Color(0xFF2D7132).withOpacity(0.1),
           borderRadius: BorderRadius.circular(4)),
       child: const Text("D1",
           style: TextStyle(
-              color: Color(0xFF1ABC9C), fontWeight: FontWeight.bold)));
+              color: Color(0xFF2D7132), fontWeight: FontWeight.bold)));
 
   Widget _buildAddButton() => Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-          color: const Color(0xFF1ABC9C),
+          color: const Color(0xFF2D7132),
           borderRadius: BorderRadius.circular(12)),
       child: const Text("Add",
-          style: TextStyle(
-              color: Color(0xFF0B1423), fontWeight: FontWeight.bold)));
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)));
 
   Widget _buildActivityChip(IconData icon, String label,
           {bool isSelected = false}) =>
@@ -488,31 +539,31 @@ class CreateTripManualContent extends StatelessWidget {
           margin: const EdgeInsets.only(right: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF1ABC9C).withOpacity(0.1)
-                  : Colors.transparent,
+              color: isSelected ? const Color(0xFF2D7132) : Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF1ABC9C)
-                      : Colors.grey.shade800)),
+                      ? Colors.transparent
+                      : const Color(0xFFE2E4EB))),
           child: Row(children: [
             Icon(icon,
                 size: 14,
-                color: isSelected ? const Color(0xFF1ABC9C) : Colors.grey),
+                color: isSelected ? Colors.white : const Color(0xFFB0B3C1)),
             const SizedBox(width: 6),
             Text(label,
                 style: TextStyle(
-                    color: isSelected ? const Color(0xFF1ABC9C) : Colors.grey,
-                    fontSize: 12))
+                    color: isSelected ? Colors.white : const Color(0xFF71768E),
+                    fontSize: 12,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal))
           ]));
 
   Widget _buildProgressBar() => ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: LinearProgressIndicator(
           value: 0.7,
-          backgroundColor: Colors.grey.shade800,
-          valueColor: const AlwaysStoppedAnimation(Color(0xFF1ABC9C)),
+          backgroundColor: const Color(0xFFF1F4FA),
+          valueColor: const AlwaysStoppedAnimation(Color(0xFF2D7132)),
           minHeight: 4));
 
   Widget _buildBudgetItem(
@@ -521,13 +572,20 @@ class CreateTripManualContent extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(16)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ]),
           child: Row(children: [
             Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
+                    color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12)),
                 child: Icon(icon, color: color, size: 20)),
             const SizedBox(width: 15),
@@ -537,9 +595,10 @@ class CreateTripManualContent extends StatelessWidget {
                     children: [
                   Text(title,
                       style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
+                          color: Color(0xFF1A1D2D),
+                          fontWeight: FontWeight.bold)),
                   const Text("Notes...",
-                      style: TextStyle(color: Colors.grey, fontSize: 12))
+                      style: TextStyle(color: Color(0xFFB0B3C1), fontSize: 12))
                 ])),
             Text(value,
                 style: TextStyle(
@@ -549,32 +608,36 @@ class CreateTripManualContent extends StatelessWidget {
   Widget _buildTipBox(String text) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: const Color(0xFF1ABC9C).withOpacity(0.1),
+          color: const Color(0xFF2D7132).withOpacity(0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF1ABC9C).withOpacity(0.3))),
+          border: Border.all(color: const Color(0xFF2D7132).withOpacity(0.1))),
       child: Row(children: [
-        const Icon(Icons.auto_awesome, color: Color(0xFF1ABC9C), size: 18),
+        const Icon(Icons.auto_awesome, color: Color(0xFF2D7132), size: 18),
         const SizedBox(width: 12),
         Expanded(
             child: Text(text,
-                style: const TextStyle(color: Colors.white, fontSize: 12)))
+                style: const TextStyle(color: Color(0xFF71768E), fontSize: 12)))
       ]));
 
   Widget _buildSummaryTag(IconData icon, String label) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-          color: const Color(0xFF0B1423).withOpacity(0.5),
+          color: const Color(0xFFF1F4FA),
           borderRadius: BorderRadius.circular(8)),
       child: Row(children: [
-        Icon(icon, color: Colors.grey, size: 14),
+        Icon(icon, color: const Color(0xFFB0B3C1), size: 14),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12))
+        Text(label,
+            style: const TextStyle(
+                color: Color(0xFF71768E),
+                fontSize: 12,
+                fontWeight: FontWeight.bold))
       ]));
 
   Widget _buildBudgetTag(String label, Color color) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
+          color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12)),
       child: Text(label,
           style: TextStyle(
@@ -590,6 +653,6 @@ class CreateTripManualContent extends StatelessWidget {
           child: Text("${i + 1 > 30 ? '' : i + 1}",
               style: TextStyle(
                   color: (i == 0 || i == 1)
-                      ? const Color(0xFF1ABC9C)
-                      : Colors.white))));
+                      ? const Color(0xFF2D7132)
+                      : const Color(0xFF1A1D2D)))));
 }

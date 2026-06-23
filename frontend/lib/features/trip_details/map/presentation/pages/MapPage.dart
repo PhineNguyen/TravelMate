@@ -6,7 +6,7 @@ class MapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -24,21 +24,21 @@ class MapPage extends StatelessWidget {
                 fromTo: "Osaka → Kyoto",
                 subTitle: "Shinkansen bullet train · 15 min",
                 distance: "15 km",
-                color: const Color(0xFF1ABC9C),
+                color: const Color(0xFF2D7132),
               ),
               _buildSegmentCard(
                 icon: Icons.train_rounded,
                 fromTo: "Kyoto → Mt. Fuji",
                 subTitle: "JR Limited Express · 2h 20min",
                 distance: "340 km",
-                color: Colors.blueAccent,
+                color: Colors.blue.shade700,
               ),
               _buildSegmentCard(
                 icon: Icons.train_rounded,
                 fromTo: "Mt. Fuji → Tokyo",
                 subTitle: "Limited Express Fujisan · 2h 5min",
                 distance: "105 km",
-                color: Colors.purpleAccent,
+                color: Colors.purple.shade700,
               ),
               const SizedBox(height: 30),
               _buildNavigationButton(),
@@ -57,11 +57,18 @@ class MapPage extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF172234),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade800),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+            child: const Icon(Icons.arrow_back,
+                color: Color(0xFF1A1D2D), size: 20),
           ),
         ),
         const SizedBox(width: 15),
@@ -70,26 +77,25 @@ class MapPage extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Color(0xFF1A1D2D),
           ),
         ),
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF1ABC9C).withOpacity(0.1),
+            color: const Color(0xFF2D7132).withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF1ABC9C).withOpacity(0.3)),
           ),
           child: const Row(
             children: [
               Icon(Icons.check_circle_rounded,
-                  color: Color(0xFF1ABC9C), size: 16),
+                  color: Color(0xFF2D7132), size: 16),
               SizedBox(width: 6),
               Text(
                 "Optimised",
                 style: TextStyle(
-                  color: Color(0xFF1ABC9C),
+                  color: Color(0xFF2D7132),
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -106,17 +112,17 @@ class MapPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade500,
+                color: Color(0xFF71768E),
                 letterSpacing: 1.2)),
         Text(
           actionText,
           style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1ABC9C)),
+              color: Color(0xFF2D7132)),
         ),
       ],
     );
@@ -127,12 +133,11 @@ class MapPage extends StatelessWidget {
       height: 340,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.grey.shade800, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -144,10 +149,10 @@ class MapPage extends StatelessWidget {
           children: [
             CustomPaint(size: Size.infinite, painter: GridPainter()),
             CustomPaint(size: Size.infinite, painter: DashLinePainter()),
-            _buildMapMarker(220, 40, "Osaka", const Color(0xFF1ABC9C)),
-            _buildMapMarker(150, 110, "Kyoto", Colors.orangeAccent),
-            _buildMapMarker(90, 180, "Mt. Fuji", Colors.purpleAccent),
-            _buildMapMarker(40, 250, "Tokyo ★", Colors.blueAccent),
+            _buildMapMarker(220, 40, "Osaka", const Color(0xFF2D7132)),
+            _buildMapMarker(150, 110, "Kyoto", Colors.orange.shade700),
+            _buildMapMarker(90, 180, "Mt. Fuji", Colors.purple.shade700),
+            _buildMapMarker(40, 250, "Tokyo ★", Colors.blue.shade700),
             Positioned(
               bottom: 20,
               right: 20,
@@ -155,9 +160,8 @@ class MapPage extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0B1423),
+                  color: const Color(0xFF1A1D2D),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade800),
                 ),
                 child: const Text(
                   "Save 4h 20min",
@@ -184,15 +188,18 @@ class MapPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF0B1423),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: color.withOpacity(0.5)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 5,
+                )
+              ],
             ),
             child: Text(label,
-                style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
+                style: TextStyle(
+                    fontSize: 10, fontWeight: FontWeight.bold, color: color)),
           ),
         ],
       ),
@@ -210,9 +217,15 @@ class MapPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -220,9 +233,8 @@ class MapPage extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withOpacity(0.3)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
@@ -236,12 +248,13 @@ class MapPage extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                      color: Color(0xFF1A1D2D)),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subTitle,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  style:
+                      const TextStyle(color: Color(0xFF71768E), fontSize: 13),
                 ),
               ],
             ),
@@ -263,11 +276,11 @@ class MapPage extends StatelessWidget {
         width: double.infinity,
         height: 58,
         decoration: BoxDecoration(
-          color: const Color(0xFF1ABC9C),
+          color: const Color(0xFF2D7132),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1ABC9C).withOpacity(0.2),
+              color: const Color(0xFF2D7132).withOpacity(0.2),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -277,13 +290,12 @@ class MapPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.navigation_rounded,
-                  size: 22, color: Color(0xFF0B1423)),
+              Icon(Icons.navigation_rounded, size: 22, color: Colors.white),
               SizedBox(width: 12),
               Text(
                 "Start Navigation",
                 style: TextStyle(
-                  color: Color(0xFF0B1423),
+                  color: Colors.white,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
@@ -300,7 +312,7 @@ class GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+      ..color = Colors.black.withOpacity(0.05)
       ..strokeWidth = 1.0;
     const double step = 40.0;
     for (double i = 0; i < size.width; i += step) {
@@ -319,7 +331,7 @@ class DashLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF1ABC9C)
+      ..color = const Color(0xFF2D7132)
       ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
 

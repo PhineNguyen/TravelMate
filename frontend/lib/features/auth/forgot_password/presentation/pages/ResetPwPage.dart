@@ -57,7 +57,7 @@ class _ResetPwPageState extends State<ResetPwPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF3F5F9),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -95,7 +95,7 @@ class _ResetPwPageState extends State<ResetPwPage>
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Color(0xFF1A1D2D),
             letterSpacing: -0.5,
           ),
         ),
@@ -127,19 +127,20 @@ class _ResetPwPageState extends State<ResetPwPage>
   }
 
   Widget _buildTextContent() {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Forgot your password?",
           style: TextStyle(
-              fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D2D)),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           "Enter your registered email and we'll send you instructions to reset your password. Link expires in 30 minutes.",
-          style:
-              TextStyle(fontSize: 16, color: Colors.grey.shade500, height: 1.5),
+          style: TextStyle(fontSize: 16, color: Color(0xFF71768E), height: 1.5),
         ),
       ],
     );
@@ -149,13 +150,13 @@ class _ResetPwPageState extends State<ResetPwPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
+        const Padding(
+          padding: EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             "EMAIL ADDRESS",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade500,
+              color: Color(0xFF71768E),
               fontSize: 12,
               letterSpacing: 1.1,
             ),
@@ -163,18 +164,24 @@ class _ResetPwPageState extends State<ResetPwPage>
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF172234),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade800),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: TextFormField(
             keyboardType: TextInputType.emailAddress,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
+            style: const TextStyle(color: Color(0xFF1A1D2D)),
+            decoration: const InputDecoration(
               hintText: "example@email.com",
-              hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              hintStyle: TextStyle(color: Color(0xFFB0B3C1), fontSize: 14),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(18),
+              contentPadding: EdgeInsets.all(18),
             ),
           ),
         ),
@@ -206,11 +213,17 @@ class _ResetPwPageState extends State<ResetPwPage>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF172234),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade800),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Icon(icon, color: Colors.white, size: 20),
+        child: Icon(icon, color: const Color(0xFF1A1D2D), size: 20),
       ),
     );
   }
@@ -222,15 +235,13 @@ class _ResetPwPageState extends State<ResetPwPage>
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: const Color(0xFF172234),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-              color: const Color(0xFF1ABC9C).withOpacity(0.1), width: 2),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1ABC9C).withOpacity(0.05),
-              blurRadius: 40,
-              spreadRadius: 5,
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
             ),
           ],
         ),

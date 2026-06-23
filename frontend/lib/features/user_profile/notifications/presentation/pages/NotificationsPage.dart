@@ -14,7 +14,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
@@ -33,7 +33,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     description:
                         "Heavy rain (120mm) expected Apr 16–17 in Kyoto. AI has rescheduled 3 outdoor activities.",
                     time: "2 hours ago",
-                    color: Colors.redAccent,
+                    color: const Color(0xFFD32F2F),
                     isUnread: true,
                   ),
                   _buildNotificationCard(
@@ -42,7 +42,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     description:
                         "Actual spending has reached 90% of your configured budget (\$4,200).",
                     time: "5 hours ago",
-                    color: Colors.orangeAccent,
+                    color: Colors.orange.shade700,
                     isUnread: true,
                   ),
                   _buildNotificationCard(
@@ -51,7 +51,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     description:
                         "Sarah Kim joined Japan Discovery as a collaborator.",
                     time: "Yesterday, 14:22",
-                    color: const Color(0xFF1ABC9C),
+                    color: const Color(0xFF2D7132),
                     isUnread: true,
                   ),
                   _buildNotificationCard(
@@ -60,7 +60,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     description:
                         "Your 22-day Japan Discovery itinerary has been generated successfully.",
                     time: "2 days ago",
-                    color: Colors.purpleAccent,
+                    color: Colors.purple.shade700,
                     isUnread: false,
                   ),
                   _buildNotificationCard(
@@ -69,7 +69,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     description:
                         "Your Japan route was optimised. You'll save approximately 4h 20min of travel time.",
                     time: "3 days ago",
-                    color: const Color(0xFF1ABC9C),
+                    color: const Color(0xFF2D7132),
                     isUnread: false,
                   ),
                   const SizedBox(height: 30),
@@ -91,7 +91,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+            icon: const Icon(Icons.arrow_back,
+                color: Color(0xFF1A1D2D), size: 24),
           ),
           const SizedBox(width: 8),
           const Text(
@@ -99,22 +100,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF1A1D2D),
             ),
           ),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF1ABC9C).withOpacity(0.15),
+              color: const Color(0xFF2D7132).withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
-              border:
-                  Border.all(color: const Color(0xFF1ABC9C).withOpacity(0.3)),
             ),
             child: const Text(
               "3 unread",
               style: TextStyle(
-                color: Color(0xFF1ABC9C),
+                color: Color(0xFF2D7132),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -142,20 +141,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isActive
-                      ? const Color(0xFF1ABC9C)
-                      : const Color(0xFF172234),
+                  color: isActive ? const Color(0xFF2D7132) : Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color:
-                          isActive ? Colors.transparent : Colors.grey.shade800),
+                  boxShadow: isActive
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                 ),
                 child: Text(
                   _tabs[index],
                   style: TextStyle(
-                    color: isActive
-                        ? const Color(0xFF0B1423)
-                        : Colors.grey.shade500,
+                    color: isActive ? Colors.white : const Color(0xFF71768E),
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -179,15 +180,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isUnread ? color.withOpacity(0.3) : Colors.grey.shade800,
-          width: 1.5,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         child: IntrinsicHeight(
           child: Row(
             children: [
@@ -207,7 +211,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         decoration: BoxDecoration(
                           color: color.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: color.withOpacity(0.2)),
                         ),
                         child: Icon(icon, color: color, size: 22),
                       ),
@@ -225,7 +228,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: Color(0xFF1A1D2D),
                                     ),
                                   ),
                                 ),
@@ -243,23 +246,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             const SizedBox(height: 8),
                             Text(
                               description,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade400,
+                                color: Color(0xFF71768E),
                                 height: 1.5,
                               ),
                             ),
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                Icon(Icons.access_time_rounded,
-                                    size: 14, color: Colors.grey.shade600),
+                                const Icon(Icons.access_time_rounded,
+                                    size: 14, color: Color(0xFFB0B3C1)),
                                 const SizedBox(width: 6),
                                 Text(
                                   time,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 11,
-                                    color: Colors.grey.shade600,
+                                    color: Color(0xFFB0B3C1),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -286,19 +289,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF0B1423),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade800),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.done_all_rounded, color: Color(0xFF1ABC9C), size: 20),
+            Icon(Icons.done_all_rounded, color: Color(0xFF2D7132), size: 20),
             SizedBox(width: 10),
             Text(
               "Mark all as read",
               style: TextStyle(
-                color: Colors.white,
+                color: Color(0xFF1A1D2D),
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),

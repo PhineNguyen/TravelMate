@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/widgets/loading_screen.dart';
+import 'package:frontend/features/trip_details/trip_detail/presentation/pages/TripDetailPage.dart';
 
 import '../../../../../core/widgets/app_button.dart';
 import '../../../../../core/widgets/app_header.dart';
@@ -37,6 +39,30 @@ class _CreateTripPageState extends State<CreateTripPage> {
     super.dispose();
   }
 
+  void _handleGenerateAI() async {
+    // Show Loading Screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LoadingScreen(
+          message: "TravelMate AI is crafting your perfect itinerary...",
+        ),
+      ),
+    );
+
+    // Simulate AI generation time
+    await Future.delayed(const Duration(seconds: 3));
+
+    if (!mounted) return;
+
+    // Pop loading screen and push Trip Detail
+    Navigator.pop(context);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const TripDetailPage()),
+    );
+  }
+
   void _nextManualStep() {
     if (_manualStep < 5) setState(() => _manualStep++);
   }
@@ -58,12 +84,12 @@ class _CreateTripPageState extends State<CreateTripPage> {
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF1ABC9C),
-              onPrimary: Color(0xFF0B1423),
-              surface: Color(0xFF172234),
-              onSurface: Colors.white,
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF2D7132),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Color(0xFF1A1D2D),
             ),
           ),
           child: child!,
@@ -72,10 +98,11 @@ class _CreateTripPageState extends State<CreateTripPage> {
     );
     if (picked != null) {
       setState(() {
-        if (isDeparture)
+        if (isDeparture) {
           _departureDate = picked;
-        else
+        } else {
           _returnDate = picked;
+        }
       });
     }
   }
@@ -105,7 +132,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
         _selectedMode == "Manual" ? "Plan your trip" : "Create new trip";
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
@@ -115,7 +142,8 @@ class _CreateTripPageState extends State<CreateTripPage> {
                 title: headerTitle,
                 trailing: PopupMenuButton<String>(
                   offset: const Offset(0, 50),
-                  color: const Color(0xFF172234),
+                  color: Colors.white,
+                  surfaceTintColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                   onSelected: (value) {},
@@ -127,12 +155,18 @@ class _CreateTripPageState extends State<CreateTripPage> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF172234),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade800),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Icon(Icons.tune_rounded,
-                        color: Colors.white, size: 20),
+                        color: Color(0xFF1A1D2D), size: 20),
                   ),
                 ),
               ),
@@ -168,10 +202,10 @@ class _CreateTripPageState extends State<CreateTripPage> {
       value: label,
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 18),
+          Icon(icon, color: const Color(0xFF1A1D2D), size: 18),
           const SizedBox(width: 12),
           Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 14)),
+              style: const TextStyle(color: Color(0xFF1A1D2D), fontSize: 14)),
         ],
       ),
     );
@@ -248,10 +282,11 @@ class _CreateTripPageState extends State<CreateTripPage> {
         const SizedBox(height: 40),
         AppButton(
           label: "Generate AI itinerary",
-          icon: Icon(
+          icon: const Icon(
             Icons.auto_awesome,
+            color: Colors.white,
           ),
-          onTap: () {},
+          onTap: _handleGenerateAI,
         ),
         const SizedBox(height: 30),
       ],
@@ -262,9 +297,9 @@ class _CreateTripPageState extends State<CreateTripPage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1ABC9C).withOpacity(0.1),
+        color: const Color(0xFF2D7132).withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF1ABC9C).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF2D7132).withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,17 +307,17 @@ class _CreateTripPageState extends State<CreateTripPage> {
           Row(
             children: [
               const Icon(Icons.auto_awesome,
-                  color: Color(0xFF1ABC9C), size: 18),
+                  color: Color(0xFF2D7132), size: 18),
               const SizedBox(width: 10),
               Text(title,
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Color(0xFF1ABC9C))),
+                      fontWeight: FontWeight.bold, color: Color(0xFF2D7132))),
             ],
           ),
           const SizedBox(height: 10),
           Text(content,
-              style: TextStyle(
-                  fontSize: 13, color: Colors.grey.shade400, height: 1.5)),
+              style: const TextStyle(
+                  fontSize: 13, color: Color(0xFF71768E), height: 1.5)),
         ],
       ),
     );
@@ -292,10 +327,10 @@ class _CreateTripPageState extends State<CreateTripPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10, left: 4),
       child: Text(text,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade500,
+              color: Color(0xFF71768E),
               letterSpacing: 1.1)),
     );
   }
@@ -303,15 +338,22 @@ class _CreateTripPageState extends State<CreateTripPage> {
   Widget _buildCustomTextField({required String hint, int maxLines = 1}) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextFormField(
         maxLines: maxLines,
-        style: const TextStyle(fontSize: 15, color: Colors.white),
+        style: const TextStyle(fontSize: 15, color: Color(0xFF1A1D2D)),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+          hintStyle: const TextStyle(color: Color(0xFFB0B3C1), fontSize: 15),
           contentPadding: const EdgeInsets.all(18),
           border: InputBorder.none,
         ),
@@ -327,18 +369,27 @@ class _CreateTripPageState extends State<CreateTripPage> {
         height: 58,
         padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF172234),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today_rounded,
-                size: 18, color: Colors.grey.shade500),
+            const Icon(Icons.calendar_today_rounded,
+                size: 18, color: Color(0xFFB0B3C1)),
             const SizedBox(width: 12),
             Text(
               date != null ? _formatDate(date) : hint,
               style: TextStyle(
-                  color: date != null ? Colors.white : Colors.grey.shade600,
+                  color: date != null
+                      ? const Color(0xFF1A1D2D)
+                      : const Color(0xFFB0B3C1),
                   fontSize: 15),
             ),
           ],
@@ -351,8 +402,15 @@ class _CreateTripPageState extends State<CreateTripPage> {
     return Container(
       height: 58,
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -367,8 +425,8 @@ class _CreateTripPageState extends State<CreateTripPage> {
             },
             icon: Icon(Icons.remove_circle_outline,
                 color: _travellerCount > 1
-                    ? const Color(0xFF1ABC9C)
-                    : Colors.grey.shade700),
+                    ? const Color(0xFF2D7132)
+                    : const Color(0xFFE2E4EB)),
           ),
           Expanded(
             child: TextFormField(
@@ -378,7 +436,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
               style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  color: Colors.white),
+                  color: Color(0xFF1A1D2D)),
               decoration: const InputDecoration(border: InputBorder.none),
               onChanged: (value) {
                 int? val = int.tryParse(value);
@@ -394,7 +452,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
               });
             },
             icon:
-                const Icon(Icons.add_circle_outline, color: Color(0xFF1ABC9C)),
+                const Icon(Icons.add_circle_outline, color: Color(0xFF2D7132)),
           ),
         ],
       ),
@@ -422,20 +480,21 @@ class _CreateTripPageState extends State<CreateTripPage> {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF1ABC9C).withOpacity(0.1)
-                  : const Color(0xFF172234),
+              color: isSelected ? const Color(0xFF2D7132) : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color:
-                      isSelected ? const Color(0xFF1ABC9C) : Colors.transparent,
-                  width: 1.5),
+              boxShadow: isSelected
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: Text(style,
                 style: TextStyle(
-                    color: isSelected
-                        ? const Color(0xFF1ABC9C)
-                        : Colors.grey.shade400,
+                    color: isSelected ? Colors.white : const Color(0xFF71768E),
                     fontWeight:
                         isSelected ? FontWeight.bold : FontWeight.normal)),
           ),
@@ -454,7 +513,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
           child: Text("${_budget.round()}\$",
               style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1ABC9C),
+                  color: Color(0xFF2D7132),
                   fontSize: 16)),
         ),
       ],
@@ -465,10 +524,10 @@ class _CreateTripPageState extends State<CreateTripPage> {
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
         trackHeight: 4,
-        activeTrackColor: const Color(0xFF1ABC9C),
-        inactiveTrackColor: Colors.grey.shade800,
+        activeTrackColor: const Color(0xFF2D7132),
+        inactiveTrackColor: const Color(0xFFE2E4EB),
         thumbColor: Colors.white,
-        overlayColor: const Color(0xFF1ABC9C).withOpacity(0.2),
+        overlayColor: const Color(0xFF2D7132).withOpacity(0.1),
       ),
       child: Slider(
         value: _budget,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/widgets/confirmation_dialog.dart';
 import 'package:frontend/features/chat/presentation/pages/ChatPage.dart';
 import 'package:frontend/features/finance/budget/presentation/pages/BudgetPage.dart';
 import 'package:frontend/features/finance/expense/presentation/pages/AddExpensePage.dart';
@@ -9,10 +10,26 @@ import 'package:frontend/features/trip_details/share/presentation/pages/ShareTri
 class TripDetailPage extends StatelessWidget {
   const TripDetailPage({super.key});
 
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => ConfirmationDialog(
+        title: "Delete Trip",
+        message:
+            "Are you sure you want to delete 'Japan Discovery'? All your itinerary and budget data will be permanently removed.",
+        confirmLabel: "Delete",
+        isDestructive: true,
+        onConfirm: () {
+          Navigator.pop(context); // Go back after delete
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1423),
+      backgroundColor: const Color(0xFFF1F4FA),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -49,8 +66,8 @@ class TripDetailPage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF1ABC9C).withOpacity(0.15),
-            const Color(0xFF0B1423),
+            const Color(0xFF2D7132).withOpacity(0.1),
+            const Color(0xFFF1F4FA),
           ],
         ),
       ),
@@ -69,25 +86,36 @@ class TripDetailPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   PopupMenuButton<String>(
                     offset: const Offset(0, 50),
-                    color: const Color(0xFF172234),
+                    color: Colors.white,
+                    surfaceTintColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
-                    onSelected: (value) {},
+                    onSelected: (value) {
+                      if (value == "delete") {
+                        _showDeleteConfirmation(context);
+                      }
+                    },
                     itemBuilder: (context) => [
                       _buildPopupItem(Icons.edit_outlined, "Edit trip"),
                       _buildPopupItem(Icons.copy_outlined, "Duplicate"),
                       _buildPopupItem(Icons.delete_outline, "Delete trip",
-                          isDestructive: true),
+                          isDestructive: true, value: "delete"),
                     ],
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF172234),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade800),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: const Icon(Icons.more_horiz,
-                          color: Colors.white, size: 20),
+                          color: Color(0xFF1A1D2D), size: 20),
                     ),
                   ),
                 ],
@@ -97,20 +125,18 @@ class TripDetailPage extends StatelessWidget {
           const SizedBox(height: 30),
           Row(
             children: [
-              _buildBadge(
-                  "Active", const Color(0xFF1ABC9C), const Color(0xFF0B1423)),
+              _buildBadge("Active", const Color(0xFF2D7132), Colors.white),
               const SizedBox(width: 10),
-              _buildBadge(
-                  "Day 8 of 22", const Color(0xFF172234), Colors.grey.shade400),
+              _buildBadge("Day 8 of 22", Colors.white, const Color(0xFF71768E)),
             ],
           ),
           const SizedBox(height: 20),
-          Text(
+          const Text(
             "JAPAN DISCOVERY 2025",
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade500,
+              color: Color(0xFF71768E),
               letterSpacing: 1.5,
             ),
           ),
@@ -120,7 +146,7 @@ class TripDetailPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF1A1D2D),
             ),
           ),
         ],
@@ -129,18 +155,21 @@ class TripDetailPage extends StatelessWidget {
   }
 
   PopupMenuItem<String> _buildPopupItem(IconData icon, String label,
-      {bool isDestructive = false}) {
+      {bool isDestructive = false, String? value}) {
     return PopupMenuItem(
-      //Burger list
-      value: label,
+      value: value,
       child: Row(
         children: [
           Icon(icon,
-              color: isDestructive ? Colors.redAccent : Colors.white, size: 18),
+              color:
+                  isDestructive ? Colors.red.shade600 : const Color(0xFF1A1D2D),
+              size: 18),
           const SizedBox(width: 12),
           Text(label,
               style: TextStyle(
-                  color: isDestructive ? Colors.redAccent : Colors.white,
+                  color: isDestructive
+                      ? Colors.red.shade600
+                      : const Color(0xFF1A1D2D),
                   fontSize: 14)),
         ],
       ),
@@ -153,11 +182,17 @@ class TripDetailPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF172234),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade800),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Icon(icon, color: Colors.white, size: 20),
+        child: Icon(icon, color: const Color(0xFF1A1D2D), size: 20),
       ),
     );
   }
@@ -168,6 +203,15 @@ class TripDetailPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(10),
+        boxShadow: bgColor == Colors.white
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                )
+              ]
+            : null,
       ),
       child: Text(
         text,
@@ -185,23 +229,23 @@ class TripDetailPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildActionItem(
-            Icons.list_alt_rounded, "Itinerary", const Color(0xFF1ABC9C), () {
+            Icons.list_alt_rounded, "Itinerary", const Color(0xFF2D7132), () {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => const ItineraryPage()));
         }),
-        _buildActionItem(
-            Icons.account_balance_wallet_outlined, "Budget", Colors.tealAccent,
-            () {
+        _buildActionItem(Icons.account_balance_wallet_outlined, "Budget",
+            const Color(0xFF009688), () {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => const BudgetPage()));
         }),
-        _buildActionItem(Icons.map_outlined, "Map", Colors.deepPurpleAccent,
+        _buildActionItem(Icons.map_outlined, "Map", const Color(0xFF673AB7),
             () {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => const MapPage()));
         }),
         _buildActionItem(
-            Icons.chat_bubble_outline_rounded, "Chat", Colors.orangeAccent, () {
+            Icons.chat_bubble_outline_rounded, "Chat", const Color(0xFFD84315),
+            () {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => const ChatPage()));
         }),
@@ -217,18 +261,31 @@ class TripDetailPage extends StatelessWidget {
         Material(
           color: Colors.transparent,
           child: Ink(
-            width: 80,
-            height: 64,
+            width: 75,
+            height: 75,
             decoration: BoxDecoration(
-              color: const Color(0xFF172234),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.grey.shade800),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: InkWell(
               onTap: ontap,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(20),
               child: Center(
-                child: Icon(icon, color: color, size: 28),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 24),
+                ),
               ),
             ),
           ),
@@ -236,7 +293,7 @@ class TripDetailPage extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+          style: const TextStyle(fontSize: 12, color: Color(0xFF71768E)),
         ),
       ],
     );
@@ -246,9 +303,15 @@ class TripDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -256,8 +319,8 @@ class TripDetailPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildSectionLabel("TRIP INFO"),
-              _buildBadge("PLANNED", const Color(0xFF1ABC9C).withOpacity(0.15),
-                  const Color(0xFF1ABC9C)),
+              _buildBadge("PLANNED", const Color(0xFF2D7132).withOpacity(0.1),
+                  const Color(0xFF2D7132)),
             ],
           ),
           const SizedBox(height: 25),
@@ -286,20 +349,20 @@ class TripDetailPage extends StatelessWidget {
     return Expanded(
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey.shade600),
+          Icon(icon, size: 20, color: const Color(0xFFB0B3C1)),
           const SizedBox(width: 12),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(title,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 10,
-                    color: Colors.grey.shade500,
+                    color: Color(0xFF71768E),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5)),
             const SizedBox(height: 2),
             Text(value,
                 style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF1A1D2D),
                     fontSize: 14)),
           ]),
         ],
@@ -311,9 +374,15 @@ class TripDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -331,9 +400,9 @@ class TripDetailPage extends StatelessWidget {
           const SizedBox(height: 15),
           Row(
             children: [
-              _buildAvatar("AJ", const Color(0xFF1ABC9C)),
+              _buildAvatar("AJ", const Color(0xFF2D7132)),
               const SizedBox(width: 10),
-              _buildAvatar("SK", Colors.deepPurpleAccent),
+              _buildAvatar("SK", const Color(0xFF673AB7)),
               const SizedBox(width: 10),
               GestureDetector(
                 onTap: () {},
@@ -341,16 +410,16 @@ class TripDetailPage extends StatelessWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0B1423),
+                    color: const Color(0xFFF1F4FA),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade800),
                   ),
-                  child: const Icon(Icons.add, color: Colors.grey, size: 20),
+                  child:
+                      const Icon(Icons.add, color: Color(0xFF71768E), size: 20),
                 ),
               ),
               const SizedBox(width: 15),
-              Text("2 members",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
+              const Text("2 members",
+                  style: TextStyle(color: Color(0xFF71768E), fontSize: 13)),
             ],
           ),
         ],
@@ -366,7 +435,7 @@ class TripDetailPage extends StatelessWidget {
       child: Center(
         child: Text(text,
             style: const TextStyle(
-                color: Color(0xFF0B1423),
+                color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.bold)),
       ),
@@ -377,9 +446,15 @@ class TripDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF172234),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade800),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,11 +473,11 @@ class TripDetailPage extends StatelessWidget {
             children: [
               const Text("Spent \$1,842",
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontSize: 14,
                       fontWeight: FontWeight.bold)),
-              Text("44% of \$4,200",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+              const Text("44% of \$4,200",
+                  style: TextStyle(color: Color(0xFF71768E), fontSize: 12)),
             ],
           ),
           const SizedBox(height: 12),
@@ -411,8 +486,8 @@ class TripDetailPage extends StatelessWidget {
             child: const LinearProgressIndicator(
               value: 0.44,
               minHeight: 10,
-              backgroundColor: Color(0xFF0B1423),
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1ABC9C)),
+              backgroundColor: Color(0xFFF1F4FA),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2D7132)),
             ),
           ),
           const SizedBox(height: 25),
@@ -422,15 +497,14 @@ class TripDetailPage extends StatelessWidget {
               width: double.infinity,
               height: 54,
               decoration: BoxDecoration(
-                color: const Color(0xFF0B1423),
+                color: const Color(0xFFF1F4FA),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade800),
               ),
               child: const Center(
                 child: Text(
                   "Full budget tracker",
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontWeight: FontWeight.bold,
                       fontSize: 14),
                 ),
@@ -445,10 +519,10 @@ class TripDetailPage extends StatelessWidget {
   Widget _buildSectionLabel(String text) {
     return Text(
       text,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.bold,
-        color: Colors.grey.shade500,
+        color: Color(0xFF71768E),
         letterSpacing: 1.2,
       ),
     );
@@ -460,14 +534,14 @@ class TripDetailPage extends StatelessWidget {
           ? () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => page!,
+                  builder: (context) => page,
                 ),
               )
           : null,
       child: Text(
         title,
         style: const TextStyle(
-          color: Color(0xFF1ABC9C),
+          color: Color(0xFF2D7132),
           fontWeight: FontWeight.bold,
           fontSize: 13,
         ),
@@ -479,15 +553,14 @@ class TripDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.redAccent.withOpacity(0.05),
+        color: const Color(0xFFFDE8E8),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.warning_amber_rounded,
-              color: Colors.redAccent, size: 24),
+              color: Color(0xFFD32F2F), size: 24),
           const SizedBox(width: 15),
           Expanded(
             child: Column(
@@ -496,15 +569,15 @@ class TripDetailPage extends StatelessWidget {
                 const Text(
                   "Heavy rain — Apr 16–17",
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1A1D2D),
                       fontWeight: FontWeight.bold,
                       fontSize: 15),
                 ),
                 const SizedBox(height: 6),
                 RichText(
                   text: TextSpan(
-                    style: TextStyle(
-                        color: Colors.grey.shade500, fontSize: 13, height: 1.4),
+                    style: const TextStyle(
+                        color: Color(0xFF71768E), fontSize: 13, height: 1.4),
                     children: [
                       const TextSpan(
                           text: "AI rescheduled 3 outdoor activities. "),
@@ -515,7 +588,7 @@ class TripDetailPage extends StatelessWidget {
                           child: const Text(
                             "See forecast →",
                             style: TextStyle(
-                                color: Color(0xFF1ABC9C),
+                                color: Color(0xFF2D7132),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13),
                           ),
