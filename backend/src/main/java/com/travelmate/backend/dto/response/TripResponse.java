@@ -20,12 +20,15 @@ public class TripResponse {
     private String destination;
     private LocalDate startDate;
     private Integer duration;
+    private Integer travelerCount;
     private BigDecimal totalBudget;
     private PlanningMode planningMode;
     private Long templateId;
     private Boolean isCustomized;
     private TripStatus tripStatus;
     private String inviteCode;
+    private Boolean isDeleted;
+    private LocalDateTime deleteAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

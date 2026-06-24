@@ -46,6 +46,9 @@ public class Trip {
     @Column(name = "duration", nullable = false)
     private Integer duration;
 
+    @Column(name = "traveler_count", nullable = false)
+    private Integer travelerCount;
+
     @Column(name = "total_budget", precision = 12, scale = 2)
     private BigDecimal totalBudget;
 

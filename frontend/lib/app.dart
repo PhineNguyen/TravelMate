@@ -12,14 +12,12 @@ class TravelMateApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.light,
         scaffoldBackgroundColor: const Color(0xFFF3F5F9),
-        // Thống nhất mã màu xanh lục chủ đạo toàn hệ thống
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF6BB04D),
           primary: const Color(0xFF6BB04D),
           surface: Colors.white,
           background: const Color(0xFFF3F5F9),
         ),
-        // Cấu hình font chữ mặc định (Yêu cầu cài đặt Google Fonts Inter)
         fontFamily: 'Inter',
         textTheme: const TextTheme(
           displayLarge:

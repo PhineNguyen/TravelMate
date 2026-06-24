@@ -13,6 +13,7 @@ public class TripMapper {
                 .destination(e.getDestination())
                 .startDate(e.getStartDate())
                 .duration(e.getDuration())
+                .travelerCount(e.getTravelerCount())
                 .totalBudget(e.getTotalBudget())
                 .planningMode(e.getPlanningMode())
                 .templateId(e.getTemplate() != null ? e.getTemplate().getId() : null)
