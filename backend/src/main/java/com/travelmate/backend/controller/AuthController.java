@@ -9,6 +9,8 @@ import com.travelmate.backend.dto.request.PasswordResetRequest;
 import com.travelmate.backend.dto.response.AuthResponse;
 import com.travelmate.backend.dto.response.PasswordResetResponse;
 import com.travelmate.backend.service.AuthService;
+
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
 
+    @Transactional
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));

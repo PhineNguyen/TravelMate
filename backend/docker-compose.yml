@@ -28,6 +28,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      SERVER_PORT: 8080
       SPRING_SECURITY_USER_NAME: admin
       SPRING_SECURITY_USER_PASSWORD: admin123
       SPRING_APPLICATION_NAME: travelmate-backend
@@ -37,6 +38,12 @@ services:
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: email_cua_ban@gmail.com
+      SPRING_MAIL_PASSWORD: app_password_lay_tu_gmail  
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
     ports:
       - "8080:8080"
     # Cấu hình dùng để tự động build lại backend khi bạn sửa code ở máy local (Development)
@@ -46,17 +53,17 @@ services:
           path: .
 
   # Thêm dịch vụ Watchtower để tự động cập nhật các image từ Docker Hub/Registry
-  watchtower:
-    image: containrrr/watchtower
-    container_name: travelmate-watchtower
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_INTERVAL=300 # Kiểm tra image mới mỗi 300 giây (5 phút)
-    # Nếu chỉ muốn watchtower cập nhật postgres, bỏ comment dòng dưới:
-    # command: travelmate-postgres
+  # watchtower:
+  #   image: containrrr/watchtower
+  #   container_name: travelmate-watchtower
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   environment:
+  #     - WATCHTOWER_CLEANUP=true
+  #     - WATCHTOWER_INTERVAL=300 # Kiểm tra image mới mỗi 300 giây (5 phút)
+  #   # Nếu chỉ muốn watchtower cập nhật postgres, bỏ comment dòng dưới:
+  #   # command: travelmate-postgres
 
 volumes:
-  postgres_data:
+  postgres_data: {}
