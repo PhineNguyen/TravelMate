@@ -16,6 +16,7 @@ class ActivitySchema(BaseModel):
     activity_type: str = Field(..., description="Phân loại hoạt động: Attraction, Restaurant, Accommodation, Activity")
     estimated_cost: float = Field(..., description="Chi phí dự kiến tại địa điểm này (VND)")
     description: str = Field(..., description="Mô tả tóm tắt trải nghiệm hoặc lưu ý từ AI")
+    google_maps_url: Optional[str] = Field(None, description="Đường dẫn Google Maps chính thức của địa điểm")
 
 class DayItinerarySchema(BaseModel):
     day: int = Field(..., description="Ngày thứ mấy của chuyến đi (1, 2, 3...)")
@@ -40,6 +41,7 @@ class PlaceSuggestionSchema(BaseModel):
     estimated_cost: float = Field(..., description="Chi phí dự kiến (VND)")
     description: str = Field(..., description="Review hoặc lý do AI gợi ý địa điểm này")
     activity_type: str = Field(..., description="Phân loại (Attraction, Restaurant...)")
+    google_maps_url: Optional[str] = Field(None, description="Đường dẫn Google Maps chính thức của địa điểm")
 
 class PlaceRecommendationResponse(BaseModel):
     recommendations: List[PlaceSuggestionSchema] = Field(..., description="Danh sách các địa điểm được gợi ý")
