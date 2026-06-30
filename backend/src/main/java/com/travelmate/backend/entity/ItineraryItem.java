@@ -53,6 +53,7 @@ public class ItineraryItem {
     @Column(name = "order_index", nullable = false)
     private Integer orderIndex;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "source_type", length = 100)
     private SourceType sourceType;
 

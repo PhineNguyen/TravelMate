@@ -23,7 +23,8 @@ public class AuthRegisterRequest {
 
     @NotBlank
     @Size(min = 8, max = 100)
-    @Pattern(regexp = ".*(?=.*[A-Z])(?=.*\\d).*$", message = "Password must contain at least 1 uppercase letter and 1 number")
+    // @Pattern(regexp = ".*(?=.*[A-Z])(?=.*\\d).*$", message = "Password must
+    // contain at least 1 uppercase letter and 1 number")
     private String password;
 
     private String avatarUrl;
