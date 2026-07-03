@@ -10,8 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -20,12 +18,26 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto));
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest userRequest) {
+        UserResponse createdUser = userService.create(userRequest);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserResponse>> list() {
-        return ResponseEntity.ok(userService.listAll());
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserRequest userRequest) {
+        UserResponse updatedUser = userService.update(id, userRequest);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.findById(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -21,7 +21,9 @@ public class UserRequest {
     private String avatarUrl;
 
     private Boolean active;
-
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String phoneNumber;
+    private String location;
+    private String plan;
+    @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 }

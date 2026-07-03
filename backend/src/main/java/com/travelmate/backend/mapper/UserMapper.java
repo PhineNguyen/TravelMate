@@ -1,31 +1,40 @@
 package com.travelmate.backend.mapper;
 
+import com.travelmate.backend.dto.request.AuthRegisterRequest;
 import com.travelmate.backend.dto.request.UserRequest;
 import com.travelmate.backend.dto.response.UserResponse;
 import com.travelmate.backend.entity.User;
 
-public class UserMapper {
-    public static User toEntity(UserRequest req) {
-        if (req == null)
-            return null;
-        User u = new User();
-        u.setFullName(req.getFullName());
-        u.setEmail(req.getEmail());
-        u.setAvatarUrl(req.getAvatarUrl());
-        if (req.getActive() != null)
-            u.setActive(req.getActive());
-        return u;
-    }
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-    public static UserResponse toResponse(User u) {
-        if (u == null)
-            return null;
-        return UserResponse.builder()
-                .id(u.getId())
-                .fullName(u.getFullName())
-                .email(u.getEmail())
-                .avatarUrl(u.getAvatarUrl())
-                .active(u.isActive())
-                .build();
+@Mapper(componentModel = "spring", // creating a spring bean (@component)
+        unmappedTargetPolicy = ReportingPolicy.IGNORE, // ignore warnings when execute
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE) // ignore null variables, do not
+                                                                                    // overwrite
+
+public abstract class UserMapper {
+    @Autowired
+    protected PasswordEncoder passwordEncoder;
+
+    @Mapping(target = "password", expression = "java(passwordEncoder.encode(req.getPassword()))")
+    @Mapping(target = "active", constant = "true")
+    public abstract User toUser(AuthRegisterRequest req);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "password", ignore = true) // Password must be handled separately in the service
+    public abstract User toUser(UserRequest request);
+
+    public abstract UserResponse toUserResponse(User user);
+
+    @Mapping(target = "password", ignore = true)
+    public abstract void updateUserFromRequest(UserRequest request, @MappingTarget User user);
+
+    @AfterMapping
+    protected void handlePasswordUpdate(UserRequest request, @MappingTarget User user) {
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
     }
 }

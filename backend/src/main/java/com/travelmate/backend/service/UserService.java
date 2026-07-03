@@ -7,7 +7,7 @@ import java.util.List;
 public interface UserService {
     UserResponse create(UserRequest dto);
 
-    UserResponse update(UserRequest dto);
+    UserResponse update(Long id, UserRequest userRequest);
 
     UserResponse findById(Long id);
 
