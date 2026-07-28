@@ -7,7 +7,7 @@ class GooglePlacesService:
 
     def search_places(self, query: str) -> str:
         """Tìm kiếm địa điểm thực tế trên Google Maps."""
-        if not self.api_key:
+        if not self.api_key or self.api_key.startswith("your_"):
             return ""
 
         url = "https://places.googleapis.com/v1/places:searchText"
