@@ -28,11 +28,23 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api/auth/**")
+                        // 1. Mở công khai Swagger UI & OpenAPI spec
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**")
                         .permitAll()
+
+                        // 2. Mở công khai API Auth (Hỗ trợ cả /api/auth/** và /api/v1/auth/**)
+                        .requestMatchers("/api/auth/**", "/api/v1/auth/**").permitAll()
+
+                        // 3. Mở endpoint xử lý lỗi mặc định của Spring
                         .requestMatchers("/error").permitAll()
+
+                        // 4. Các API còn lại bắt buộc có JWT Token
                         .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
                 .formLogin(form -> form.disable());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -26,7 +26,7 @@ public abstract class UserMapper {
     @Mapping(target = "password", ignore = true) // Password must be handled separately in the service
     public abstract User toUser(UserRequest request);
 
-    public abstract UserResponse toUserResponse(User user);
+    public abstract UserResponse toResponse(User user);
 
     @Mapping(target = "password", ignore = true)
     public abstract void updateUserFromRequest(UserRequest request, @MappingTarget User user);

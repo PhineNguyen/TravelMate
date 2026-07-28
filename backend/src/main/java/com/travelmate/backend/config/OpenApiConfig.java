@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme; // <-- NEW IMPORT
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 public class OpenApiConfig {
@@ -36,5 +37,10 @@ public class OpenApiConfig {
                                 .group("public")
                                 .packagesToScan("com.travelmate.backend.controller")
                                 .build();
+        }
+
+        @Bean
+        public RestClient restClient() {
+                return RestClient.create();
         }
 }

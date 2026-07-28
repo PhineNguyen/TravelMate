@@ -8,13 +8,12 @@ import com.travelmate.backend.dto.request.PasswordResetConfirmRequest;
 import com.travelmate.backend.dto.request.PasswordResetRequest;
 import com.travelmate.backend.dto.response.AuthResponse;
 import com.travelmate.backend.dto.response.PasswordResetResponse;
-import com.travelmate.backend.dto.response.UserResponse;
 import com.travelmate.backend.entity.OAuthAccount;
 import com.travelmate.backend.entity.PasswordResetToken;
-import com.travelmate.backend.mapper.UserMapper;
 import com.travelmate.backend.entity.RefreshToken;
 import com.travelmate.backend.entity.User;
 import com.travelmate.backend.entity.enums.OAuthProvider;
+import com.travelmate.backend.mapper.UserMapper;
 import com.travelmate.backend.repository.OAuthAccountRepository;
 import com.travelmate.backend.repository.PasswordResetTokenRepository;
 import com.travelmate.backend.repository.RefreshTokenRepository;
@@ -22,10 +21,12 @@ import com.travelmate.backend.repository.UserRepository;
 import com.travelmate.backend.security.JwtService;
 import com.travelmate.backend.service.AuthService;
 import com.travelmate.backend.service.PasswordResetMailService;
-import java.util.NoSuchElementException;
-import java.util.List;
-import java.util.UUID;
+
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
@@ -41,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordResetMailService passwordResetMailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final UserMapper userMapper; // 1. Khai báo private final để Lombok inject bean
 
     @Override
     @Transactional
@@ -158,7 +161,7 @@ public class AuthServiceImpl implements AuthService {
         if (existing.isRevoked()) {
             throw new IllegalArgumentException("Refresh token was revoked");
         }
-        if (existing.getExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+        if (existing.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Refresh token expired");
         }
 
@@ -270,7 +273,7 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expiresInSeconds(jwtService.getAccessTokenTtlSeconds())
-                .user(UserMapper.toResponse(user))
+                .user(userMapper.toResponse(user)) 
                 .build();
     }
 
@@ -300,5 +303,4 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Invalid password format");
         }
     }
-
 }

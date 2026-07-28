@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User saved = userRepository.save(user);
-        return userMapper.toUserResponse(saved);
+        return userMapper.toResponse(saved);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
         // Use the mapper to update the entity from the request
         userMapper.updateUserFromRequest(userRequest, user);
 
-        return userMapper.toUserResponse(userRepository.save(user));
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
-        return userMapper.toUserResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> listAll() {
         return userRepository.findByActiveTrue()
                 .stream()
-                .map(userMapper::toUserResponse)
+                .map(userMapper::toResponse)
                 .collect(Collectors.toList());
     }
 

@@ -41,7 +41,7 @@ public class JwtService {
         Date expiry = Date.from(Instant.now().plusSeconds(accessTokenMinutes * 60));
         return Jwts.builder()
                 .subject(email)
-                .claims(Map.of("uid", userId))
+                .claim("uid", userId)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(secretKey)

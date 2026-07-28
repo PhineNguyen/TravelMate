@@ -2,6 +2,7 @@ package com.travelmate.backend.service.impl;
 
 import com.travelmate.backend.dto.request.TripRequest;
 import com.travelmate.backend.dto.response.TripResponse;
+import com.travelmate.backend.service.WeatherApiClientService;
 import com.travelmate.backend.entity.Trip;
 import com.travelmate.backend.repository.TripRepository;
 import com.travelmate.backend.service.TripService;
@@ -34,6 +35,7 @@ public class TripServiceImpl implements TripService {
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
     private final TripTemplateRepository tripTemplateRepository;
+    private final WeatherApiClientService weatherApiClientService;
 
     @Override
     @Transactional
@@ -56,7 +58,7 @@ public class TripServiceImpl implements TripService {
         if (dto.getDuration() == null || dto.getDuration() <= 0) {
             throw new IllegalArgumentException("Duration must be > 0");
         }
-        // ✅ KIỂM TRA RÀNG BUỘC NGHIỆP VỤ: Số lượng người đi phải lớn hơn 0
+
         if (dto.getTravelerCount() == null || dto.getTravelerCount() <= 0) {
             throw new IllegalArgumentException("Traveler count must be > 0");
         }
@@ -105,9 +107,15 @@ public class TripServiceImpl implements TripService {
                 .isDeleted(false)
                 .build();
         try {
-            return TripMapper.toResponse(tripRepository.save(trip));
+            Trip savedTrip = tripRepository.save(trip);
+            // Fetch weather data if trip is created as active
+            if (savedTrip.getTripStatus() == TripStatus.ACTIVE) {
+                weatherApiClientService.fetchAndProcessWeatherData(savedTrip.getDestination(), savedTrip);
+            }
+            return TripMapper.toResponse(savedTrip);
         } catch (DataIntegrityViolationException ex) {
-            throw new IllegalArgumentException("Database constraint violated", ex);
+            throw new DataIntegrityViolationException("Database constraint violated, check for unique invite code.",
+                    ex);
         }
     }
 
@@ -122,6 +130,8 @@ public class TripServiceImpl implements TripService {
         }
         Trip existing = tripRepository.findByIdAndIsDeletedFalse(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("TripId not found or has been deleted"));
+
+        TripStatus previousStatus = existing.getTripStatus();
 
         if (isTerminal(existing.getTripStatus())) {
             throw new IllegalArgumentException("Trip is read-only in terminal state");
@@ -157,9 +167,16 @@ public class TripServiceImpl implements TripService {
             existing.setTemplate(tripTemplate);
         }
         try {
-            return TripMapper.toResponse(tripRepository.save(existing));
+            Trip updatedTrip = tripRepository.save(existing);
+
+            // If trip status changed to ACTIVE, fetch weather data
+            if (previousStatus != TripStatus.ACTIVE && updatedTrip.getTripStatus() == TripStatus.ACTIVE) {
+                weatherApiClientService.fetchAndProcessWeatherData(updatedTrip.getDestination(), updatedTrip);
+            }
+
+            return TripMapper.toResponse(updatedTrip);
         } catch (DataIntegrityViolationException ex) {
-            throw new IllegalArgumentException("Database constraint violated", ex);
+            throw new DataIntegrityViolationException("Database constraint violated on update.", ex);
         }
     }
 
