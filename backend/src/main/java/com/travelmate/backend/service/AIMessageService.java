@@ -13,4 +13,8 @@ public interface AIMessageService {
     List<AIMessageDTO> listAll();
 
     void delete(Long id);
+
+    AIMessageDTO sendMessage(Long conversationId, String userContent);
+
+    List<AIMessageDTO> listByConversation(Long conversationId);
 }

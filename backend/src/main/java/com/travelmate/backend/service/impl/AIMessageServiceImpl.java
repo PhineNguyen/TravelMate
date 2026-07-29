@@ -1,11 +1,12 @@
 package com.travelmate.backend.service.impl;
 
 import com.travelmate.backend.dto.AIMessageDTO;
-import com.travelmate.backend.entity.AIMessage;
-import com.travelmate.backend.mapper.AIMessageMapper;
 import com.travelmate.backend.entity.AIConversation;
-import com.travelmate.backend.repository.AIMessageRepository;
+import com.travelmate.backend.entity.AIMessage;
+import com.travelmate.backend.entity.enums.SenderType;
+import com.travelmate.backend.mapper.AIMessageMapper;
 import com.travelmate.backend.repository.AIConversationRepository;
+import com.travelmate.backend.repository.AIMessageRepository;
 import com.travelmate.backend.service.AIMessageService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,58 @@ public class AIMessageServiceImpl implements AIMessageService {
 
     private final AIMessageRepository aiMessageRepository;
     private final AIConversationRepository aiConversationRepository;
+    private final GeminiApiClientServiceImpl geminiApiClientService;
 
+    // Persona của TravelMate AI
+    private static final String TRAVEL_MATE_PERSONA = "You are TravelMate AI, an expert travel assistant. " +
+            "Help users with itineraries, food recommendations, and travel advice concisely.";
+
+    // =========================================================================
+    // 🚀 PHƯƠNG THỨC MỚI: XỬ LÝ GỬI TIN NHẮN VÀ NHẬN PHẢN HỒI TỪ GEMINI
+    // =========================================================================
+    @Override
+    @Transactional
+    public AIMessageDTO sendMessage(Long conversationId, String userContent) {
+        if (conversationId == null) {
+            throw new IllegalArgumentException("conversationId is required");
+        }
+        if (userContent == null || userContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("userContent must not be empty");
+        }
+
+        // 1. Tìm cuộc hội thoại
+        AIConversation conv = aiConversationRepository.findById(conversationId)
+                .orElseThrow(() -> new IllegalArgumentException("Conversation not found with id: " + conversationId));
+
+        // 2. Lưu tin nhắn của User vào PostgreSQL
+        AIMessage userMsg = AIMessage.builder()
+                .conversation(conv)
+                .senderType(SenderType.USER)
+                .content(userContent)
+                .build();
+        aiMessageRepository.save(userMsg);
+
+        // 3. Lấy 10 tin nhắn gần nhất để làm ngữ cảnh (history)
+        List<AIMessage> history = aiMessageRepository.findTop10ByConversationOrderByCreatedAtAsc(conv);
+
+        // 4. Gọi API Gemini để lấy câu trả lời
+        String aiReplyText = geminiApiClientService.callGeminiApi(TRAVEL_MATE_PERSONA, history, userContent);
+
+        // 5. Lưu tin nhắn phản hồi của AI vào PostgreSQL
+        AIMessage aiMsg = AIMessage.builder()
+                .conversation(conv)
+                .senderType(SenderType.AI)
+                .content(aiReplyText)
+                .build();
+        AIMessage savedAiMsg = aiMessageRepository.save(aiMsg);
+
+        // 6. Trả về DTO câu trả lời của AI
+        return AIMessageMapper.toDto(savedAiMsg);
+    }
+
+    // =========================================================================
+    // CÁC HÀM CRUD SẴN CÓ
+    // =========================================================================
     @Override
     @Transactional
     public AIMessageDTO create(AIMessageDTO dto) {
@@ -101,6 +153,17 @@ public class AIMessageServiceImpl implements AIMessageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AIMessageDTO> listByConversation(Long conversationId) {
+        if (conversationId == null) {
+            throw new IllegalArgumentException("conversationId is required");
+        }
+        return aiMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId).stream()
+                .map(AIMessageMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void delete(Long id) {
         if (id == null)
@@ -109,5 +172,4 @@ public class AIMessageServiceImpl implements AIMessageService {
             throw new IllegalArgumentException("Message not found");
         aiMessageRepository.deleteById(id);
     }
-
 }

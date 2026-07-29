@@ -29,3 +29,16 @@ openweathermap:
   api:
     url: ${OPENWEATHERMAP_API_URL:https://api.openweathermap.org/data/2.5}
     key: ${OPENWEATHERMAP_API_KEY:{OPENWEATHER_API_KEY}}
+
+gemini:
+  api-key: ${GEMINI_API_KEY:{GEMINI_API_KEY}}
+  url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+
+# Cấu hình Springdoc (Swagger UI)
+springdoc:
+  # Đường dẫn để truy cập Swagger UI
+  swagger-ui:
+    path: /swagger-ui.html
+  # Các đường dẫn API sẽ được quét
+  paths-to-match:
+    - /api/**
