@@ -16,6 +16,10 @@ class PlaceItem(BaseModel):
     latitude: float
     longitude: float
     reason: str
+    google_maps_url: Optional[str] = None
+    website: Optional[str] = None
+    phone: Optional[str] = None
+    opening_hours: Optional[str] = None
 
 class RecommendPlacesResponse(BaseModel):
     total_found: int

@@ -171,13 +171,20 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
                             break
                             
                 if matched_place:
+                    lat = matched_place["latitude"]
+                    lon = matched_place["longitude"]
+                    google_maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
                     ranked_places.append({
                         "name": matched_place["name"],
                         "category": category,
                         "address": matched_place["address"],
-                        "latitude": matched_place["latitude"],
-                        "longitude": matched_place["longitude"],
-                        "reason": item.get("reason", "Địa điểm phù hợp với sở thích của bạn.")
+                        "latitude": lat,
+                        "longitude": lon,
+                        "reason": item.get("reason", "Địa điểm phù hợp với sở thích của bạn."),
+                        "google_maps_url": google_maps_url,
+                        "website": matched_place.get("website"),
+                        "phone": matched_place.get("phone"),
+                        "opening_hours": matched_place.get("opening_hours")
                     })
             
             return ranked_places

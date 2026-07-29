@@ -32,11 +32,15 @@ async def fetch_places_from_geoapify(lat: float, lon: float, radius_km: float, c
     places = []
     for feature in data.get("features", []):
         props = feature.get("properties", {})
+        contact = props.get("contact") or {}
         places.append({
             "name": props.get("name") or props.get("formatted", "Địa điểm không tên"),
             "address": props.get("formatted", ""),
             "latitude": props.get("lat"),
             "longitude": props.get("lon"),
-            "categories": props.get("categories", [])
+            "categories": props.get("categories", []),
+            "website": props.get("website"),
+            "phone": contact.get("phone") or props.get("phone"),
+            "opening_hours": props.get("opening_hours")
         })
     return places
