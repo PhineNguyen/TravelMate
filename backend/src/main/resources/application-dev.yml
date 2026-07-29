@@ -25,3 +25,7 @@ spring:
           auth: false
           starttls:
             enable: false
+openweathermap:
+  api:
+    url: ${OPENWEATHERMAP_API_URL:https://api.openweathermap.org/data/2.5}
+    key: ${OPENWEATHERMAP_API_KEY:350316ac806044934d5615d8f986a78b}
