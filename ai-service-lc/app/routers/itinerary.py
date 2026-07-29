@@ -1,8 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from app.schemas import GenerateItineraryRequest, GenerateItineraryResponse
-from app.services.llm_service import generate_itinerary_llm
+from app.schemas import (
+    GenerateItineraryRequest, GenerateItineraryResponse,
+    RouteOptimizationRequest, OptimizedRouteResponse,
+    WeatherAdjustmentRequest, WeatherAdjustmentResponse,
+    ChatRequest, ChatResponse
+)
+from app.services.llm_service import (
+    generate_itinerary_llm, optimize_route_llm,
+    adjust_weather_llm, chat_with_ai_llm
+)
 
-router = APIRouter(prefix="/ai", tags=["Trip Planning"])
+router = APIRouter(prefix="/ai", tags=["Trip Planning & Assistant"])
 
 @router.post("/generate-itinerary", response_model=GenerateItineraryResponse)
 async def generate_itinerary(payload: GenerateItineraryRequest):
@@ -19,4 +27,41 @@ async def generate_itinerary(payload: GenerateItineraryRequest):
         raise HTTPException(
             status_code=500, 
             detail=f"Lỗi khi AI sinh lịch trình: {str(e)}"
+        )
+
+@router.post("/optimize-route", response_model=OptimizedRouteResponse)
+async def optimize_route(payload: RouteOptimizationRequest):
+    try:
+        optimized = await optimize_route_llm(payload.locations)
+        return OptimizedRouteResponse(optimized_route=optimized)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi tối ưu lộ trình: {str(e)}"
+        )
+
+@router.post("/adjust-weather", response_model=WeatherAdjustmentResponse)
+async def adjust_weather(payload: WeatherAdjustmentRequest):
+    try:
+        result = await adjust_weather_llm(
+            weather_alert=payload.weather_alert,
+            budget_limit=payload.budget_limit,
+            current_activities=payload.current_activities
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi điều chỉnh thời tiết: {str(e)}"
+        )
+
+@router.post("/chat", response_model=ChatResponse)
+async def chat(payload: ChatRequest):
+    try:
+        reply = await chat_with_ai_llm(payload.session_id, payload.message)
+        return ChatResponse(reply=reply)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi chat với AI: {str(e)}"
         )

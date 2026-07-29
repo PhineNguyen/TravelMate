@@ -48,3 +48,39 @@ class GenerateItineraryResponse(BaseModel):
     estimated_total_cost: float
     summary: str
     itinerary: List[DayPlan]
+
+
+# --- SCHEMAS CHO OPTIMIZE ROUTE ---
+class RouteLocationInput(BaseModel):
+    location_name: str = Field(..., description="Tên địa điểm")
+    current_sequence: int = Field(..., description="Thứ tự hiện tại người dùng đang sắp xếp")
+
+class RouteOptimizationRequest(BaseModel):
+    locations: List[RouteLocationInput] = Field(..., description="Danh sách các địa điểm cần tối ưu thứ tự")
+
+class OptimizedLocationOutput(BaseModel):
+    location_name: str = Field(..., description="Tên địa điểm")
+    optimized_sequence: int = Field(..., description="Thứ tự đã được AI sắp xếp lại cho tối ưu quãng đường")
+
+class OptimizedRouteResponse(BaseModel):
+    optimized_route: List[OptimizedLocationOutput] = Field(..., description="Lộ trình đã được tối ưu")
+
+
+# --- SCHEMAS CHO ADJUST WEATHER ---
+class WeatherAdjustmentRequest(BaseModel):
+    weather_alert: str = Field(..., description="Bản tin cảnh báo thời tiết (ví dụ: Chiều mai có mưa bão)")
+    budget_limit: float = Field(..., description="Ngân sách còn lại cho các hoạt động thay thế")
+    current_activities: List[ActivityItem] = Field(..., description="Lịch trình của ngày đang bị ảnh hưởng")
+
+class WeatherAdjustmentResponse(BaseModel):
+    updated_activities: List[ActivityItem] = Field(..., description="Lịch trình mới đã được AI thay thế điểm đến")
+    adjustment_reason: str = Field(..., description="Lời giải thích của AI về lý do thay đổi")
+
+
+# --- SCHEMAS CHO AI CHAT ---
+class ChatRequest(BaseModel):
+    session_id: str = Field(..., description="ID định danh phiên chat (Ví dụ: trip_123_chat)")
+    message: str = Field(..., description="Tin nhắn người dùng gửi cho AI")
+
+class ChatResponse(BaseModel):
+    reply: str = Field(..., description="Câu trả lời từ AI")

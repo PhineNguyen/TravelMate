@@ -269,3 +269,233 @@ async def generate_itinerary_llm(
         if response_text:
             print(f"Raw response text: {ascii(response_text)}")
         return {}
+
+
+# Global memory storage for chat sessions
+chat_sessions = {}
+
+async def optimize_route_llm(locations: list) -> list:
+    if not locations:
+        return []
+
+    # Map locations to a list of dicts for safety
+    loc_list = []
+    for loc in locations:
+        if hasattr(loc, "dict"):
+            loc_list.append(loc.dict())
+        elif isinstance(loc, dict):
+            loc_list.append(loc)
+        else:
+            loc_list.append({
+                "location_name": getattr(loc, "location_name", ""),
+                "current_sequence": getattr(loc, "current_sequence", 0)
+            })
+
+    prompt = f"""
+    Bạn là chuyên gia tối ưu lộ trình du lịch.
+    Dưới đây là danh sách toàn bộ {len(loc_list)} địa điểm cần tối ưu hóa thứ tự di chuyển để khoảng cách địa lý ngắn nhất, tránh đi vòng:
+    {json.dumps(loc_list, ensure_ascii=False)}
+
+    Hãy sắp xếp lại thứ tự di chuyển cho TOÀN BỘ {len(loc_list)} địa điểm trên. Giá trị "optimized_sequence" bắt đầu từ 1 cho địa điểm đầu tiên, tăng dần lên 2, 3... cho các địa điểm tiếp theo.
+    Bạn bắt buộc phải trả về đầy đủ tất cả {len(loc_list)} địa điểm trong kết quả.
+    Trả về ĐÚNG cấu trúc mảng JSON gồm các đối tượng có cấu trúc như mẫu sau, không kèm bất kỳ câu thoại nào:
+    [
+      {{
+        "location_name": "Tên địa điểm",
+        "optimized_sequence": 1
+      }}
+    ]
+    """
+
+    payload = {
+        "model": settings.OLLAMA_MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "format": "json",
+        "options": {
+            "temperature": 0.1,
+            "num_predict": 1024
+        }
+    }
+
+    response_text = ""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{settings.OLLAMA_BASE_URL}/api/generate",
+                json=payload,
+                timeout=180.0
+            )
+            response.raise_for_status()
+            response_text = response.json().get("response", "[]")
+            print("--- Ollama Optimize Route Raw Response ---")
+            print(ascii(response_text))
+            print("------------------------------------------")
+
+            cleaned = clean_json_response(response_text)
+            repaired = try_repair_json(cleaned)
+            data = json.loads(repaired)
+
+            items = []
+            if isinstance(data, dict):
+                for key in ["optimized_route", "route", "data", "items"]:
+                    if key in data and isinstance(data[key], list):
+                        items = data[key]
+                        break
+            elif isinstance(data, list):
+                items = data
+
+            # Extract location_name and optimized_sequence
+            optimized_route = []
+            for item in items:
+                if isinstance(item, dict) and "location_name" in item and "optimized_sequence" in item:
+                    try:
+                        optimized_route.append({
+                            "location_name": item["location_name"],
+                            "optimized_sequence": int(item["optimized_sequence"])
+                        })
+                    except (ValueError, TypeError):
+                        continue
+            
+            if optimized_route:
+                return optimized_route
+            return [{"location_name": loc["location_name"], "optimized_sequence": idx + 1} for idx, loc in enumerate(loc_list)]
+
+    except Exception as e:
+        print(f"Error optimizing route: {ascii(e)}")
+        if response_text:
+            print(f"Raw response: {ascii(response_text)}")
+        return [{"location_name": loc["location_name"], "optimized_sequence": idx + 1} for idx, loc in enumerate(loc_list)]
+
+
+async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_activities: list) -> dict:
+    if not current_activities:
+        return {"updated_activities": [], "adjustment_reason": "Không có hoạt động nào cần điều chỉnh."}
+
+    activities_list = []
+    for act in current_activities:
+        if hasattr(act, "dict"):
+            activities_list.append(act.dict())
+        elif isinstance(act, dict):
+            activities_list.append(act)
+        else:
+            activities_list.append({
+                "time": getattr(act, "time", ""),
+                "place_name": getattr(act, "place_name", ""),
+                "category": getattr(act, "category", ""),
+                "estimated_cost": getattr(act, "estimated_cost", 0.0),
+                "description": getattr(act, "description", "")
+            })
+
+    prompt = f"""
+    Bạn là chuyên gia điều chỉnh lịch trình du lịch thông minh dựa trên thời tiết.
+    - Cảnh báo thời tiết: {weather_alert}
+    - Giới hạn ngân sách còn lại: {budget_limit} VNĐ
+    - Lịch trình hiện tại của ngày bị ảnh hưởng:
+    {json.dumps(activities_list, ensure_ascii=False)}
+
+    Yêu cầu:
+    1. Hãy quét qua lịch trình hiện tại, xác định các hoạt động ngoài trời (ví dụ: tham quan thác, bãi biển, leo núi) và thay thế bằng các hoạt động trong nhà phù hợp (ví dụ: bảo tàng, quán cà phê trong nhà, trung tâm thương mại, khu vui chơi trong nhà).
+    2. Đảm bảo tổng chi phí của các hoạt động mới thay thế không vượt quá giới hạn ngân sách ({budget_limit} VNĐ).
+    3. Giữ nguyên khung thời gian (time) của hoạt động cũ.
+    4. Trả về giải thích ngắn gọn lý do điều chỉnh.
+
+    Trả về ĐÚNG cấu trúc JSON sau, không kèm bất kỳ lời thoại nào:
+    {{
+      "updated_activities": [
+        {{
+          "time": "Khung giờ cũ",
+          "place_name": "Tên địa điểm trong nhà mới",
+          "category": "restaurant/attraction/accommodation/activity",
+          "estimated_cost": 150000,
+          "description": "Mô tả ngắn gọn về địa điểm mới thay thế và lưu ý thời tiết"
+        }}
+      ],
+      "adjustment_reason": "Mô tả tóm tắt lý do thay đổi các hoạt động ngoài trời thành trong nhà..."
+    }}
+    """
+
+    payload = {
+        "model": settings.OLLAMA_MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "format": "json",
+        "options": {
+            "temperature": 0.1,
+            "num_predict": 2048
+        }
+    }
+
+    response_text = ""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{settings.OLLAMA_BASE_URL}/api/generate",
+                json=payload,
+                timeout=180.0
+            )
+            response.raise_for_status()
+            response_text = response.json().get("response", "{}")
+            print("--- Ollama Adjust Weather Raw Response ---")
+            print(ascii(response_text))
+            print("------------------------------------------")
+
+            cleaned = clean_json_response(response_text)
+            repaired = try_repair_json(cleaned)
+            data = json.loads(repaired)
+
+            if isinstance(data, dict):
+                return data
+            return {"updated_activities": activities_list, "adjustment_reason": "Không thể điều chỉnh lịch trình do lỗi xử lý cấu trúc."}
+
+    except Exception as e:
+        print(f"Error adjusting weather: {ascii(e)}")
+        if response_text:
+            print(f"Raw response: {ascii(response_text)}")
+        return {
+            "updated_activities": activities_list,
+            "adjustment_reason": f"Không thể điều chỉnh lịch trình do lỗi hệ thống: {str(e)}"
+        }
+
+
+async def chat_with_ai_llm(session_id: str, message: str) -> str:
+    if session_id not in chat_sessions:
+        chat_sessions[session_id] = [
+            {"role": "system", "content": "Bạn là trợ lý du lịch thông minh, thân thiện của TravelMate. Hãy trả lời các câu hỏi bằng tiếng Việt ngắn gọn, hữu ích và chính xác."}
+        ]
+
+    # Append user message
+    chat_sessions[session_id].append({"role": "user", "content": message})
+
+    # Keep context memory limited to last 11 messages (system prompt + 10 chat messages)
+    if len(chat_sessions[session_id]) > 11:
+        system_prompt = chat_sessions[session_id][0]
+        chat_sessions[session_id] = [system_prompt] + chat_sessions[session_id][-10:]
+
+    payload = {
+        "model": settings.OLLAMA_MODEL,
+        "messages": chat_sessions[session_id],
+        "stream": False,
+        "options": {
+            "temperature": 0.7
+        }
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{settings.OLLAMA_BASE_URL}/api/chat",
+                json=payload,
+                timeout=120.0
+            )
+            response.raise_for_status()
+            assistant_message = response.json().get("message", {})
+            content = assistant_message.get("content", "Trợ lý không phản hồi.")
+            
+            # Store assistant response in history
+            chat_sessions[session_id].append({"role": "assistant", "content": content})
+            return content
+            
+    except Exception as e:
+        print(f"Error in chat session {session_id}: {ascii(e)}")
+        return f"Xin lỗi, tôi gặp sự cố khi kết nối hệ thống AI: {str(e)}"
