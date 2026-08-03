@@ -18,7 +18,8 @@ async def generate_itinerary(payload: GenerateItineraryRequest):
             duration_days=payload.duration_days,
             budget=payload.budget,
             travel_style=payload.travel_style,
-            traveler_count=payload.traveler_count
+            traveler_count=payload.traveler_count,
+            preferences=payload.preferences
         )
         return result
     except Exception as e:

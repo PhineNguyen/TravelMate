@@ -21,6 +21,7 @@ class GenerateItineraryRequest(BaseModel):
     budget: float = Field(..., description="Tổng ngân sách dự kiến (VNĐ)")
     travel_style: str = Field(..., description="Phong cách chuyến đi (ngon rẻ, sang chảnh, khám phá...)")
     traveler_count: int = Field(..., description="Số lượng người tham gia chuyến đi")
+    preferences: Optional[List[str]] = Field(default=[], description="Danh sách sở thích, yêu cầu đặc biệt của người dùng (ví dụ: hải sản, check-in, yên tĩnh...)")
 
 class GenerateItineraryResponse(BaseModel):
     destination: str = Field(..., description="Điểm đến")

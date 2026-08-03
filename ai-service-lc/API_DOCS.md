@@ -169,6 +169,7 @@ Tự động thiết lập lịch trình du lịch trọn gói chi tiết từng
 * `budget` (float, Bắt buộc): Tổng ngân sách dự kiến cho chuyến đi (VNĐ).
 * `travel_style` (string, Bắt buộc): Phong cách du lịch (ví dụ: nghỉ dưỡng, ngon rẻ, khám phá mạo hiểm...).
 * `traveler_count` (int, Bắt buộc): Số lượng người tham gia hành trình.
+* `preferences` (array of strings, Tùy chọn): Danh sách sở thích, yêu cầu đặc biệt của khách du lịch (ví dụ: hải sản, check-in, yên tĩnh...).
 
 ### Nội dung Request mẫu để test
 ```json
@@ -177,7 +178,12 @@ Tự động thiết lập lịch trình du lịch trọn gói chi tiết từng
   "duration_days": 2,
   "budget": 2500000.0,
   "travel_style": "ngon rẻ, trải nghiệm địa phương",
-  "traveler_count": 2
+  "traveler_count": 2,
+  "preferences": [
+    "ẩm thực hải sản",
+    "chụp ảnh check-in",
+    "yêu thích thiên nhiên"
+  ]
 }
 ```
 
@@ -185,5 +191,5 @@ Tự động thiết lập lịch trình du lịch trọn gói chi tiết từng
 ```bash
 curl -X POST "http://127.0.0.1:8000/ai/generate-itinerary" \
      -H "Content-Type: application/json" \
-     -d "{\"destination\": \"Nha Trang\", \"duration_days\": 2, \"budget\": 3000000, \"travel_style\": \"khám phá\", \"traveler_count\": 2}"
+     -d "{\"destination\": \"Nha Trang\", \"duration_days\": 2, \"budget\": 3000000, \"travel_style\": \"khám phá\", \"traveler_count\": 2, \"preferences\": [\"hải sản\"]}"
 ```

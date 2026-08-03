@@ -41,7 +41,8 @@ async def test_generate_itinerary(client: httpx.AsyncClient):
         "duration_days": 2,
         "budget": 2000000.0,
         "travel_style": "ngon rẻ, khám phá",
-        "traveler_count": 2
+        "traveler_count": 2,
+        "preferences": ["ẩm thực hải sản", "thích chụp ảnh check-in"]
     }
     try:
         resp = await client.post(f"{BASE_URL}/ai/generate-itinerary", json=payload, timeout=180.0)

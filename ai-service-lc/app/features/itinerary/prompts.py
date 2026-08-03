@@ -1,6 +1,6 @@
 import json
 
-def get_itinerary_prompt(destination: str, duration_days: int, budget: float, travel_style: str, traveler_count: int) -> str:
+def get_itinerary_prompt(destination: str, duration_days: int, budget: float, travel_style: str, traveler_count: int, preferences: list = None) -> str:
     return f"""
     Bạn là chuyên gia lập kế hoạch du lịch chuyên nghiệp. Hãy tạo lịch trình chi tiết:
     - Điểm đến: {destination}
@@ -8,9 +8,10 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
     - Tổng ngân sách: {budget} VNĐ
     - Phong cách: {travel_style}
     - Số khách: {traveler_count} người
+    - Sở thích/yêu cầu đặc biệt của khách du lịch: {', '.join(preferences) if preferences else 'Không có'}
 
     Yêu cầu:
-    1. Lập kế hoạch chi tiết cho từng ngày (Day 1, Day 2...).
+    1. Lập kế hoạch chi tiết cho từng ngày (Day 1, Day 2...). Hãy lựa chọn các địa điểm (nhà hàng, điểm tham quan, hoạt động) và phân bổ thời gian sao cho tối ưu, phù hợp nhất với sở thích/yêu cầu đặc biệt được liệt kê ở trên.
     2. Phân bổ các hoạt động theo mốc thời gian hợp lý (Sáng, Trưa, Chiều, Tối).
     3. Ước tính chi phí chi tiết sao cho tổng chi phí gần bằng hoặc nhỏ hơn ngân sách.
     4. Gán category rõ ràng: "restaurant", "attraction", "accommodation", "activity".

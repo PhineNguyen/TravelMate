@@ -11,9 +11,10 @@ async def generate_itinerary_llm(
     duration_days: int,
     budget: float,
     travel_style: str,
-    traveler_count: int
+    traveler_count: int,
+    preferences: list = None
 ) -> dict:
-    prompt = get_itinerary_prompt(destination, duration_days, budget, travel_style, traveler_count)
+    prompt = get_itinerary_prompt(destination, duration_days, budget, travel_style, traveler_count, preferences)
 
     payload = {
         "model": settings.OLLAMA_MODEL,
