@@ -3,11 +3,11 @@ from app.schemas import (
     GenerateItineraryRequest, GenerateItineraryResponse,
     RouteOptimizationRequest, OptimizedRouteResponse,
     WeatherAdjustmentRequest, WeatherAdjustmentResponse,
-    ChatRequest, ChatResponse
+    ChatRequest, ChatResponse, ChatMessageItem, ChatHistoryResponse
 )
 from app.services.llm_service import (
     generate_itinerary_llm, optimize_route_llm,
-    adjust_weather_llm, chat_with_ai_llm
+    adjust_weather_llm, chat_with_ai_llm, get_chat_history_llm
 )
 
 router = APIRouter(prefix="/ai", tags=["Trip Planning & Assistant"])
@@ -64,4 +64,16 @@ async def chat(payload: ChatRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi khi chat với AI: {str(e)}"
+        )
+
+@router.get("/chat/{session_id}", response_model=ChatHistoryResponse)
+async def get_chat_history(session_id: str):
+    try:
+        history = await get_chat_history_llm(session_id)
+        messages = [ChatMessageItem(role=msg["role"], content=msg["content"]) for msg in history]
+        return ChatHistoryResponse(session_id=session_id, messages=messages)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi lấy lịch sử chat: {str(e)}"
         )

@@ -1,0 +1,41 @@
+services:
+  ai-db:
+    image: postgres:16
+    container_name: travelmate-ai-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ai_service_chat
+      POSTGRES_USER: ai_user
+      POSTGRES_PASSWORD: ai_password
+    ports:
+      - "5434:5432"  # Map to 5434 to avoid conflict with Java backend's postgres on 5433 or host 5432
+    volumes:
+      - ai_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_user -d ai_service_chat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build: .
+    container_name: travelmate-ai-service
+    restart: unless-stopped
+    depends_on:
+      ai-db:
+        condition: service_healthy
+    environment:
+      - PORT=8000
+      - GEOAPIFY_API_KEY=f6c58aacd90b409fa1766b93222b2fef
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434  # To access local Ollama running on Windows host
+      - OLLAMA_MODEL=gemma2:2b
+      - DB_HOST=ai-db
+      - DB_PORT=5432
+      - DB_NAME=ai_service_chat
+      - DB_USER=ai_user
+      - DB_PASSWORD=ai_password
+    ports:
+      - "8000:8000"
+
+volumes:
+  ai_postgres_data: {}

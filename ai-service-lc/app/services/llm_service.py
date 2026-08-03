@@ -317,8 +317,8 @@ async def generate_itinerary_llm(
         return {}
 
 
-# Global memory storage for chat sessions
-chat_sessions = {}
+from app.services.chat_store import PostgresChatStore
+chat_store = PostgresChatStore()
 
 async def optimize_route_llm(locations: list) -> list:
     if not locations:
@@ -509,22 +509,28 @@ async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_ac
 
 
 async def chat_with_ai_llm(session_id: str, message: str) -> str:
-    if session_id not in chat_sessions:
-        chat_sessions[session_id] = [
-            {"role": "system", "content": "Bạn là trợ lý du lịch thông minh, thân thiện của TravelMate. Hãy trả lời các câu hỏi bằng tiếng Việt ngắn gọn, hữu ích và chính xác."}
-        ]
+    # 1. Fetch current history from PostgreSQL
+    history = chat_store.get_history(session_id)
+    
+    # 2. If empty, initialize session with system prompt
+    if not history:
+        system_content = "Bạn là trợ lý du lịch thông minh, thân thiện của TravelMate. Hãy trả lời các câu hỏi bằng tiếng Việt ngắn gọn, hữu ích và chính xác."
+        chat_store.add_message(session_id, "system", system_content)
+        history = [{"role": "system", "content": system_content}]
 
-    # Append user message
-    chat_sessions[session_id].append({"role": "user", "content": message})
+    # 3. Add user message to PostgreSQL
+    chat_store.add_message(session_id, "user", message)
+    history.append({"role": "user", "content": message})
 
-    # Keep context memory limited to last 11 messages (system prompt + 10 chat messages)
-    if len(chat_sessions[session_id]) > 11:
-        system_prompt = chat_sessions[session_id][0]
-        chat_sessions[session_id] = [system_prompt] + chat_sessions[session_id][-10:]
+    # 4. Limit the messages sent to Ollama to (system prompt + last 10 messages)
+    system_prompt = history[0]
+    messages_payload = [system_prompt]
+    if len(history) > 1:
+        messages_payload += history[1:][-10:]
 
     payload = {
         "model": settings.OLLAMA_MODEL,
-        "messages": chat_sessions[session_id],
+        "messages": messages_payload,
         "stream": False,
         "options": {
             "temperature": 0.7
@@ -542,10 +548,13 @@ async def chat_with_ai_llm(session_id: str, message: str) -> str:
             assistant_message = response.json().get("message", {})
             content = assistant_message.get("content", "Trợ lý không phản hồi.")
             
-            # Store assistant response in history
-            chat_sessions[session_id].append({"role": "assistant", "content": content})
+            # 5. Store assistant response in PostgreSQL
+            chat_store.add_message(session_id, "assistant", content)
             return content
             
     except Exception as e:
         print(f"Error in chat session {session_id}: {ascii(e)}")
         return f"Xin lỗi, tôi gặp sự cố khi kết nối hệ thống AI: {str(e)}"
+
+async def get_chat_history_llm(session_id: str) -> list:
+    return chat_store.get_history(session_id)
