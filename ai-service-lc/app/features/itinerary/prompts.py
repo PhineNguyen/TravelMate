@@ -45,23 +45,33 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
 
 def get_optimize_route_prompt(loc_list: list) -> str:
     return f"""
-    Bạn là chuyên gia tối ưu lộ trình du lịch.
-    Dưới đây là danh sách toàn bộ {len(loc_list)} địa điểm cần tối ưu hóa thứ tự di chuyển để khoảng cách địa lý ngắn nhất, tránh đi vòng chéo nhau:
+    Bạn là chuyên gia tối ưu lộ trình du lịch và thiết kế trải nghiệm hành trình cho du khách.
+    Dưới đây là danh sách toàn bộ {len(loc_list)} địa điểm cần sắp xếp tối ưu thứ tự di chuyển:
     {json.dumps(loc_list, ensure_ascii=False)}
 
-    Yêu cầu:
-    1. Hãy sử dụng tọa độ địa lý (vĩ độ và kinh độ - nếu có cung cấp) để tính toán khoảng cách thực tế giữa các điểm tham quan để sắp xếp lộ trình di chuyển tối ưu địa lý tốt nhất.
-    2. Sắp xếp lại thứ tự di chuyển cho TOÀN BỘ {len(loc_list)} địa điểm trên. Giá trị "optimized_sequence" bắt đầu từ 1 cho địa điểm đầu tiên, tăng dần lên 2, 3... cho các địa điểm tiếp theo.
-    3. Bạn bắt buộc phải trả về đầy đủ tất cả {len(loc_list)} địa điểm trong kết quả. Giữ nguyên giá trị "place_id" (nếu có) tương ứng của địa điểm đó.
+    Yêu cầu sắp xếp:
+    1. Hãy sử dụng tọa độ địa lý (vĩ độ và kinh độ - nếu có cung cấp) để tính toán khoảng cách thực tế giữa các điểm tham quan để sắp xếp lộ trình di chuyển tối ưu địa lý ngắn nhất, tránh đi vòng chéo nhau.
+    2. Đồng thời, kết hợp logic hành vi thực tế của con người và tính chất thời điểm trong ngày (Morning/Noon/Afternoon/Evening) dựa trên tên địa điểm hoặc phân loại ("category"):
+       - Buổi sáng (Morning): Ưu tiên các hoạt động ngoài trời, tham quan tự nhiên, vận động dạo mát (ví dụ: bãi biển, bán đảo, danh lam thắng cảnh).
+       - Buổi trưa (Noon): Ưu tiên các địa điểm ẩm thực ("category": "restaurant" hoặc quán ăn, quán cafe) để nghỉ chân ăn trưa tránh nắng nóng.
+       - Buổi chiều (Afternoon): Ưu tiên các địa điểm văn hóa, lịch sử, bảo tàng, không gian trong nhà hoặc quán cà phê, đi bộ nhẹ nhàng.
+       - Buổi tối (Evening): Ưu tiên các địa điểm vui chơi giải trí về đêm, cầu đi bộ, chợ đêm, xem biểu diễn nghệ thuật, bar hoặc ăn tối lãng mạn.
+    3. Tìm điểm cân bằng tối ưu nhất giữa khoảng cách địa lý ngắn nhất và thứ tự thời gian sinh hoạt tự nhiên hợp lý của con người.
+    4. Sắp xếp lại thứ tự di chuyển cho TOÀN BỘ {len(loc_list)} địa điểm trên. Giá trị "optimized_sequence" bắt đầu từ 1 cho địa điểm đầu tiên, tăng dần lên 2, 3... cho các địa điểm tiếp theo.
+    5. Bạn bắt buộc phải trả về đầy đủ tất cả {len(loc_list)} địa điểm trong kết quả. Giữ nguyên giá trị "place_id" (nếu có) tương ứng của địa điểm đó.
+    6. Với mỗi địa điểm, hãy viết thêm 1-2 câu giới thiệu/giải thích ngắn gọn (bằng tiếng Việt) lý do sắp xếp địa điểm này vào thứ tự này trong ngày hoặc nét đặc trưng nổi bật nhất của điểm đến, lưu vào trường "description".
 
-    Trả về ĐÚNG cấu trúc mảng JSON gồm các đối tượng có cấu trúc như mẫu sau, không kèm bất kỳ câu thoại nào:
-    [
-      {{
-        "place_id": 1,
-        "location_name": "Tên địa điểm",
-        "optimized_sequence": 1
-      }}
-    ]
+    Trả về ĐÚNG cấu trúc đối tượng JSON chứa mảng như mẫu sau, không kèm bất kỳ câu thoại nào ngoài JSON:
+    {{
+      "optimized_route": [
+        {{
+          "place_id": 1,
+          "location_name": "Tên địa điểm",
+          "optimized_sequence": 1,
+          "description": "Lời giới thiệu ngắn gọn về địa điểm này và lý do sắp xếp vào khung giờ/thứ tự tương ứng..."
+        }}
+      ]
+    }}
     """
 
 def get_weather_adjustment_prompt(weather_alert: str, budget_limit: float, activities_list: list) -> str:

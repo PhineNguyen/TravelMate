@@ -54,9 +54,10 @@ async def test_optimize_route(client: httpx.AsyncClient):
     print("\n--- Running Test: POST /ai/optimize-route ---")
     payload = {
         "locations": [
-            {"place_id": 101, "location_name": "Bán đảo Sơn Trà", "current_sequence": 1, "latitude": 16.0984, "longitude": 108.2721},
-            {"place_id": 102, "location_name": "Chùa Linh Ứng", "current_sequence": 2, "latitude": 16.1008, "longitude": 108.2778},
-            {"place_id": 103, "location_name": "Cầu Rồng", "current_sequence": 3, "latitude": 16.0612, "longitude": 108.2268}
+            {"place_id": 101, "location_name": "Bán đảo Sơn Trà", "current_sequence": 1, "latitude": 16.0984, "longitude": 108.2721, "category": "attraction"},
+            {"place_id": 102, "location_name": "Chùa Linh Ứng", "current_sequence": 2, "latitude": 16.1008, "longitude": 108.2778, "category": "attraction"},
+            {"place_id": 104, "location_name": "Nhà hàng hải sản Bé Mặn", "current_sequence": 3, "latitude": 16.0825, "longitude": 108.2492, "category": "restaurant"},
+            {"place_id": 103, "location_name": "Cầu Rồng", "current_sequence": 4, "latitude": 16.0612, "longitude": 108.2268, "category": "attraction"}
         ]
     }
     try:

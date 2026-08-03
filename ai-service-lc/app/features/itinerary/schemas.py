@@ -36,11 +36,13 @@ class RouteLocationItem(BaseModel):
     place_id: Optional[int] = Field(None, description="ID địa điểm từ CSDL backend")
     latitude: Optional[float] = Field(None, description="Vĩ độ")
     longitude: Optional[float] = Field(None, description="Kinh độ")
+    category: Optional[str] = Field(None, description="Phân loại địa điểm: restaurant | attraction | accommodation | activity")
 
 class RouteLocationOptimized(BaseModel):
     location_name: str = Field(..., description="Tên địa điểm")
     optimized_sequence: int = Field(..., description="Thứ tự tối ưu sau khi sắp xếp")
     place_id: Optional[int] = Field(None, description="ID địa điểm từ CSDL backend")
+    description: Optional[str] = Field(None, description="Lời giới thiệu/giải thích ngắn gọn về địa điểm và lý do xếp vào thứ tự di chuyển này (1-2 câu)")
 
 class RouteOptimizationRequest(BaseModel):
     locations: List[RouteLocationItem] = Field(..., description="Danh sách các địa điểm cần tối ưu hóa")

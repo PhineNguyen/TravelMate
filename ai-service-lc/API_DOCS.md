@@ -108,6 +108,7 @@ Sắp xếp lại thứ tự ghé thăm các địa điểm trong ngày sao cho 
   * `place_id` (int, Tùy chọn): ID địa điểm tương ứng từ CSDL backend.
   * `latitude` (float, Tùy chọn): Vĩ độ của địa điểm.
   * `longitude` (float, Tùy chọn): Kinh độ của địa điểm.
+  * `category` (string, Tùy chọn): Phân loại địa điểm (`restaurant` | `attraction` | `accommodation` | `activity`).
 
 ### Nội dung Request mẫu để test
 ```json
@@ -118,31 +119,49 @@ Sắp xếp lại thứ tự ghé thăm các địa điểm trong ngày sao cho 
       "location_name": "Bán đảo Sơn Trà",
       "current_sequence": 1,
       "latitude": 16.0984,
-      "longitude": 108.2721
+      "longitude": 108.2721,
+      "category": "attraction"
     },
     {
       "place_id": 102,
       "location_name": "Chùa Linh Ứng",
       "current_sequence": 2,
       "latitude": 16.1008,
-      "longitude": 108.2778
+      "longitude": 108.2778,
+      "category": "attraction"
+    },
+    {
+      "place_id": 104,
+      "location_name": "Nhà hàng hải sản Bé Mặn",
+      "current_sequence": 3,
+      "latitude": 16.0825,
+      "longitude": 108.2492,
+      "category": "restaurant"
     },
     {
       "place_id": 103,
       "location_name": "Cầu Rồng",
-      "current_sequence": 3,
+      "current_sequence": 4,
       "latitude": 16.0612,
-      "longitude": 108.2268
+      "longitude": 108.2268,
+      "category": "attraction"
     }
   ]
 }
 ```
 
+### Cấu Trúc Response Trả Về (JSON)
+* `optimized_route` (array of objects): Danh sách các địa điểm đã sắp xếp tối ưu. Mỗi đối tượng gồm:
+  * `place_id` (int): ID địa điểm từ backend CSDL.
+  * `location_name` (string): Tên địa điểm.
+  * `optimized_sequence` (int): Thứ tự di chuyển tối ưu mới (1, 2, 3...).
+  * `description` (string): Lời giới thiệu/giải thích lý do AI xếp địa điểm vào thứ tự này trong ngày.
+
 ### Lệnh cURL để test nhanh
 ```bash
 curl -X POST "http://127.0.0.1:8000/ai/optimize-route" \
      -H "Content-Type: application/json" \
-     -d "{\"locations\": [{\"place_id\": 101, \"location_name\": \"Bán đảo Sơn Trà\", \"current_sequence\": 1, \"latitude\": 16.0984, \"longitude\": 108.2721}, {\"place_id\": 103, \"location_name\": \"Cầu Rồng\", \"current_sequence\": 2, \"latitude\": 16.0612, \"longitude\": 108.2268}]}"
+     -d "{\"locations\": [{\"place_id\": 101, \"location_name\": \"Bán đảo Sơn Trà\", \"current_sequence\": 1, \"latitude\": 16.0984, \"longitude\": 108.2721, \"category\": \"attraction\"}, {\"place_id\": 104, \"location_name\": \"Nhà hàng hải sản Bé Mặn\", \"current_sequence\": 2, \"latitude\": 16.0825, \"longitude\": 108.2492, \"category\": \"restaurant\"}]}"
 ```
 
 ---

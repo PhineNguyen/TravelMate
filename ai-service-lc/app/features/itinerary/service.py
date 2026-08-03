@@ -68,7 +68,8 @@ async def optimize_route_llm(locations: list) -> list:
                 "current_sequence": getattr(loc, "current_sequence", 0),
                 "place_id": getattr(loc, "place_id", None),
                 "latitude": getattr(loc, "latitude", None),
-                "longitude": getattr(loc, "longitude", None)
+                "longitude": getattr(loc, "longitude", None),
+                "category": getattr(loc, "category", None)
             })
 
     prompt = get_optimize_route_prompt(loc_list)
@@ -111,7 +112,7 @@ async def optimize_route_llm(locations: list) -> list:
             elif isinstance(data, list):
                 items = data
 
-            # Extract location_name, optimized_sequence, and place_id
+            # Extract location_name, optimized_sequence, place_id, and description
             optimized_route = []
             for item in items:
                 if isinstance(item, dict) and "location_name" in item and "optimized_sequence" in item:
@@ -119,7 +120,8 @@ async def optimize_route_llm(locations: list) -> list:
                         optimized_route.append({
                             "location_name": item["location_name"],
                             "optimized_sequence": int(item["optimized_sequence"]),
-                            "place_id": item.get("place_id")
+                            "place_id": item.get("place_id"),
+                            "description": item.get("description")
                         })
                     except (ValueError, TypeError):
                         continue
@@ -129,7 +131,8 @@ async def optimize_route_llm(locations: list) -> list:
             return [{
                 "location_name": loc["location_name"], 
                 "optimized_sequence": idx + 1,
-                "place_id": loc.get("place_id")
+                "place_id": loc.get("place_id"),
+                "description": None
             } for idx, loc in enumerate(loc_list)]
 
     except Exception as e:
@@ -139,7 +142,8 @@ async def optimize_route_llm(locations: list) -> list:
         return [{
             "location_name": loc["location_name"], 
             "optimized_sequence": idx + 1,
-            "place_id": loc.get("place_id")
+            "place_id": loc.get("place_id"),
+            "description": None
         } for idx, loc in enumerate(loc_list)]
 
 async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_activities: list) -> dict:
