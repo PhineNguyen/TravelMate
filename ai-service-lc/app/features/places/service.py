@@ -1,14 +1,43 @@
 import httpx
 import json
-from app.config import settings
-from app.services.llm.helpers import clean_json_response, try_repair_json, check_is_indoor
-from app.services.llm.prompts import get_recommend_prompt
+from app.core.config import settings
+from app.core.helpers import clean_json_response, try_repair_json
+from app.features.places.prompts import get_recommend_prompt
+
+def check_is_indoor(categories: list) -> bool:
+    if not categories:
+        return False
+    indoor_keywords = {
+        "restaurant", "cafe", "fast_food", "bar", "food_court", "pub",
+        "hotel", "hostel", "motel", "guest_house", "apartment", "chalet",
+        "museum", "cinema", "theater", "mall", "shop", "supermarket",
+        "place_of_worship", "church", "temple", "pagoda", "cathedral",
+        "art_gallery", "library", "exhibition_centre"
+    }
+    outdoor_keywords = {
+        "beach", "park", "garden", "nature_reserve", "forest", "mountain",
+        "viewpoint", "waterfall", "lake", "river", "swimming_pool", "playground",
+        "zoo", "theme_park", "amusement_park", "stadium"
+    }
+    is_indoor_match = False
+    is_outdoor_match = False
+    for cat in categories:
+        cat_lower = cat.lower()
+        if any(kw in cat_lower for kw in indoor_keywords):
+            is_indoor_match = True
+        if any(kw in cat_lower for kw in outdoor_keywords):
+            is_outdoor_match = True
+            
+    if is_indoor_match and not is_outdoor_match:
+        return True
+    if is_outdoor_match:
+        return False
+    return False
 
 async def rank_and_explain_places(user_preferences: list, raw_places: list, category: str) -> list:
     if not raw_places:
         return []
 
-    # Simplify places to reduce token count and speed up local inference
     simplified_places = []
     for idx, p in enumerate(raw_places):
         simplified_places.append({
@@ -25,8 +54,8 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
         "stream": False,
         "format": "json",
         "options": {
-            "temperature": 0.1,      # Low temperature for structure adherence
-            "num_predict": 1024      # Ensure output is not truncated
+            "temperature": 0.1,
+            "num_predict": 1024
         }
     }
 
@@ -48,7 +77,6 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
             repaired = try_repair_json(cleaned)
             data = json.loads(repaired)
             
-            # Normalize list format
             items = []
             if isinstance(data, dict):
                 for key in ["recommendations", "places", "results", "items", "data"]:
@@ -58,14 +86,12 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
             elif isinstance(data, list):
                 items = data
             
-            # Map selected items back to original raw_places
             ranked_places = []
             for item in items:
                 if not isinstance(item, dict):
                     continue
                 matched_place = None
                 
-                # Try matching by ID first
                 if "id" in item:
                     try:
                         idx = int(item["id"])
@@ -74,7 +100,6 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
                     except (ValueError, TypeError):
                         pass
                 
-                # Fallback to matching by Name if ID is missing or invalid
                 if not matched_place and "name" in item:
                     name_lower = str(item["name"]).strip().lower()
                     for p in raw_places:

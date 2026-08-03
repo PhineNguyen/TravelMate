@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from app.config import settings
+from app.core.config import settings
 
 class PostgresChatStore:
     def __init__(self):

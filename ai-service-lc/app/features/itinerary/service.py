@@ -1,8 +1,8 @@
 import httpx
 import json
-from app.config import settings
-from app.services.llm.helpers import clean_json_response, try_repair_json
-from app.services.llm.prompts import (
+from app.core.config import settings
+from app.core.helpers import clean_json_response, try_repair_json
+from app.features.itinerary.prompts import (
     get_itinerary_prompt, get_optimize_route_prompt, get_weather_adjustment_prompt
 )
 
@@ -21,8 +21,8 @@ async def generate_itinerary_llm(
         "stream": False,
         "format": "json",
         "options": {
-            "temperature": 0.1,      # Low temperature for structure adherence
-            "num_predict": 2048      # Higher because itinerary is long
+            "temperature": 0.1,
+            "num_predict": 2048
         }
     }
 
@@ -55,7 +55,6 @@ async def optimize_route_llm(locations: list) -> list:
     if not locations:
         return []
 
-    # Map locations to a list of dicts for safety
     loc_list = []
     for loc in locations:
         if hasattr(loc, "dict"):

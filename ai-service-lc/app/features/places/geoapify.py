@@ -1,5 +1,5 @@
 import httpx
-from app.config import settings
+from app.core.config import settings
 
 CATEGORY_MAPPING = {
     "restaurant": "catering.restaurant,catering.fast_food,catering.cafe",

@@ -69,33 +69,3 @@ def try_repair_json(json_str: str) -> str:
             json_str += ']'
 
     return json_str
-
-def check_is_indoor(categories: list) -> bool:
-    if not categories:
-        return False
-    indoor_keywords = {
-        "restaurant", "cafe", "fast_food", "bar", "food_court", "pub",
-        "hotel", "hostel", "motel", "guest_house", "apartment", "chalet",
-        "museum", "cinema", "theater", "mall", "shop", "supermarket",
-        "place_of_worship", "church", "temple", "pagoda", "cathedral",
-        "art_gallery", "library", "exhibition_centre"
-    }
-    outdoor_keywords = {
-        "beach", "park", "garden", "nature_reserve", "forest", "mountain",
-        "viewpoint", "waterfall", "lake", "river", "swimming_pool", "playground",
-        "zoo", "theme_park", "amusement_park", "stadium"
-    }
-    is_indoor_match = False
-    is_outdoor_match = False
-    for cat in categories:
-        cat_lower = cat.lower()
-        if any(kw in cat_lower for kw in indoor_keywords):
-            is_indoor_match = True
-        if any(kw in cat_lower for kw in outdoor_keywords):
-            is_outdoor_match = True
-            
-    if is_indoor_match and not is_outdoor_match:
-        return True
-    if is_outdoor_match:
-        return False
-    return False

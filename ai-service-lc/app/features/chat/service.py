@@ -1,6 +1,6 @@
 import httpx
-from app.config import settings
-from app.services.chat_store import PostgresChatStore
+from app.core.config import settings
+from app.features.chat.store import PostgresChatStore
 
 chat_store = PostgresChatStore()
 
