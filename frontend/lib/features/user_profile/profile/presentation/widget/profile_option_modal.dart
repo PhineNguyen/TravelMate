@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
 
 class ProfilePage extends StatelessWidget {
   final VoidCallback? onBackToHome;
@@ -271,7 +272,14 @@ class ProfilePage extends StatelessWidget {
                 color: Colors.redAccent,
                 isDestructive: true,
                 onTap: () {
-                  Navigator.pop(context);
+                  final navigator = Navigator.of(context, rootNavigator: true);
+                  navigator.pop();
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginPage(),
+                    ),
+                    (route) => false,
+                  );
                 },
               ),
               const SizedBox(height: 16),

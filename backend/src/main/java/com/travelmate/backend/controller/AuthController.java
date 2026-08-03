@@ -1,25 +1,25 @@
 package com.travelmate.backend.controller;
 
 import com.travelmate.backend.dto.request.AuthLoginRequest;
-import com.travelmate.backend.dto.request.AuthRefreshRequest;
 import com.travelmate.backend.dto.request.AuthRegisterRequest;
+import com.travelmate.backend.dto.request.LogoutRequest;
 import com.travelmate.backend.dto.request.OAuthLoginRequest;
 import com.travelmate.backend.dto.request.PasswordResetConfirmRequest;
 import com.travelmate.backend.dto.request.PasswordResetRequest;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.travelmate.backend.dto.response.AuthResponse;
 import com.travelmate.backend.dto.response.PasswordResetResponse;
 import com.travelmate.backend.service.AuthService;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,11 +42,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.oauthLogin(request));
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody AuthRefreshRequest request) {
-        return ResponseEntity.ok(authService.refresh(request));
-    }
-
     @PostMapping("/forgot-password")
     public ResponseEntity<PasswordResetResponse> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
         return ResponseEntity.ok(authService.requestPasswordReset(request));
@@ -59,8 +54,8 @@ public class AuthController {
     }
 
     @DeleteMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody Map<String, String> payload) {
-        authService.logout(payload.get("refreshToken"));
+    public ResponseEntity<Void> logout(@Valid @RequestBody(required = false) LogoutRequest request) {
+        authService.logout(request);
         return ResponseEntity.noContent().build();
     }
 }
