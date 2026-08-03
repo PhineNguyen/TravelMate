@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.features.chat.schemas import ChatRequest, ChatResponse, ChatMessageItem, ChatHistoryResponse
-from app.features.chat.service import chat_with_ai_llm, get_chat_history_llm
+from app.features.chat.service import chat_with_ai_llm, get_chat_history_llm, clear_chat_history_llm
 
 router = APIRouter(prefix="/ai", tags=["Assistant Chat"])
 
@@ -25,4 +25,15 @@ async def get_chat_history(session_id: str):
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi khi lấy lịch sử chat: {str(e)}"
+        )
+
+@router.delete("/chat/{session_id}")
+async def delete_chat_history(session_id: str):
+    try:
+        await clear_chat_history_llm(session_id)
+        return {"status": "success", "message": f"Đã xóa lịch sử chat của session {session_id} thành công!"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi xóa lịch sử chat: {str(e)}"
         )

@@ -81,7 +81,22 @@ curl -X GET "http://127.0.0.1:8000/ai/chat/trip_da_nang_2026"
 
 ---
 
-## 4. Tối Ưu Lộ Trình Di Chuyển (`POST /ai/optimize-route`)
+## 4. Xóa Lịch Sử Chat (`DELETE /ai/chat/{session_id}`)
+
+### Mô tả
+Xóa sạch toàn bộ lịch sử các tin nhắn của một phiên chat từ PostgreSQL (dùng để reset cuộc hội thoại hoặc bắt đầu lại phiên chat mới).
+
+### Tham Số Trên Đường Dẫn (Path Parameter)
+* `session_id` (string, Bắt buộc): ID định danh phiên chat cần xóa lịch sử.
+
+### Lệnh cURL để test nhanh
+```bash
+curl -X DELETE "http://127.0.0.1:8000/ai/chat/trip_da_nang_2026"
+```
+
+---
+
+## 5. Tối Ưu Lộ Trình Di Chuyển (`POST /ai/optimize-route`)
 
 ### Mô tả
 Sắp xếp lại thứ tự ghé thăm các địa điểm trong ngày sao cho tuyến đường di chuyển là ngắn nhất, tránh việc đi vòng hoặc lặp lại đường đi.
@@ -120,7 +135,7 @@ curl -X POST "http://127.0.0.1:8000/ai/optimize-route" \
 
 ---
 
-## 5. Điều Chỉnh Thời Tiết Xấu (`POST /ai/adjust-weather`)
+## 6. Điều Chỉnh Thời Tiết Xấu (`POST /ai/adjust-weather`)
 
 ### Mô tả
 Khi thời tiết thay đổi đột ngột (mưa, bão), AI sẽ tự động phân tích lịch trình hiện tại của người dùng, lọc các điểm ngoài trời gặp thời tiết xấu và thay thế bằng các điểm trong nhà phù hợp với cùng khung giờ và trong giới hạn ngân sách.
@@ -158,7 +173,7 @@ curl -X POST "http://127.0.0.1:8000/ai/adjust-weather" \
 
 ---
 
-## 6. Tự Động Thiết Kế Lịch Trình (`POST /ai/generate-itinerary`)
+## 7. Tự Động Thiết Kế Lịch Trình (`POST /ai/generate-itinerary`)
 
 ### Mô tả
 Tự động thiết lập lịch trình du lịch trọn gói chi tiết từng ngày bao gồm: Khung giờ di chuyển, tên địa điểm tham quan/ăn uống, phân loại danh mục, ước lượng chi phí và mô tả hoạt động.

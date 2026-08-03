@@ -54,3 +54,6 @@ async def chat_with_ai_llm(session_id: str, message: str) -> str:
 
 async def get_chat_history_llm(session_id: str) -> list:
     return chat_store.get_history(session_id)
+
+async def clear_chat_history_llm(session_id: str):
+    chat_store.clear_history(session_id)

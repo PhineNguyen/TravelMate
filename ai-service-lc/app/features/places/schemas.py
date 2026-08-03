@@ -24,6 +24,11 @@ class PlaceItem(BaseModel):
     country: Optional[str] = None
     image_url: Optional[str] = None
     source_provider: Optional[str] = None
+    rating: Optional[float] = None
+    review_count: Optional[int] = None
+    avg_cost: Optional[float] = None
+    currency: Optional[str] = None
+    is_active: Optional[bool] = True
 
 class RecommendPlacesResponse(BaseModel):
     total_found: int

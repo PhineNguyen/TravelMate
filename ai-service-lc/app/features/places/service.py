@@ -127,7 +127,12 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
                         "city": matched_place.get("city"),
                         "country": matched_place.get("country"),
                         "image_url": matched_place.get("image_url"),
-                        "source_provider": matched_place.get("source_provider")
+                        "source_provider": matched_place.get("source_provider"),
+                        "rating": None,
+                        "review_count": None,
+                        "avg_cost": None,
+                        "currency": None,
+                        "is_active": True
                     })
             
             return ranked_places
