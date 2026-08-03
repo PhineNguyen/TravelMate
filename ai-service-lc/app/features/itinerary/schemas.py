@@ -33,10 +33,14 @@ class GenerateItineraryResponse(BaseModel):
 class RouteLocationItem(BaseModel):
     location_name: str = Field(..., description="Tên địa điểm")
     current_sequence: int = Field(..., description="Thứ tự hiện tại trong danh sách")
+    place_id: Optional[int] = Field(None, description="ID địa điểm từ CSDL backend")
+    latitude: Optional[float] = Field(None, description="Vĩ độ")
+    longitude: Optional[float] = Field(None, description="Kinh độ")
 
 class RouteLocationOptimized(BaseModel):
     location_name: str = Field(..., description="Tên địa điểm")
     optimized_sequence: int = Field(..., description="Thứ tự tối ưu sau khi sắp xếp")
+    place_id: Optional[int] = Field(None, description="ID địa điểm từ CSDL backend")
 
 class RouteOptimizationRequest(BaseModel):
     locations: List[RouteLocationItem] = Field(..., description="Danh sách các địa điểm cần tối ưu hóa")

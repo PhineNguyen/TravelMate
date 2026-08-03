@@ -46,14 +46,18 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
 def get_optimize_route_prompt(loc_list: list) -> str:
     return f"""
     Bạn là chuyên gia tối ưu lộ trình du lịch.
-    Dưới đây là danh sách toàn bộ {len(loc_list)} địa điểm cần tối ưu hóa thứ tự di chuyển để khoảng cách địa lý ngắn nhất, tránh đi vòng:
+    Dưới đây là danh sách toàn bộ {len(loc_list)} địa điểm cần tối ưu hóa thứ tự di chuyển để khoảng cách địa lý ngắn nhất, tránh đi vòng chéo nhau:
     {json.dumps(loc_list, ensure_ascii=False)}
 
-    Hãy sắp xếp lại thứ tự di chuyển cho TOÀN BỘ {len(loc_list)} địa điểm trên. Giá trị "optimized_sequence" bắt đầu từ 1 cho địa điểm đầu tiên, tăng dần lên 2, 3... cho các địa điểm tiếp theo.
-    Bạn bắt buộc phải trả về đầy đủ tất cả {len(loc_list)} địa điểm trong kết quả.
+    Yêu cầu:
+    1. Hãy sử dụng tọa độ địa lý (vĩ độ và kinh độ - nếu có cung cấp) để tính toán khoảng cách thực tế giữa các điểm tham quan để sắp xếp lộ trình di chuyển tối ưu địa lý tốt nhất.
+    2. Sắp xếp lại thứ tự di chuyển cho TOÀN BỘ {len(loc_list)} địa điểm trên. Giá trị "optimized_sequence" bắt đầu từ 1 cho địa điểm đầu tiên, tăng dần lên 2, 3... cho các địa điểm tiếp theo.
+    3. Bạn bắt buộc phải trả về đầy đủ tất cả {len(loc_list)} địa điểm trong kết quả. Giữ nguyên giá trị "place_id" (nếu có) tương ứng của địa điểm đó.
+
     Trả về ĐÚNG cấu trúc mảng JSON gồm các đối tượng có cấu trúc như mẫu sau, không kèm bất kỳ câu thoại nào:
     [
       {{
+        "place_id": 1,
         "location_name": "Tên địa điểm",
         "optimized_sequence": 1
       }}

@@ -65,7 +65,10 @@ async def optimize_route_llm(locations: list) -> list:
         else:
             loc_list.append({
                 "location_name": getattr(loc, "location_name", ""),
-                "current_sequence": getattr(loc, "current_sequence", 0)
+                "current_sequence": getattr(loc, "current_sequence", 0),
+                "place_id": getattr(loc, "place_id", None),
+                "latitude": getattr(loc, "latitude", None),
+                "longitude": getattr(loc, "longitude", None)
             })
 
     prompt = get_optimize_route_prompt(loc_list)
@@ -108,27 +111,36 @@ async def optimize_route_llm(locations: list) -> list:
             elif isinstance(data, list):
                 items = data
 
-            # Extract location_name and optimized_sequence
+            # Extract location_name, optimized_sequence, and place_id
             optimized_route = []
             for item in items:
                 if isinstance(item, dict) and "location_name" in item and "optimized_sequence" in item:
                     try:
                         optimized_route.append({
                             "location_name": item["location_name"],
-                            "optimized_sequence": int(item["optimized_sequence"])
+                            "optimized_sequence": int(item["optimized_sequence"]),
+                            "place_id": item.get("place_id")
                         })
                     except (ValueError, TypeError):
                         continue
             
             if optimized_route:
                 return optimized_route
-            return [{"location_name": loc["location_name"], "optimized_sequence": idx + 1} for idx, loc in enumerate(loc_list)]
+            return [{
+                "location_name": loc["location_name"], 
+                "optimized_sequence": idx + 1,
+                "place_id": loc.get("place_id")
+            } for idx, loc in enumerate(loc_list)]
 
     except Exception as e:
         print(f"Error optimizing route: {ascii(e)}")
         if response_text:
             print(f"Raw response: {ascii(response_text)}")
-        return [{"location_name": loc["location_name"], "optimized_sequence": idx + 1} for idx, loc in enumerate(loc_list)]
+        return [{
+            "location_name": loc["location_name"], 
+            "optimized_sequence": idx + 1,
+            "place_id": loc.get("place_id")
+        } for idx, loc in enumerate(loc_list)]
 
 async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_activities: list) -> dict:
     if not current_activities:

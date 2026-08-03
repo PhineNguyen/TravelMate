@@ -105,22 +105,34 @@ Sắp xếp lại thứ tự ghé thăm các địa điểm trong ngày sao cho 
 * `locations` (array of objects, Bắt buộc): Danh sách địa điểm cần tối ưu. Mỗi đối tượng gồm:
   * `location_name` (string, Bắt buộc): Tên địa điểm.
   * `current_sequence` (int, Bắt buộc): Thứ tự hiện tại (1, 2, 3...).
+  * `place_id` (int, Tùy chọn): ID địa điểm tương ứng từ CSDL backend.
+  * `latitude` (float, Tùy chọn): Vĩ độ của địa điểm.
+  * `longitude` (float, Tùy chọn): Kinh độ của địa điểm.
 
 ### Nội dung Request mẫu để test
 ```json
 {
   "locations": [
     {
+      "place_id": 101,
       "location_name": "Bán đảo Sơn Trà",
-      "current_sequence": 1
+      "current_sequence": 1,
+      "latitude": 16.0984,
+      "longitude": 108.2721
     },
     {
+      "place_id": 102,
       "location_name": "Chùa Linh Ứng",
-      "current_sequence": 2
+      "current_sequence": 2,
+      "latitude": 16.1008,
+      "longitude": 108.2778
     },
     {
+      "place_id": 103,
       "location_name": "Cầu Rồng",
-      "current_sequence": 3
+      "current_sequence": 3,
+      "latitude": 16.0612,
+      "longitude": 108.2268
     }
   ]
 }
@@ -130,7 +142,7 @@ Sắp xếp lại thứ tự ghé thăm các địa điểm trong ngày sao cho 
 ```bash
 curl -X POST "http://127.0.0.1:8000/ai/optimize-route" \
      -H "Content-Type: application/json" \
-     -d "{\"locations\": [{\"location_name\": \"Bán đảo Sơn Trà\", \"current_sequence\": 1}, {\"location_name\": \"Cầu Rồng\", \"current_sequence\": 2}]}"
+     -d "{\"locations\": [{\"place_id\": 101, \"location_name\": \"Bán đảo Sơn Trà\", \"current_sequence\": 1, \"latitude\": 16.0984, \"longitude\": 108.2721}, {\"place_id\": 103, \"location_name\": \"Cầu Rồng\", \"current_sequence\": 2, \"latitude\": 16.0612, \"longitude\": 108.2268}]}"
 ```
 
 ---
