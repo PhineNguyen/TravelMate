@@ -17,6 +17,7 @@ async def fetch_places_from_geoapify(lat: float, lon: float, radius_km: float, c
         "filter": f"circle:{lon},{lat},{radius_meters}",
         "bias": f"proximity:{lon},{lat}",
         "limit": limit,
+        "details": "contact,wiki_and_media,catering",
         "apiKey": settings.GEOAPIFY_API_KEY
     }
     
@@ -33,6 +34,7 @@ async def fetch_places_from_geoapify(lat: float, lon: float, radius_km: float, c
     for feature in data.get("features", []):
         props = feature.get("properties", {})
         contact = props.get("contact") or {}
+        wiki_media = props.get("wiki_and_media") or {}
         places.append({
             "name": props.get("name") or props.get("formatted", "Địa điểm không tên"),
             "address": props.get("formatted", ""),
@@ -41,6 +43,10 @@ async def fetch_places_from_geoapify(lat: float, lon: float, radius_km: float, c
             "categories": props.get("categories", []),
             "website": props.get("website"),
             "phone": contact.get("phone") or props.get("phone"),
-            "opening_hours": props.get("opening_hours")
+            "opening_hours": props.get("opening_hours"),
+            "city": props.get("city"),
+            "country": props.get("country"),
+            "image_url": wiki_media.get("image"),
+            "source_provider": props.get("datasource", {}).get("sourcename")
         })
     return places

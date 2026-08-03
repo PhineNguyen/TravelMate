@@ -17,9 +17,14 @@ class PlaceItem(BaseModel):
     longitude: float
     reason: str
     google_maps_url: Optional[str] = None
-    website: Optional[str] = None
-    phone: Optional[str] = None
+    website_url: Optional[str] = None
+    phone_number: Optional[str] = None
     opening_hours: Optional[str] = None
+    is_indoor: Optional[bool] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    image_url: Optional[str] = None
+    source_provider: Optional[str] = None
 
 class RecommendPlacesResponse(BaseModel):
     total_found: int
@@ -36,6 +41,8 @@ class GenerateItineraryRequest(BaseModel):
 
 class ActivityItem(BaseModel):
     time: str = Field(..., example="08:00 - 10:00")
+    start_time: str = Field(..., example="08:00")
+    duration_minutes: int = Field(..., example=90)
     place_name: str
     category: str = Field(..., example="restaurant / attraction / accommodation")
     estimated_cost: float

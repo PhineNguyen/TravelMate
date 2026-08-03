@@ -74,6 +74,36 @@ def try_repair_json(json_str: str) -> str:
 
     return json_str
 
+def check_is_indoor(categories: list) -> bool:
+    if not categories:
+        return False
+    indoor_keywords = {
+        "restaurant", "cafe", "fast_food", "bar", "food_court", "pub",
+        "hotel", "hostel", "motel", "guest_house", "apartment", "chalet",
+        "museum", "cinema", "theater", "mall", "shop", "supermarket",
+        "place_of_worship", "church", "temple", "pagoda", "cathedral",
+        "art_gallery", "library", "exhibition_centre"
+    }
+    outdoor_keywords = {
+        "beach", "park", "garden", "nature_reserve", "forest", "mountain",
+        "viewpoint", "waterfall", "lake", "river", "swimming_pool", "playground",
+        "zoo", "theme_park", "amusement_park", "stadium"
+    }
+    is_indoor_match = False
+    is_outdoor_match = False
+    for cat in categories:
+        cat_lower = cat.lower()
+        if any(kw in cat_lower for kw in indoor_keywords):
+            is_indoor_match = True
+        if any(kw in cat_lower for kw in outdoor_keywords):
+            is_outdoor_match = True
+            
+    if is_indoor_match and not is_outdoor_match:
+        return True
+    if is_outdoor_match:
+        return False
+    return False
+
 async def rank_and_explain_places(user_preferences: list, raw_places: list, category: str) -> list:
     if not raw_places:
         return []
@@ -174,6 +204,7 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
                     lat = matched_place["latitude"]
                     lon = matched_place["longitude"]
                     google_maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+                    is_indoor_flag = check_is_indoor(matched_place.get("categories", []))
                     ranked_places.append({
                         "name": matched_place["name"],
                         "category": category,
@@ -182,9 +213,14 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
                         "longitude": lon,
                         "reason": item.get("reason", "Địa điểm phù hợp với sở thích của bạn."),
                         "google_maps_url": google_maps_url,
-                        "website": matched_place.get("website"),
-                        "phone": matched_place.get("phone"),
-                        "opening_hours": matched_place.get("opening_hours")
+                        "website_url": matched_place.get("website"),
+                        "phone_number": matched_place.get("phone"),
+                        "opening_hours": matched_place.get("opening_hours"),
+                        "is_indoor": is_indoor_flag,
+                        "city": matched_place.get("city"),
+                        "country": matched_place.get("country"),
+                        "image_url": matched_place.get("image_url"),
+                        "source_provider": matched_place.get("source_provider")
                     })
             
             return ranked_places
@@ -216,6 +252,7 @@ async def generate_itinerary_llm(
     2. Phân bổ các hoạt động theo mốc thời gian hợp lý (Sáng, Trưa, Chiều, Tối).
     3. Ước tính chi phí chi tiết sao cho tổng chi phí gần bằng hoặc nhỏ hơn ngân sách.
     4. Gán category rõ ràng: "restaurant", "attraction", "accommodation", "activity".
+    5. Hãy tính toán chính xác và điền các trường `start_time` (mốc giờ bắt đầu hoạt động, ví dụ "08:00") và `duration_minutes` (khoảng thời gian hoạt động kéo dài bao nhiêu phút, dạng số nguyên).
 
     Trả về ĐÚNG cấu trúc JSON theo mẫu sau, không kèm bất kỳ câu thoại thừa nào:
     {{
@@ -230,6 +267,8 @@ async def generate_itinerary_llm(
           "activities": [
             {{
               "time": "08:00 - 09:30",
+              "start_time": "08:00",
+              "duration_minutes": 90,
               "place_name": "Tên địa điểm/Quán ăn",
               "category": "restaurant",
               "estimated_cost": 100000,
@@ -388,6 +427,8 @@ async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_ac
         else:
             activities_list.append({
                 "time": getattr(act, "time", ""),
+                "start_time": getattr(act, "start_time", ""),
+                "duration_minutes": getattr(act, "duration_minutes", 0),
                 "place_name": getattr(act, "place_name", ""),
                 "category": getattr(act, "category", ""),
                 "estimated_cost": getattr(act, "estimated_cost", 0.0),
@@ -404,7 +445,7 @@ async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_ac
     Yêu cầu:
     1. Hãy quét qua lịch trình hiện tại, xác định các hoạt động ngoài trời (ví dụ: tham quan thác, bãi biển, leo núi) và thay thế bằng các hoạt động trong nhà phù hợp (ví dụ: bảo tàng, quán cà phê trong nhà, trung tâm thương mại, khu vui chơi trong nhà).
     2. Đảm bảo tổng chi phí của các hoạt động mới thay thế không vượt quá giới hạn ngân sách ({budget_limit} VNĐ).
-    3. Giữ nguyên khung thời gian (time) của hoạt động cũ.
+    3. Giữ nguyên khung thời gian (`time`), mốc giờ bắt đầu (`start_time`), và thời gian kéo dài (`duration_minutes`) của hoạt động cũ.
     4. Trả về giải thích ngắn gọn lý do điều chỉnh.
 
     Trả về ĐÚNG cấu trúc JSON sau, không kèm bất kỳ lời thoại nào:
@@ -412,6 +453,8 @@ async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_ac
       "updated_activities": [
         {{
           "time": "Khung giờ cũ",
+          "start_time": "Mốc giờ bắt đầu cũ",
+          "duration_minutes": 90,
           "place_name": "Tên địa điểm trong nhà mới",
           "category": "restaurant/attraction/accommodation/activity",
           "estimated_cost": 150000,
