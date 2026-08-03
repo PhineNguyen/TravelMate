@@ -13,8 +13,6 @@ import java.util.Optional;
 
 public interface WeatherAlertRepository extends JpaRepository<WeatherAlert, Long> {
 
-    // ── Basic lookups ──────────────────────────────────────────
-
     // Get all alerts for a specific trip
     List<WeatherAlert> findByTripId(Long tripId);
 
@@ -33,21 +31,18 @@ public interface WeatherAlertRepository extends JpaRepository<WeatherAlert, Long
     // Filter alerts by severity (LOW, MEDIUM, HIGH, CRITICAL)
     List<WeatherAlert> findBySeverity(AlertSeverity severity);
 
-    // ── Combined conditions ────────────────────────────────────
-
     // Get unresolved alerts for a trip filtered by severity level
     List<WeatherAlert> findByTripIdAndSeverityAndIsResolvedFalse(Long tripId, AlertSeverity severity);
 
-    // ── Time range ─────────────────────────────────────────────
-
     // Get alerts created within a specific time range
     List<WeatherAlert> findByCreatedAtBetween(Instant from, Instant to);
-
-    // ── Special queries ────────────────────────────────────────
 
     // Get the most recent alert for a trip
     Optional<WeatherAlert> findTopByTripIdOrderByCreatedAtDesc(Long tripId);
 
     // Count unresolved alerts for a trip (used for badge display)
     long countByTripIdAndIsResolvedFalse(Long tripId);
+
+    boolean existsByTripIdAndAlertTypeAndIsResolvedFalse(Long tripId, AlertType alertType);
+
 }

@@ -8,15 +8,15 @@ import com.travelmate.backend.entity.ItineraryItem;
 
 public interface ItineraryItemRepository extends JpaRepository<ItineraryItem, Long> {
 
-    List<ItineraryItem> findByTripIdId(Long tripId);
+    List<ItineraryItem> findByTripId(Long tripId);
 
-    List<ItineraryItem> findByTripIdIdOrderByDayNumberAscOrderIndexAsc(Long tripId);
+    List<ItineraryItem> findByTripIdOrderByDayNumberAscOrderIndexAsc(Long tripId);
 
-    List<ItineraryItem> findByTripIdIdAndDayNumberOrderByOrderIndexAsc(Long tripId, Integer dayNumber);
+    List<ItineraryItem> findByTripIdAndDayNumberOrderByOrderIndexAsc(Long tripId, Integer dayNumber);
 
-    List<ItineraryItem> findByPlaceIdId(Long placeId);
+    List<ItineraryItem> findByPlaceId(Long placeId);
 
-    List<ItineraryItem> findByTripIdIdAndIsLockedTrue(Long tripId);
+    List<ItineraryItem> findByTripIdAndIsLockedTrue(Long tripId);
 
-    boolean existsByTripIdIdAndDayNumberAndOrderIndex(Long tripId, Integer dayNumber, Integer orderIndex);
+    boolean existsByTripIdAndDayNumberAndOrderIndex(Long tripId, Integer dayNumber, Integer orderIndex);
 }

@@ -9,17 +9,17 @@ import com.travelmate.backend.entity.AIConversation;
 
 public interface AIConversationRepository extends JpaRepository<AIConversation, Long> {
 
-    List<AIConversation> findByUserIdId(Long userId);
+    List<AIConversation> findByUser_Id(Long userId);
 
-    List<AIConversation> findByTripIdId(Long tripId);
+    List<AIConversation> findByTrip_Id(Long tripId);
 
-    List<AIConversation> findByUserIdIdOrderByCreatedAtDesc(Long userId);
+    List<AIConversation> findByUser_IdOrderByCreatedAtDesc(Long userId);
 
-    List<AIConversation> findByTripIdIdOrderByCreatedAtDesc(Long tripId);
+    List<AIConversation> findByTrip_IdOrderByCreatedAtDesc(Long tripId);
 
-    Optional<AIConversation> findTopByUserIdIdOrderByUpdatedAtDesc(Long userId);
+    Optional<AIConversation> findTopByUser_IdOrderByUpdatedAtDesc(Long userId);
 
-    Optional<AIConversation> findTopByTripIdIdOrderByUpdatedAtDesc(Long tripId);
+    Optional<AIConversation> findTopByTrip_IdOrderByUpdatedAtDesc(Long tripId);
 
-    boolean existsByUserIdIdAndTripIdId(Long userId, Long tripId);
+    boolean existsByUser_IdAndTrip_Id(Long userId, Long tripId);
 }

@@ -12,16 +12,16 @@ import com.travelmate.backend.entity.enums.ManualActionType;
 
 public interface ManualActionLogRepository extends JpaRepository<ManualActionLog, Long> {
 
-    List<ManualActionLog> findByTripIdIdOrderByTimestampDesc(Long tripId);
+    List<ManualActionLog> findByTripIdOrderByTimestampDesc(Long tripId);
 
-    Page<ManualActionLog> findByTripIdIdOrderByTimestampDesc(Long tripId, Pageable pageable);
+    Page<ManualActionLog> findByTripIdOrderByTimestampDesc(Long tripId, Pageable pageable);
 
-    List<ManualActionLog> findByUserIdIdOrderByTimestampDesc(Long userId);
+    List<ManualActionLog> findByUserIdOrderByTimestampDesc(Long userId);
 
-    List<ManualActionLog> findByTargetItemIdIdOrderByTimestampDesc(Long targetItemId);
+    List<ManualActionLog> findByTargetItemIdOrderByTimestampDesc(Long targetItemId);
 
     List<ManualActionLog> findByActionTypeOrderByTimestampDesc(ManualActionType actionType);
 
-    List<ManualActionLog> findByTripIdIdAndTimestampBetweenOrderByTimestampDesc(Long tripId, LocalDateTime from,
+    List<ManualActionLog> findByTripIdAndTimestampBetweenOrderByTimestampDesc(Long tripId, LocalDateTime from,
             LocalDateTime to);
 }

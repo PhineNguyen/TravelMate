@@ -23,8 +23,8 @@ public class PlaceDTO {
     private Integer reviewCount;
     private BigDecimal avgCost;
     private String currency;
-    private boolean isIndoor;
-    private boolean isActive;
+    private Boolean isIndoor;
+    private Boolean isActive;
     private String imageUrl;
     private String phoneNumber;
     private String websiteUrl;

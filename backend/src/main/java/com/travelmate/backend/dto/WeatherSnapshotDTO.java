@@ -22,7 +22,7 @@ public class WeatherSnapshotDTO {
     private Double visibility;
     private String alertLevel;
     private String city;
-    private boolean isOutdoorSafe;
+    private Boolean isOutdoorSafe;
     private Instant expiresAt;
     private Instant createdAt;
     private Instant updatedAt;

@@ -5,19 +5,22 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.travelmate.backend.entity.AIConversation;
 import com.travelmate.backend.entity.AIMessage;
 import com.travelmate.backend.entity.enums.SenderType;
 
 public interface AIMessageRepository extends JpaRepository<AIMessage, Long> {
 
-    List<AIMessage> findByConversationIdIdOrderByCreatedAtAsc(Long conversationId);
+    List<AIMessage> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
 
-    List<AIMessage> findByConversationIdIdAndSenderTypeOrderByCreatedAtAsc(Long conversationId, SenderType senderType);
+    List<AIMessage> findByConversationIdAndSenderTypeOrderByCreatedAtAsc(Long conversationId, SenderType senderType);
 
-    List<AIMessage> findByConversationIdIdAndCreatedAtAfterOrderByCreatedAtAsc(Long conversationId,
+    List<AIMessage> findByConversationIdAndCreatedAtAfterOrderByCreatedAtAsc(Long conversationId,
             LocalDateTime createdAt);
 
     List<AIMessage> findBySenderTypeOrderByCreatedAtDesc(SenderType senderType);
 
-    long countByConversationIdId(Long conversationId);
+    long countByConversationId(Long conversationId);
+
+    List<AIMessage> findTop10ByConversationOrderByCreatedAtAsc(AIConversation conversation);
 }

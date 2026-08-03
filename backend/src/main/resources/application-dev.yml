@@ -1,10 +1,44 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:devdb;DB_CLOSE_DELAY=-1
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    # URL trỏ đến service 'postgres' trong docker-compose
+    url: jdbc:postgresql://postgres:5432/travelmate
+    driverClassName: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
   jpa:
     hibernate:
+      # Dùng 'update' để giữ dữ liệu, hoặc 'create' nếu muốn xóa sạch khi khởi động lại
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
     show-sql: true
+  # Cấu hình Mail (giả lập)
+  mail:
+    host: localhost
+    port: 25
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+openweathermap:
+  api:
+    url: ${OPENWEATHERMAP_API_URL:https://api.openweathermap.org/data/2.5}
+    key: ${OPENWEATHERMAP_API_KEY:{OPENWEATHER_API_KEY}}
+
+gemini:
+  api-key: ${GEMINI_API_KEY:{GEMINI_API_KEY}}
+  url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+
+# Cấu hình Springdoc (Swagger UI)
+springdoc:
+  # Đường dẫn để truy cập Swagger UI
+  swagger-ui:
+    path: /swagger-ui.html
+  # Các đường dẫn API sẽ được quét
+  paths-to-match:
+    - /api/**

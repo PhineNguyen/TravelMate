@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 public class TripTemplateDTO {
     private Long id;
+    private Long tripId;
     private String title;
     private String destination;
     private String category;

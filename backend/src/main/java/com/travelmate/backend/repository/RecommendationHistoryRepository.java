@@ -11,19 +11,19 @@ import com.travelmate.backend.entity.RecommendationHistory;
 
 public interface RecommendationHistoryRepository extends JpaRepository<RecommendationHistory, Long> {
 
-    List<RecommendationHistory> findByUserIdId(Long userId);
+    List<RecommendationHistory> findByUserId(Long userId);
 
-    Page<RecommendationHistory> findByUserIdIdOrderByGeneratedAtDesc(Long userId, Pageable pageable);
+    Page<RecommendationHistory> findByUserIdOrderByGeneratedAtDesc(Long userId, Pageable pageable);
 
-    List<RecommendationHistory> findByTripIdId(Long tripId);
+    List<RecommendationHistory> findByTripId(Long tripId);
 
-    Page<RecommendationHistory> findByTripIdIdOrderByGeneratedAtDesc(Long tripId, Pageable pageable);
+    Page<RecommendationHistory> findByTripIdOrderByGeneratedAtDesc(Long tripId, Pageable pageable);
 
-    List<RecommendationHistory> findByPlaceIdId(Long placeId);
+    List<RecommendationHistory> findByPlaceId(Long placeId);
 
     List<RecommendationHistory> findBySourceEngine(String sourceEngine);
 
-    List<RecommendationHistory> findByUserIdIdAndSourceEngine(Long userId, String sourceEngine);
+    List<RecommendationHistory> findByUserIdAndSourceEngine(Long userId, String sourceEngine);
 
     List<RecommendationHistory> findByScoreGreaterThanEqual(Double minScore);
 

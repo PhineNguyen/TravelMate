@@ -5,14 +5,14 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: travelmate
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: 21052026
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U root -d travelmate"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d travelmate"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,18 +27,28 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file: .env
     environment:
+      SERVER_PORT: 8080
       SPRING_SECURITY_USER_NAME: admin
       SPRING_SECURITY_USER_PASSWORD: admin123
       SPRING_APPLICATION_NAME: travelmate-backend
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/travelmate
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 21052026
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: nguyenquangtien2005z@gmail.com
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
     ports:
       - "8080:8080"
+    # Cấu hình dùng để tự động build lại backend khi bạn sửa code ở máy local (Development)
+    develop:
+      watch:
+        - action: rebuild
+          path: .
 
 volumes:
-  postgres_data:
+  postgres_data: {}
