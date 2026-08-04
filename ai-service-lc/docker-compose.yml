@@ -24,10 +24,12 @@ services:
     depends_on:
       ai-db:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - PORT=8000
       - GEOAPIFY_API_KEY=f6c58aacd90b409fa1766b93222b2fef
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434  # To access local Ollama running on Windows host
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434  # To access local Ollama running on Windows/Linux/macOS host
       - OLLAMA_MODEL=gemma2:2b
       - DB_HOST=ai-db
       - DB_PORT=5432
