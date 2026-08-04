@@ -146,7 +146,14 @@ async def optimize_route_llm(locations: list) -> list:
             "description": None
         } for idx, loc in enumerate(loc_list)]
 
-async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_activities: list) -> dict:
+async def adjust_weather_llm(
+    weather_alert: str,
+    budget_limit: float,
+    current_activities: list,
+    latitude: float,
+    longitude: float,
+    radius_km: float = 5.0
+) -> dict:
     if not current_activities:
         return {"updated_activities": [], "adjustment_reason": "Không có hoạt động nào cần điều chỉnh."}
 
@@ -167,7 +174,32 @@ async def adjust_weather_llm(weather_alert: str, budget_limit: float, current_ac
                 "description": getattr(act, "description", "")
             })
 
-    prompt = get_weather_adjustment_prompt(weather_alert, budget_limit, activities_list)
+    # Fetch candidate places from Geoapify
+    indoor_candidates = []
+    try:
+        from app.features.places.geoapify import fetch_places_from_geoapify
+        from app.features.places.service import check_is_indoor
+        
+        # Fetch both attractions and restaurants
+        attractions = await fetch_places_from_geoapify(latitude, longitude, radius_km, "attraction", limit=20)
+        restaurants = await fetch_places_from_geoapify(latitude, longitude, radius_km, "restaurant", limit=15)
+        
+        raw_candidates = attractions + restaurants
+        
+        # Filter for indoor candidates only
+        seen_names = set()
+        for p in raw_candidates:
+            if p["name"] not in seen_names and check_is_indoor(p.get("categories", [])):
+                seen_names.add(p["name"])
+                indoor_candidates.append({
+                    "name": p["name"],
+                    "address": p["address"],
+                    "categories": p.get("categories", [])
+                })
+    except Exception as geo_err:
+        print(f"Error fetching indoor candidates from Geoapify: {geo_err}")
+
+    prompt = get_weather_adjustment_prompt(weather_alert, budget_limit, activities_list, indoor_candidates)
 
     payload = {
         "model": settings.OLLAMA_MODEL,

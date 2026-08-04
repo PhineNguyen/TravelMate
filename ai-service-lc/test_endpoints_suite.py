@@ -71,6 +71,9 @@ async def test_adjust_weather(client: httpx.AsyncClient):
     payload = {
         "weather_alert": "Ngày mai trời mưa to, có bão gió giật mạnh ở Đà Nẵng.",
         "budget_limit": 500000.0,
+        "latitude": 16.0544,
+        "longitude": 108.2022,
+        "radius_km": 5.0,
         "current_activities": [
             {
                 "time": "08:00 - 11:30",

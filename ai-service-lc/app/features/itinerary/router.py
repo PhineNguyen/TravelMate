@@ -45,7 +45,10 @@ async def adjust_weather(payload: WeatherAdjustmentRequest):
         result = await adjust_weather_llm(
             weather_alert=payload.weather_alert,
             budget_limit=payload.budget_limit,
-            current_activities=payload.current_activities
+            current_activities=payload.current_activities,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            radius_km=payload.radius_km
         )
         return result
     except Exception as e:

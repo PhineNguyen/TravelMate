@@ -54,6 +54,9 @@ class WeatherAdjustmentRequest(BaseModel):
     weather_alert: str = Field(..., description="Bản tin cảnh báo thời tiết (ví dụ: Chiều mai có mưa bão)")
     budget_limit: float = Field(..., description="Ngân sách còn lại cho các hoạt động thay thế")
     current_activities: List[ActivityItem] = Field(..., description="Lịch trình của ngày đang bị ảnh hưởng")
+    latitude: float = Field(..., description="Vĩ độ hiện tại của du khách")
+    longitude: float = Field(..., description="Kinh độ hiện tại của du khách")
+    radius_km: Optional[float] = Field(5.0, description="Bán kính tìm kiếm các điểm trong nhà thay thế (km)")
 
 class WeatherAdjustmentResponse(BaseModel):
     updated_activities: List[ActivityItem] = Field(..., description="Lịch trình mới đã được AI thay thế điểm đến")

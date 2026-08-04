@@ -74,7 +74,7 @@ def get_optimize_route_prompt(loc_list: list) -> str:
     }}
     """
 
-def get_weather_adjustment_prompt(weather_alert: str, budget_limit: float, activities_list: list) -> str:
+def get_weather_adjustment_prompt(weather_alert: str, budget_limit: float, activities_list: list, candidates: list) -> str:
     return f"""
     Bạn là chuyên gia điều chỉnh lịch trình du lịch thông minh dựa trên thời tiết.
     - Cảnh báo thời tiết: {weather_alert}
@@ -82,25 +82,29 @@ def get_weather_adjustment_prompt(weather_alert: str, budget_limit: float, activ
     - Lịch trình hiện tại của ngày bị ảnh hưởng:
     {json.dumps(activities_list, ensure_ascii=False)}
 
-    Yêu cầu:
-    1. Hãy quét qua lịch trình hiện tại, xác định các hoạt động ngoài trời (ví dụ: tham quan thác, bãi biển, leo núi) và thay thế bằng các hoạt động trong nhà phù hợp (ví dụ: bảo tàng, quán cà phê trong nhà, trung tâm thương mại, khu vui chơi trong nhà).
-    2. Đảm bảo tổng chi phí của các hoạt động mới thay thế không vượt quá giới hạn ngân sách ({budget_limit} VNĐ).
-    3. Giữ nguyên khung thời gian (`time`), mốc giờ bắt đầu (`start_time`), và thời gian kéo dài (`duration_minutes`) của hoạt động cũ.
-    4. Trả về giải thích ngắn gọn lý do điều chỉnh.
+    - Danh sách các địa điểm trong nhà thực tế xung quanh du khách (Lấy từ Geoapify):
+    {json.dumps(candidates, ensure_ascii=False)}
 
-    Trả về ĐÚNG cấu trúc JSON sau, không kèm bất kỳ lời thoại nào:
+    Yêu cầu:
+    1. Hãy quét qua lịch trình hiện tại, xác định các hoạt động ngoài trời (ví dụ: bãi biển, công viên, đỉnh núi) bị ảnh hưởng bởi thời tiết xấu.
+    2. Thay thế các hoạt động ngoài trời bị ảnh hưởng đó bằng các địa điểm trong nhà phù hợp. Bạn bắt buộc phải lựa chọn địa điểm thay thế từ "Danh sách các địa điểm trong nhà thực tế" được cung cấp ở trên (so khớp tên địa điểm để đảm bảo tính xác thực địa lý).
+    3. Đảm bảo tổng chi phí của các hoạt động mới thay thế không vượt quá giới hạn ngân sách ({budget_limit} VNĐ).
+    4. Giữ nguyên khung thời gian (`time`), mốc giờ bắt đầu (`start_time`), và thời gian kéo dài (`duration_minutes`) của hoạt động cũ.
+    5. Trả về giải thích ngắn gọn lý do điều chỉnh.
+
+    Trả về ĐÚNG cấu trúc JSON sau, không kèm bất kỳ lời thoại nào ngoài JSON:
     {{
       "updated_activities": [
         {{
           "time": "Khung giờ cũ",
           "start_time": "Mốc giờ bắt đầu cũ",
           "duration_minutes": 90,
-          "place_name": "Tên địa điểm trong nhà mới",
+          "place_name": "Tên địa điểm trong nhà chọn từ danh sách thực tế",
           "category": "restaurant/attraction/accommodation/activity",
           "estimated_cost": 150000,
           "description": "Mô tả ngắn gọn về địa điểm mới thay thế và lưu ý thời tiết"
         }}
       ],
-      "adjustment_reason": "Mô tả tóm tắt lý do thay đổi các hoạt động ngoài trời thành trong nhà..."
+      "adjustment_reason": "Giải thích chi tiết lý do và tính hợp lý của sự thay đổi lịch trình theo thời tiết."
     }}
     """
