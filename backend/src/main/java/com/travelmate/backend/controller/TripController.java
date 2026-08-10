@@ -1,6 +1,7 @@
 package com.travelmate.backend.controller;
 
 import com.travelmate.backend.dto.request.TripRequest;
+import com.travelmate.backend.dto.request.TripUpdateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
 import com.travelmate.backend.entity.enums.TripStatus;
 import com.travelmate.backend.service.TripService;
@@ -28,23 +29,19 @@ public class TripController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TripResponse> update(@PathVariable Long id, @Valid @RequestBody TripRequest dto) {
+    public ResponseEntity<TripResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody TripUpdateRequest dto) { // Dùng DTO mới và GIỮ LẠI @Valid
         dto.setId(id);
         return ResponseEntity.ok(tripService.update(dto));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TripResponse> get(@PathVariable Long id) {
-        // Service cần viết logic chỉ lấy các trip có isDeleted = false
         TripResponse dto = tripService.findById(id);
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
-    /**
-     * ✅ NÂNG CẤP: Lấy danh sách chuyến đi hỗ trợ Phân trang, Sắp xếp và Bộ lọc
-     * (Filter)
-     * URL ví dụ: /api/trips?page=0&size=10&sort=createdAt,desc&status=PLANNING
-     */
     @GetMapping
     public ResponseEntity<Page<TripResponse>> list(
             @RequestParam(required = false) Long ownerId,
@@ -57,21 +54,12 @@ public class TripController {
         return ResponseEntity.ok(trips);
     }
 
-    /**
-     * ✅ HÀNH ĐỘNG XÓA MỀM (Soft Delete)
-     * Không xóa hẳn khỏi DB mà chuyển trạng thái isDeleted = true thông qua Service
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         tripService.delete(id); // Service sẽ gọi repository.softDeleteById(id)
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * ✅ BỔ SUNG: Khôi phục chuyến đi đã xóa mềm (Restore)
-     * Một tính năng cực kỳ cần thiết khi hệ thống đã chuyển sang kiến trúc Soft
-     * Delete
-     */
     @PutMapping("/{id}/restore")
     public ResponseEntity<TripResponse> restore(@PathVariable Long id) {
         TripResponse restoredTrip = tripService.restore(id);

@@ -248,7 +248,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                                 .tripStatus(TripStatus.PLANNED)
                                                 .inviteCode(UUID.randomUUID().toString().substring(0, 8))
                                                 .isCustomized(true)
-                                                .isDeleted(false)
                                                 .build());
                         }
                         trips = tripRepository.saveAll(trips);
@@ -291,7 +290,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                                 .description("Ăn tối ngày " + (i + 1))
                                                 .expenseDate(LocalDate.now().plusDays(i * 7))
                                                 .isShared(true)
-                                                .isDeleted(false)
                                                 .build());
                         }
                         expenseRepository.saveAll(expenses);

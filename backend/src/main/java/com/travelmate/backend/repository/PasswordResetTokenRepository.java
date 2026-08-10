@@ -1,5 +1,8 @@
 package com.travelmate.backend.repository;
 
+import com.travelmate.backend.entity.User;
+import java.time.LocalDateTime;
+
 import com.travelmate.backend.entity.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -7,4 +10,6 @@ import java.util.Optional;
 
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
     Optional<PasswordResetToken> findByTokenHash(String tokenHash);
+
+    Long countByUserAndCreatedAtAfter(User user, LocalDateTime since);
 }

@@ -177,6 +177,12 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmailAndActiveTrue(request.getEmail())
                 .orElseThrow(() -> new NoSuchElementException("Unknown email"));
 
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        Long recentRequests = passwordResetTokenRepository.countByUserAndCreatedAtAfter(user, oneHourAgo);
+
+        if (recentRequests >= 3) {
+            throw new IllegalArgumentException("To many recent requests please wait 1 hour to continute");
+        }
         String rawToken = UUID.randomUUID().toString().replace("-", "");
         PasswordResetToken token = PasswordResetToken.builder()
                 .user(user)
@@ -185,6 +191,7 @@ public class AuthServiceImpl implements AuthService {
                 .used(false)
                 .build();
         passwordResetTokenRepository.save(token);
+
         passwordResetMailService.sendResetMail(user, rawToken, token.getExpiresAt());
 
         return PasswordResetResponse.builder()

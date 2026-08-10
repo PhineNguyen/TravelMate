@@ -1,6 +1,7 @@
 package com.travelmate.backend.service.impl;
 
 import com.travelmate.backend.dto.request.TripRequest;
+import com.travelmate.backend.dto.request.TripUpdateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
 import com.travelmate.backend.service.WeatherApiClientService;
 import com.travelmate.backend.entity.Trip;
@@ -10,7 +11,6 @@ import com.travelmate.backend.mapper.TripMapper;
 
 import com.travelmate.backend.entity.TripTemplate;
 import com.travelmate.backend.entity.User;
-import com.travelmate.backend.entity.enums.PlanningMode;
 import com.travelmate.backend.entity.enums.TripStatus;
 
 import com.travelmate.backend.repository.TripTemplateRepository;
@@ -21,10 +21,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
 
 import lombok.RequiredArgsConstructor;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,6 +38,33 @@ public class TripServiceImpl implements TripService {
     private final UserRepository userRepository;
     private final TripTemplateRepository tripTemplateRepository;
     private final WeatherApiClientService weatherApiClientService;
+
+    private void checkOwnership(Trip trip, User user) {
+        if (!trip.getOwner().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied. You are not the owner of this trip.");
+        }
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return (User) authentication.getPrincipal();
+    }
+
+    private void checkReadAccess(Trip trip, User user) {
+        if (trip.getOwner().getId().equals(user.getId())) {
+            return;
+        }
+
+        boolean isCollaborator = trip.getTripParticipations().stream()
+                .anyMatch(participant -> participant.getUser().getId().equals(user.getId()));
+
+        if (!isCollaborator) {
+            throw new AccessDeniedException("Access denied. You are not a collaborator on this trip.");
+        }
+    }
 
     @Override
     @Transactional
@@ -121,7 +150,7 @@ public class TripServiceImpl implements TripService {
 
     @Override
     @Transactional
-    public TripResponse update(TripRequest dto) {
+    public TripResponse update(TripUpdateRequest dto) {
         if (dto == null) {
             throw new IllegalArgumentException("TripRequest must be not null");
         }
@@ -130,6 +159,9 @@ public class TripServiceImpl implements TripService {
         }
         Trip existing = tripRepository.findByIdAndIsDeletedFalse(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("TripId not found or has been deleted"));
+
+        User currentUser = getCurrentUser();
+        checkOwnership(existing, currentUser);
 
         TripStatus previousStatus = existing.getTripStatus();
 
@@ -145,7 +177,7 @@ public class TripServiceImpl implements TripService {
                 throw new IllegalArgumentException("Duration must not be <= 0");
             existing.setDuration(dto.getDuration());
         }
-        // ✅ CẬP NHẬT: Xử lý thay đổi số lượng người tham gia
+        // Xử lý thay đổi số lượng người tham gia
         if (dto.getTravelerCount() != null) {
             if (dto.getTravelerCount() <= 0)
                 throw new IllegalArgumentException("Traveler count must not be <= 0");
@@ -185,9 +217,15 @@ public class TripServiceImpl implements TripService {
     public TripResponse findById(Long id) {
         if (id == null)
             throw new IllegalArgumentException("Id must not be null");
-        return tripRepository.findByIdAndIsDeletedFalse(id)
-                .map(TripMapper::toResponse)
-                .orElse(null);
+
+        Trip trip = tripRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found or deleted"));
+
+        // Lấy user hiện tại và kiểm tra quyền XEM
+        User currentUser = getCurrentUser(); // Nhớ dùng hàm getCurrentUser ép kiểu UserDetails của bạn
+        checkReadAccess(trip, currentUser);
+
+        return TripMapper.toResponse(trip);
     }
 
     @Override
@@ -232,11 +270,16 @@ public class TripServiceImpl implements TripService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (id == null)
+        if (id == null) {
             throw new IllegalArgumentException("Id is required");
+        }
 
-        // Sử dụng hàm Custom @Modifying trong Repository để tối ưu hiệu năng hạ tầng dữ
-        // liệu
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        User currentUser = getCurrentUser();
+        checkOwnership(trip, currentUser);
+
         int rowsAffected = tripRepository.softDeleteById(id);
         if (rowsAffected == 0) {
             throw new IllegalArgumentException("Trip not found or already deleted");

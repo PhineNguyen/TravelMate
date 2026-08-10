@@ -14,6 +14,8 @@ import com.travelmate.backend.entity.enums.TripStatus;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "trips", indexes = {
@@ -83,5 +85,9 @@ public class Trip {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TripParticipant> tripParticipations = new ArrayList<>();
 
 }
