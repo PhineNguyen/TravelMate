@@ -47,10 +47,21 @@ public class TripServiceImpl implements TripService {
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() == null) {
             throw new IllegalStateException("User not authenticated");
         }
-        return (User) authentication.getPrincipal();
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User user) {
+            return user;
+        }
+
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            return userRepository.findByEmailAndActiveTrue(userDetails.getUsername())
+                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
+        }
+
+        throw new IllegalStateException("Unsupported authentication principal type: " + principal.getClass().getName());
     }
 
     private void checkReadAccess(Trip trip, User user) {
