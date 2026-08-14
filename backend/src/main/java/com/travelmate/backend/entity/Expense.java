@@ -44,7 +44,6 @@ public class Expense {
     @Column(name = "category", length = 50)
     private ExpenseCategory category;
 
-    @Lob
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 

@@ -9,6 +9,7 @@ import com.travelmate.backend.repository.AIConversationRepository;
 import com.travelmate.backend.repository.TripRepository;
 import com.travelmate.backend.repository.UserRepository;
 import com.travelmate.backend.service.AIConversationService;
+import com.travelmate.backend.service.AiServiceClient;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,6 +26,7 @@ public class AIConversationServiceImpl implements AIConversationService {
     private final AIConversationRepository aiConversationRepository;
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
+    private final AiServiceClient aiServiceClient;
 
     @Override
     @Transactional
@@ -99,6 +101,10 @@ public class AIConversationServiceImpl implements AIConversationService {
             throw new IllegalArgumentException("id is required");
         if (!aiConversationRepository.existsById(id))
             throw new IllegalArgumentException("Conversation not found");
+
+        // Gọi ai-service để xóa sạch lịch sử chat lưu bên phía AI trước
+        aiServiceClient.deleteChatHistory("conversation_" + id);
+
         aiConversationRepository.deleteById(id);
     }
 

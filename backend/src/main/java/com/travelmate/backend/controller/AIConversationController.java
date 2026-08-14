@@ -1,6 +1,8 @@
 package com.travelmate.backend.controller;
 
 import com.travelmate.backend.dto.AIConversationDTO;
+import com.travelmate.backend.dto.request.AIConversationCreateRequest;
+import com.travelmate.backend.dto.request.AIConversationUpdateRequest;
 import com.travelmate.backend.service.AIConversationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +22,21 @@ public class AIConversationController {
     private final AIConversationService aiConversationService;
 
     @PostMapping
-    public ResponseEntity<AIConversationDTO> create(@Valid @RequestBody AIConversationDTO dto) {
+    public ResponseEntity<AIConversationDTO> create(@Valid @RequestBody AIConversationCreateRequest request) {
+        AIConversationDTO dto = AIConversationDTO.builder()
+                .userId(request.getUserId())
+                .tripId(request.getTripId())
+                .sessionTitle(request.getSessionTitle())
+                .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(aiConversationService.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AIConversationDTO> update(@PathVariable Long id, @Valid @RequestBody AIConversationDTO dto) {
-        dto.setId(id);
+    public ResponseEntity<AIConversationDTO> update(@PathVariable Long id, @Valid @RequestBody AIConversationUpdateRequest request) {
+        AIConversationDTO dto = AIConversationDTO.builder()
+                .id(id)
+                .sessionTitle(request.getSessionTitle())
+                .build();
         return ResponseEntity.ok(aiConversationService.update(dto));
     }
 

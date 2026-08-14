@@ -8,6 +8,7 @@ import com.travelmate.backend.mapper.AIMessageMapper;
 import com.travelmate.backend.repository.AIConversationRepository;
 import com.travelmate.backend.repository.AIMessageRepository;
 import com.travelmate.backend.service.AIMessageService;
+import com.travelmate.backend.service.AiServiceClient;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,14 +24,14 @@ public class AIMessageServiceImpl implements AIMessageService {
 
     private final AIMessageRepository aiMessageRepository;
     private final AIConversationRepository aiConversationRepository;
-    private final GeminiApiClientServiceImpl geminiApiClientService;
+    private final AiServiceClient aiServiceClient;
 
-    // Persona của TravelMate AI
+    // Persona của TravelMate AI 
     private static final String TRAVEL_MATE_PERSONA = "You are TravelMate AI, an expert travel assistant. " +
             "Help users with itineraries, food recommendations, and travel advice concisely.";
 
     // =========================================================================
-    // 🚀 PHƯƠNG THỨC MỚI: XỬ LÝ GỬI TIN NHẮN VÀ NHẬN PHẢN HỒI TỪ GEMINI
+    // 🚀 PHƯƠNG THỨC MỚI: XỬ LÝ GỬI TIN NHẮN VÀ NHẬN PHẢN HỒI TỪ AI SERVICE
     // =========================================================================
     @Override
     @Transactional
@@ -46,7 +47,7 @@ public class AIMessageServiceImpl implements AIMessageService {
         AIConversation conv = aiConversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found with id: " + conversationId));
 
-        // 2. Lưu tin nhắn của User vào PostgreSQL
+        // 2. Lưu tin nhắn của User vào PostgreSQL (Java Backend DB)
         AIMessage userMsg = AIMessage.builder()
                 .conversation(conv)
                 .senderType(SenderType.USER)
@@ -54,13 +55,10 @@ public class AIMessageServiceImpl implements AIMessageService {
                 .build();
         aiMessageRepository.save(userMsg);
 
-        // 3. Lấy 10 tin nhắn gần nhất để làm ngữ cảnh (history)
-        List<AIMessage> history = aiMessageRepository.findTop10ByConversationOrderByCreatedAtAsc(conv);
+        // 3. Gọi API của ai-service để lấy câu trả lời (Phiên chat tự động quản lý lịch sử ở phía ai-service)
+        String aiReplyText = aiServiceClient.getChatReply("conversation_" + conversationId, userContent);
 
-        // 4. Gọi API Gemini để lấy câu trả lời
-        String aiReplyText = geminiApiClientService.callGeminiApi(TRAVEL_MATE_PERSONA, history, userContent);
-
-        // 5. Lưu tin nhắn phản hồi của AI vào PostgreSQL
+        // 4. Lưu tin nhắn phản hồi của AI vào PostgreSQL (Java Backend DB)
         AIMessage aiMsg = AIMessage.builder()
                 .conversation(conv)
                 .senderType(SenderType.AI)
@@ -68,7 +66,7 @@ public class AIMessageServiceImpl implements AIMessageService {
                 .build();
         AIMessage savedAiMsg = aiMessageRepository.save(aiMsg);
 
-        // 6. Trả về DTO câu trả lời của AI
+        // 5. Trả về DTO câu trả lời của AI
         return AIMessageMapper.toDto(savedAiMsg);
     }
 

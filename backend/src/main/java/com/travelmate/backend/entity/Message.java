@@ -33,7 +33,6 @@ public class Message {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @Lob
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 

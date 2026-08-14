@@ -36,7 +36,6 @@ public class AIMessage implements Serializable {
     @Column(name = "sender_type", length = 20, nullable = false)
     private SenderType senderType; // enum: USER, AI, SYSTEM
 
-    @Lob
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 

@@ -34,6 +34,9 @@ gemini:
   api-key: ${GEMINI_API_KEY:{GEMINI_API_KEY}}
   url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
 
+ai-service:
+  url: ${AI_SERVICE_URL:http://host.docker.internal:8000}
+
 # Cấu hình Springdoc (Swagger UI)
 springdoc:
   # Đường dẫn để truy cập Swagger UI
