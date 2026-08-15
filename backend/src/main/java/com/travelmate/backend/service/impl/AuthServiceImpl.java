@@ -1,8 +1,8 @@
 package com.travelmate.backend.service.impl;
 
 import com.travelmate.backend.dto.request.AuthLoginRequest;
-import com.travelmate.backend.dto.request.AuthRefreshRequest;
 import com.travelmate.backend.dto.request.AuthRegisterRequest;
+import com.travelmate.backend.dto.request.LogoutRequest;
 import com.travelmate.backend.dto.request.OAuthLoginRequest;
 import com.travelmate.backend.dto.request.PasswordResetConfirmRequest;
 import com.travelmate.backend.dto.request.PasswordResetRequest;
@@ -10,20 +10,19 @@ import com.travelmate.backend.dto.response.AuthResponse;
 import com.travelmate.backend.dto.response.PasswordResetResponse;
 import com.travelmate.backend.entity.OAuthAccount;
 import com.travelmate.backend.entity.PasswordResetToken;
-import com.travelmate.backend.entity.RefreshToken;
 import com.travelmate.backend.entity.User;
 import com.travelmate.backend.entity.enums.OAuthProvider;
 import com.travelmate.backend.mapper.UserMapper;
 import com.travelmate.backend.repository.OAuthAccountRepository;
 import com.travelmate.backend.repository.PasswordResetTokenRepository;
-import com.travelmate.backend.repository.RefreshTokenRepository;
 import com.travelmate.backend.repository.UserRepository;
 import com.travelmate.backend.security.JwtService;
 import com.travelmate.backend.service.AuthService;
 import com.travelmate.backend.service.PasswordResetMailService;
+import com.travelmate.backend.service.TokenRevocationService;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -37,12 +36,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final OAuthAccountRepository oauthAccountRepository;
     private final PasswordResetMailService passwordResetMailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final TokenRevocationService tokenRevocationService;
     private final UserMapper userMapper; // 1. Khai báo private final để Lombok inject bean
 
     @Override
@@ -149,41 +148,23 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthResponse refresh(AuthRefreshRequest request) {
+    public void logout(LogoutRequest request) {
         if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
             throw new IllegalArgumentException("Refresh token is required");
         }
 
-        String tokenHash = jwtService.hashToken(request.getRefreshToken());
-        RefreshToken existing = refreshTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
-
-        if (existing.isRevoked()) {
-            throw new IllegalArgumentException("Refresh token was revoked");
-        }
-        if (existing.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Refresh token expired");
+        String rawToken = request.getRefreshToken().trim();
+        if (!jwtService.isAccessTokenValid(rawToken)) {
+            throw new IllegalStateException("Token is invalid or already revoked");
         }
 
-        User user = existing.getUser();
-        existing.setRevoked(true);
-        refreshTokenRepository.save(existing);
-
-        return issueTokens(user);
-    }
-
-    @Override
-    @Transactional
-    public void logout(String refreshToken) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            throw new IllegalArgumentException("Refresh token is required");
+        String jti = jwtService.extractJti(rawToken);
+        if (tokenRevocationService.isRevoked(jti)) {
+            throw new IllegalStateException("Token is invalid or already revoked");
         }
 
-        String tokenHash = jwtService.hashToken(refreshToken);
-        RefreshToken existing = refreshTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
-        existing.setRevoked(true);
-        refreshTokenRepository.save(existing);
+        Instant expiresAt = jwtService.extractExpiration(rawToken);
+        tokenRevocationService.revoke(jti, expiresAt);
     }
 
     @Override
@@ -196,6 +177,12 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmailAndActiveTrue(request.getEmail())
                 .orElseThrow(() -> new NoSuchElementException("Unknown email"));
 
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        Long recentRequests = passwordResetTokenRepository.countByUserAndCreatedAtAfter(user, oneHourAgo);
+
+        if (recentRequests >= 3) {
+            throw new IllegalArgumentException("To many recent requests please wait 1 hour to continute");
+        }
         String rawToken = UUID.randomUUID().toString().replace("-", "");
         PasswordResetToken token = PasswordResetToken.builder()
                 .user(user)
@@ -204,6 +191,7 @@ public class AuthServiceImpl implements AuthService {
                 .used(false)
                 .build();
         passwordResetTokenRepository.save(token);
+
         passwordResetMailService.sendResetMail(user, rawToken, token.getExpiresAt());
 
         return PasswordResetResponse.builder()
@@ -251,29 +239,16 @@ public class AuthServiceImpl implements AuthService {
         resetToken.setUsedAt(LocalDateTime.now());
         passwordResetTokenRepository.save(resetToken);
 
-        List<RefreshToken> activeTokens = refreshTokenRepository.findByUserIdAndRevokedFalse(user.getId());
-        activeTokens.forEach(rt -> rt.setRevoked(true));
-        refreshTokenRepository.saveAll(activeTokens);
     }
 
     private AuthResponse issueTokens(User user) {
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
-        String refreshToken = jwtService.generateRawRefreshToken();
-
-        RefreshToken refreshTokenEntity = RefreshToken.builder()
-                .user(user)
-                .tokenHash(jwtService.hashToken(refreshToken))
-                .expiryDate(jwtService.refreshTokenExpiry())
-                .revoked(false)
-                .build();
-        refreshTokenRepository.save(refreshTokenEntity);
 
         return AuthResponse.builder()
                 .tokenType("Bearer")
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .expiresInSeconds(jwtService.getAccessTokenTtlSeconds())
-                .user(userMapper.toResponse(user)) 
+                .user(userMapper.toResponse(user))
                 .build();
     }
 
@@ -302,5 +277,15 @@ public class AuthServiceImpl implements AuthService {
         if (!password.matches(".*\\d.*")) {
             throw new IllegalArgumentException("Invalid password format");
         }
+    }
+
+    private String extractBearerToken(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        if (!authorizationHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        return authorizationHeader.substring(7);
     }
 }

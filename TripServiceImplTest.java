@@ -60,7 +60,6 @@ class TripServiceImplTest {
         trip.setDuration(7);
         trip.setTripStatus(TripStatus.DRAFT); // Bắt đầu ở trạng thái nháp
         trip.setTotalBudget(new BigDecimal("2000.00"));
-        trip.setDeleted(false);
         testTrip = tripRepository.save(trip);
     }
 

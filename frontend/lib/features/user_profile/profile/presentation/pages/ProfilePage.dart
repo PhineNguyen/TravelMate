@@ -244,12 +244,21 @@ class ProfilePage extends StatelessWidget {
   }) {
     return ListTile(
       onTap: page != null
-          ? () => Navigator.push(
+          ? () {
+              if (isDestructive) {
+                Navigator.of(context!).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => page),
+                  (route) => false,
+                );
+                return;
+              }
+              Navigator.push(
                 context!,
                 MaterialPageRoute(
                   builder: (context) => page,
                 ),
-              )
+              );
+            }
           : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(

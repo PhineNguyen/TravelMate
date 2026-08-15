@@ -28,7 +28,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
         private final UserRepository userRepository;
         private final UserPreferenceRepository userPreferenceRepository;
         private final OAuthAccountRepository oAuthAccountRepository;
-        private final RefreshTokenRepository refreshTokenRepository;
         private final PasswordResetTokenRepository passwordResetTokenRepository;
 
         // 2. Kho dữ liệu Địa điểm & Mẫu chuyến đi
@@ -189,20 +188,7 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                         }
                         oAuthAccountRepository.saveAll(oAuthAccounts);
 
-                        // 6. Bảng RefreshToken
-                        List<RefreshToken> refreshTokens = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
-                                RefreshToken rt = RefreshToken.builder()
-                                                .user(users.get(i))
-                                                .tokenHash("tokenHash_V2_" + i)
-                                                .expiryDate(LocalDateTime.now().plusDays(30))
-                                                .revoked(false)
-                                                .build();
-                                refreshTokens.add(rt);
-                        }
-                        refreshTokenRepository.saveAll(refreshTokens);
-
-                        // 7. Bảng PasswordResetToken
+                        // 6. Bảng PasswordResetToken
                         List<PasswordResetToken> prTokens = new ArrayList<>();
                         for (int i = 0; i < 5; i++) {
                                 PasswordResetToken prt = PasswordResetToken.builder()
@@ -215,7 +201,7 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                         }
                         passwordResetTokenRepository.saveAll(prTokens);
 
-                        // 8. Bảng TemplateItem
+                        // 7. Bảng TemplateItem
                         List<TemplateItem> templateItems = new ArrayList<>();
                         for (int i = 0; i < 5; i++) {
                                 TemplateItem item = TemplateItem.builder()
@@ -262,7 +248,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                                 .tripStatus(TripStatus.PLANNED)
                                                 .inviteCode(UUID.randomUUID().toString().substring(0, 8))
                                                 .isCustomized(true)
-                                                .isDeleted(false)
                                                 .build());
                         }
                         trips = tripRepository.saveAll(trips);
@@ -305,7 +290,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                                 .description("Ăn tối ngày " + (i + 1))
                                                 .expenseDate(LocalDate.now().plusDays(i * 7))
                                                 .isShared(true)
-                                                .isDeleted(false)
                                                 .build());
                         }
                         expenseRepository.saveAll(expenses);
