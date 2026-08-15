@@ -2,10 +2,19 @@ package com.travelmate.backend.service.impl;
 
 import com.travelmate.backend.dto.request.TripRequest;
 import com.travelmate.backend.dto.request.TripUpdateRequest;
+import com.travelmate.backend.dto.request.TripItineraryGenerateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
+import com.travelmate.backend.dto.response.AiItineraryGenerateResponse;
 import com.travelmate.backend.service.WeatherApiClientService;
+import com.travelmate.backend.service.AiServiceClient;
 import com.travelmate.backend.entity.Trip;
+import com.travelmate.backend.entity.ItineraryItem;
+import com.travelmate.backend.entity.Place;
+import com.travelmate.backend.entity.enums.ExpenseCategory;
+import com.travelmate.backend.entity.enums.SourceType;
 import com.travelmate.backend.repository.TripRepository;
+import com.travelmate.backend.repository.ItineraryItemRepository;
+import com.travelmate.backend.repository.PlaceRepository;
 import com.travelmate.backend.service.TripService;
 import com.travelmate.backend.mapper.TripMapper;
 
@@ -27,7 +36,10 @@ import org.springframework.security.access.AccessDeniedException;
 
 import lombok.RequiredArgsConstructor;
 import java.math.RoundingMode;
+import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,6 +50,9 @@ public class TripServiceImpl implements TripService {
     private final UserRepository userRepository;
     private final TripTemplateRepository tripTemplateRepository;
     private final WeatherApiClientService weatherApiClientService;
+    private final AiServiceClient aiServiceClient;
+    private final ItineraryItemRepository itineraryItemRepository;
+    private final PlaceRepository placeRepository;
 
     private void checkOwnership(Trip trip, User user) {
         if (!trip.getOwner().getId().equals(user.getId())) {
@@ -366,5 +381,118 @@ public class TripServiceImpl implements TripService {
 
     private boolean isTerminal(TripStatus status) {
         return status == TripStatus.COMPLETED || status == TripStatus.CANCELLED || status == TripStatus.ARCHIVED;
+    }
+
+    @Override
+    @Transactional
+    public void generateItineraryWithAI(Long id, TripItineraryGenerateRequest request) {
+        if (id == null) {
+            throw new IllegalArgumentException("Trip ID is required");
+        }
+        if (request == null) {
+            throw new IllegalArgumentException("Request body is required");
+        }
+
+        // 1. Tìm Trip và kiểm tra quyền sở hữu
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found with id: " + id));
+        User currentUser = getCurrentUser();
+        checkOwnership(trip, currentUser);
+
+        // 2. Chuyển đổi thông tin sang Request AI
+        Double budget = trip.getTotalBudget() != null ? trip.getTotalBudget().doubleValue() : 0.0;
+        Integer duration = trip.getDuration() != null ? trip.getDuration() : 1;
+        Integer travelerCount = trip.getTravelerCount() != null ? trip.getTravelerCount() : 1;
+
+        // 3. Gọi AI Service
+        AiItineraryGenerateResponse response = aiServiceClient.generateItinerary(
+            trip.getDestination(),
+            duration,
+            budget,
+            request.getTravelStyle(),
+            travelerCount,
+            request.getPreferences()
+        );
+
+        // 4. Xóa sạch lịch trình cũ nếu có
+        List<ItineraryItem> oldItems = itineraryItemRepository.findByTripId(id);
+        itineraryItemRepository.deleteAll(oldItems);
+
+        // 5. Duyệt và lưu lịch trình mới từ AI
+        if (response != null && response.getItinerary() != null) {
+            for (AiItineraryGenerateResponse.DayItinerary day : response.getItinerary()) {
+                int orderIndex = 1;
+                if (day.getActivities() != null) {
+                    for (AiItineraryGenerateResponse.AiActivity act : day.getActivities()) {
+                        // Tìm hoặc tạo mới Place
+                        Place place = findOrCreatePlace(act.getPlace_name(), act.getDescription(), trip.getDestination(), act.getCategory());
+
+                        // Parse Start Time
+                        LocalTime startTime = LocalTime.of(8, 0); // Default fallback
+                        if (act.getStart_time() != null && act.getStart_time().contains(":")) {
+                            try {
+                                String[] parts = act.getStart_time().trim().split(":");
+                                int hr = Integer.parseInt(parts[0]);
+                                int min = Integer.parseInt(parts[1]);
+                                startTime = LocalTime.of(hr, min);
+                            } catch (Exception e) {
+                                // Keep default fallback
+                            }
+                        }
+
+                        // Create ItineraryItem
+                        ItineraryItem item = ItineraryItem.builder()
+                                .trip(trip)
+                                .place(place)
+                                .dayNumber(day.getDay() != null ? day.getDay() : 1)
+                                .startTime(startTime)
+                                .duration(act.getDuration_minutes() != null ? act.getDuration_minutes() : 60)
+                                .note(act.getDescription())
+                                .costEstimate(act.getEstimated_cost() != null ? BigDecimal.valueOf(act.getEstimated_cost()) : BigDecimal.ZERO)
+                                .orderIndex(orderIndex++)
+                                .sourceType(SourceType.AI)
+                                .isLocked(false)
+                                .build();
+
+                        itineraryItemRepository.save(item);
+                    }
+                }
+            }
+        }
+    }
+
+    private Place findOrCreatePlace(String name, String description, String city, String aiCategory) {
+        if (name == null || name.trim().isEmpty()) {
+            return null;
+        }
+
+        Optional<Place> existing = placeRepository.findByNameAndCityAndCountry(name.trim(), city, "Vietnam");
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        // Map Category
+        ExpenseCategory category = ExpenseCategory.OTHER;
+        if (aiCategory != null) {
+            String cat = aiCategory.toLowerCase().trim();
+            if (cat.equals("restaurant") || cat.contains("food")) {
+                category = ExpenseCategory.FOOD;
+            } else if (cat.equals("accommodation") || cat.contains("hotel")) {
+                category = ExpenseCategory.HOTEL;
+            } else if (cat.equals("attraction") || cat.contains("sight") || cat.contains("entertainment")) {
+                category = ExpenseCategory.ENTERTAINMENT;
+            }
+        }
+
+        Place newPlace = Place.builder()
+                .name(name.trim())
+                .description(description)
+                .city(city)
+                .country("Vietnam")
+                .category(category)
+                .isActive(true)
+                .build();
+
+        return placeRepository.save(newPlace);
     }
 }

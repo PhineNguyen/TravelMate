@@ -2,6 +2,7 @@ package com.travelmate.backend.controller;
 
 import com.travelmate.backend.dto.request.TripRequest;
 import com.travelmate.backend.dto.request.TripUpdateRequest;
+import com.travelmate.backend.dto.request.TripItineraryGenerateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
 import com.travelmate.backend.entity.enums.TripStatus;
 import com.travelmate.backend.service.TripService;
@@ -64,5 +65,13 @@ public class TripController {
     public ResponseEntity<TripResponse> restore(@PathVariable Long id) {
         TripResponse restoredTrip = tripService.restore(id);
         return ResponseEntity.ok(restoredTrip);
+    }
+
+    @PostMapping("/{id}/generate-itinerary")
+    public ResponseEntity<Void> generateItinerary(
+            @PathVariable Long id,
+            @Valid @RequestBody TripItineraryGenerateRequest request) {
+        tripService.generateItineraryWithAI(id, request);
+        return ResponseEntity.ok().build();
     }
 }

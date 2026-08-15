@@ -33,7 +33,7 @@ async def generate_itinerary_llm(
             response = await client.post(
                 f"{settings.OLLAMA_BASE_URL}/api/generate",
                 json=payload,
-                timeout=180.0
+                timeout=600.0
             )
             response.raise_for_status()
             response_text = response.json().get("response", "{}")
@@ -91,7 +91,7 @@ async def optimize_route_llm(locations: list) -> list:
             response = await client.post(
                 f"{settings.OLLAMA_BASE_URL}/api/generate",
                 json=payload,
-                timeout=180.0
+                timeout=600.0
             )
             response.raise_for_status()
             response_text = response.json().get("response", "[]")
@@ -218,7 +218,7 @@ async def adjust_weather_llm(
             response = await client.post(
                 f"{settings.OLLAMA_BASE_URL}/api/generate",
                 json=payload,
-                timeout=180.0
+                timeout=600.0
             )
             response.raise_for_status()
             response_text = response.json().get("response", "{}")

@@ -16,13 +16,14 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
     3. Ước tính chi phí chi tiết sao cho tổng chi phí gần bằng hoặc nhỏ hơn ngân sách.
     4. Gán category rõ ràng: "restaurant", "attraction", "accommodation", "activity".
     5. Hãy tính toán chính xác và điền các trường `start_time` (mốc giờ bắt đầu hoạt động, ví dụ "08:00") và `duration_minutes` (khoảng thời gian hoạt động kéo dài bao nhiêu phút, dạng số nguyên).
+    6. TỐI ƯU TỐC ĐỘ: Trường `summary` và `description` của từng hoạt động phải viết CỰC KỲ NGẮN GỌN và CÔ ĐỌNG (Mỗi description tối đa 10 từ). Tuyệt đối không viết dài dòng.
 
     Trả về ĐÚNG cấu trúc JSON theo mẫu sau, không kèm bất kỳ câu thoại thừa nào:
     {{
       "destination": "{destination}",
       "duration_days": {duration_days},
       "estimated_total_cost": {budget},
-      "summary": "Mô tả tóm tắt trải nghiệm chuyến đi...",
+      "summary": "Tóm tắt chuyến đi dưới 15 từ...",
       "itinerary": [
         {{
           "day": 1,
@@ -35,7 +36,7 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
               "place_name": "Tên địa điểm/Quán ăn",
               "category": "restaurant",
               "estimated_cost": 100000,
-              "description": "Mô tả ngắn gọn hoạt động"
+              "description": "Mô tả siêu ngắn dưới 10 từ"
             }}
           ]
         }}
@@ -59,7 +60,7 @@ def get_optimize_route_prompt(loc_list: list) -> str:
     3. Tìm điểm cân bằng tối ưu nhất giữa khoảng cách địa lý ngắn nhất và thứ tự thời gian sinh hoạt tự nhiên hợp lý của con người.
     4. Sắp xếp lại thứ tự di chuyển cho TOÀN BỘ {len(loc_list)} địa điểm trên. Giá trị "optimized_sequence" bắt đầu từ 1 cho địa điểm đầu tiên, tăng dần lên 2, 3... cho các địa điểm tiếp theo.
     5. Bạn bắt buộc phải trả về đầy đủ tất cả {len(loc_list)} địa điểm trong kết quả. Giữ nguyên giá trị "place_id" (nếu có) tương ứng của địa điểm đó.
-    6. Với mỗi địa điểm, hãy viết thêm 1-2 câu giới thiệu/giải thích ngắn gọn (bằng tiếng Việt) lý do sắp xếp địa điểm này vào thứ tự này trong ngày hoặc nét đặc trưng nổi bật nhất của điểm đến, lưu vào trường "description".
+    6. TỐI ƯU TỐC ĐỘ: Với mỗi địa điểm, hãy viết 1 câu giải thích lý do sắp xếp cực kỳ ngắn gọn, cô đọng (Dưới 10 từ), lưu vào trường "description".
 
     Trả về ĐÚNG cấu trúc đối tượng JSON chứa mảng như mẫu sau, không kèm bất kỳ câu thoại nào ngoài JSON:
     {{
@@ -68,7 +69,7 @@ def get_optimize_route_prompt(loc_list: list) -> str:
           "place_id": 1,
           "location_name": "Tên địa điểm",
           "optimized_sequence": 1,
-          "description": "Lời giới thiệu ngắn gọn về địa điểm này và lý do sắp xếp vào khung giờ/thứ tự tương ứng..."
+          "description": "Lý do sắp xếp siêu ngắn dưới 10 từ..."
         }}
       ]
     }}

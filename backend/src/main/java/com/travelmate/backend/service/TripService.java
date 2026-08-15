@@ -2,6 +2,7 @@ package com.travelmate.backend.service;
 
 import com.travelmate.backend.dto.request.TripRequest;
 import com.travelmate.backend.dto.request.TripUpdateRequest;
+import com.travelmate.backend.dto.request.TripItineraryGenerateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
 import com.travelmate.backend.entity.enums.TripStatus;
 import org.springframework.data.domain.Page;
@@ -24,4 +25,6 @@ public interface TripService {
     void delete(Long id);
 
     TripResponse restore(Long id);
+
+    void generateItineraryWithAI(Long id, TripItineraryGenerateRequest request);
 }
