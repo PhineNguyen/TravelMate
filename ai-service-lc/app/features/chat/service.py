@@ -12,6 +12,7 @@ def get_classification_prompt(message: str) -> str:
     "{message}"
 
     Hãy phân loại câu hỏi vào một trong các nhãn (intent) sau:
+    - `out_of_scope`: Câu hỏi hoàn toàn không liên quan đến du lịch, du hành, hành trình, danh lam thắng cảnh, ẩm thực hay di chuyển (ví dụ: học lập trình python, viết code máy tính, học toán học, tìm việc làm thêm, tin tức thời sự chính trị, hướng dẫn làm bài tập...).
     - `trip_preparation`: Chuẩn bị hành lý, đồ đạc cần mang theo, giấy tờ.
     - `weather`: Hỏi về thời tiết, nhiệt độ, khí hậu.
     - `food`: Hỏi về món ăn ngon, ẩm thực, đặc sản, quán ăn, quán nước.
@@ -19,7 +20,7 @@ def get_classification_prompt(message: str) -> str:
     - `budget`: Hỏi về chi phí, ngân sách, giá cả.
     - `accommodation`: Hỏi về nơi ở, khách sạn, homestay.
     - `place_recommendation`: Hỏi về địa điểm tham quan, vui chơi, check-in, giải trí.
-    - `general_travel`: Hỏi đáp hoặc trò chuyện du lịch chung không thuộc các nhóm trên.
+    - `general_travel`: Hỏi đáp hoặc trò chuyện du lịch chung (như hỏi kinh nghiệm đi du lịch, lưu ý khi đi một mình...).
 
     Đồng thời, hãy trích xuất tên địa danh (thành phố/tỉnh thành) được đề cập trong câu hỏi nếu có (ví dụ: "Đà Lạt", "HCM", "Nha Trang"). Nếu không có địa danh nào được nhắc tới, hãy trả về null.
 
@@ -99,6 +100,14 @@ async def chat_with_ai_llm(session_id: str, message: str, destination: str = Non
         print(f"[Chat Classifier] Error in session {session_id}: {class_err}")
 
     print(f"[Chat AI] Session: {session_id} | Intent: {intent} | Destination: {active_destination}")
+
+    # Check for out of scope query
+    if intent == "out_of_scope":
+        reply = "Xin lỗi, tôi là trợ lý du lịch của TravelMate và chỉ có thể hỗ trợ các thông tin liên quan đến du lịch, hành trình, ẩm thực, thời tiết hoặc chuẩn bị chuyến đi. Bạn vui lòng đặt câu hỏi liên quan đến du lịch nhé! 😊"
+        chat_store.add_message(session_id, "user", message)
+        chat_store.add_message(session_id, "assistant", reply)
+        return reply
+
     system_content = build_dynamic_system_prompt(intent, active_destination, preferences)
 
     # 3. If empty, initialize session with system prompt
@@ -189,6 +198,15 @@ async def chat_with_ai_stream(session_id: str, message: str, destination: str = 
         print(f"[Chat Stream Classifier] Error in session {session_id}: {class_err}")
 
     print(f"[Chat AI Stream] Session: {session_id} | Intent: {intent} | Destination: {active_destination}")
+
+    # Check for out of scope query
+    if intent == "out_of_scope":
+        reply = "Xin lỗi, tôi là trợ lý du lịch của TravelMate và chỉ có thể hỗ trợ các thông tin liên quan đến du lịch, hành trình, ẩm thực, thời tiết hoặc chuẩn bị chuyến đi. Bạn vui lòng đặt câu hỏi liên quan đến du lịch nhé! 😊"
+        chat_store.add_message(session_id, "user", message)
+        chat_store.add_message(session_id, "assistant", reply)
+        yield f"data: {json.dumps({'content': reply}, ensure_ascii=False)}\n\n"
+        return
+
     system_content = build_dynamic_system_prompt(intent, active_destination, preferences)
 
     if not history:
