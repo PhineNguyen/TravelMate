@@ -12,5 +12,7 @@ public interface ItineraryItemService {
 
     List<ItineraryItemDTO> listAll();
 
+    List<ItineraryItemDTO> findByTripId(Long tripId);
+
     void delete(Long id);
 }

@@ -6,6 +6,8 @@ import com.travelmate.backend.dto.request.TripItineraryGenerateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
 import com.travelmate.backend.entity.enums.TripStatus;
 import com.travelmate.backend.service.TripService;
+import com.travelmate.backend.dto.ItineraryItemDTO;
+import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -68,10 +70,10 @@ public class TripController {
     }
 
     @PostMapping("/{id}/generate-itinerary")
-    public ResponseEntity<Void> generateItinerary(
+    public ResponseEntity<List<ItineraryItemDTO>> generateItinerary(
             @PathVariable Long id,
             @Valid @RequestBody TripItineraryGenerateRequest request) {
-        tripService.generateItineraryWithAI(id, request);
-        return ResponseEntity.ok().build();
+        List<ItineraryItemDTO> itinerary = tripService.generateItineraryWithAI(id, request);
+        return ResponseEntity.ok(itinerary);
     }
 }

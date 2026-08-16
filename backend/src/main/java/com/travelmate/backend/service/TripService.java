@@ -8,6 +8,8 @@ import com.travelmate.backend.entity.enums.TripStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.travelmate.backend.dto.ItineraryItemDTO;
+
 import java.util.List;
 
 public interface TripService {
@@ -26,5 +28,5 @@ public interface TripService {
 
     TripResponse restore(Long id);
 
-    void generateItineraryWithAI(Long id, TripItineraryGenerateRequest request);
+    List<ItineraryItemDTO> generateItineraryWithAI(Long id, TripItineraryGenerateRequest request);
 }

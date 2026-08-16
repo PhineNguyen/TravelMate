@@ -36,7 +36,10 @@ public class ItineraryItemController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ItineraryItemDTO>> list() {
+    public ResponseEntity<List<ItineraryItemDTO>> list(@RequestParam(required = false) Long tripId) {
+        if (tripId != null) {
+            return ResponseEntity.ok(itineraryItemService.findByTripId(tripId));
+        }
         return ResponseEntity.ok(itineraryItemService.listAll());
     }
 

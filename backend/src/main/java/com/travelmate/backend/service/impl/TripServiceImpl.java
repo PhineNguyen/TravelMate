@@ -17,6 +17,8 @@ import com.travelmate.backend.repository.ItineraryItemRepository;
 import com.travelmate.backend.repository.PlaceRepository;
 import com.travelmate.backend.service.TripService;
 import com.travelmate.backend.mapper.TripMapper;
+import com.travelmate.backend.dto.ItineraryItemDTO;
+import com.travelmate.backend.mapper.ItineraryItemMapper;
 
 import com.travelmate.backend.entity.TripTemplate;
 import com.travelmate.backend.entity.User;
@@ -385,7 +387,7 @@ public class TripServiceImpl implements TripService {
 
     @Override
     @Transactional
-    public void generateItineraryWithAI(Long id, TripItineraryGenerateRequest request) {
+    public List<ItineraryItemDTO> generateItineraryWithAI(Long id, TripItineraryGenerateRequest request) {
         if (id == null) {
             throw new IllegalArgumentException("Trip ID is required");
         }
@@ -419,6 +421,7 @@ public class TripServiceImpl implements TripService {
         itineraryItemRepository.deleteAll(oldItems);
 
         // 5. Duyệt và lưu lịch trình mới từ AI
+        List<ItineraryItem> savedItems = new java.util.ArrayList<>();
         if (response != null && response.getItinerary() != null) {
             for (AiItineraryGenerateResponse.DayItinerary day : response.getItinerary()) {
                 int orderIndex = 1;
@@ -454,11 +457,14 @@ public class TripServiceImpl implements TripService {
                                 .isLocked(false)
                                 .build();
 
-                        itineraryItemRepository.save(item);
+                        savedItems.add(itineraryItemRepository.save(item));
                     }
                 }
             }
         }
+        return savedItems.stream()
+                .map(ItineraryItemMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     private Place findOrCreatePlace(String name, String description, String city, String aiCategory) {

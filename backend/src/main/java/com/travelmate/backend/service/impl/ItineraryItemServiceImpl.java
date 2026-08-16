@@ -124,6 +124,17 @@ public class ItineraryItemServiceImpl implements ItineraryItemService {
     }
 
     @Override
+    public List<ItineraryItemDTO> findByTripId(Long tripId) {
+        if (tripId == null) {
+            throw new IllegalArgumentException("tripId is required");
+        }
+        return itineraryItemRepository.findByTripIdOrderByDayNumberAscOrderIndexAsc(tripId)
+                .stream()
+                .map(ItineraryItemMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void delete(Long id) {
         if (id == null)
