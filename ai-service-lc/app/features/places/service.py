@@ -38,8 +38,31 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
     if not raw_places:
         return []
 
+    # 1. Pre-score candidates in Python based on keyword matching
+    scored_places = []
+    for p in raw_places:
+        score = 0
+        name = p.get("name", "").lower()
+        cats = [c.lower() for c in p.get("categories", [])]
+        
+        for pref in user_preferences:
+            pref_lower = pref.lower()
+            if pref_lower in name:
+                score += 5
+            for c in cats:
+                if pref_lower in c:
+                    score += 3
+        
+        scored_places.append((score, p))
+        
+    # Sort by score descending
+    scored_places.sort(key=lambda x: x[0], reverse=True)
+    
+    # Filter to top 5 candidates to speed up LLM processing
+    top_candidates = [p for score, p in scored_places[:5]]
+
     simplified_places = []
-    for idx, p in enumerate(raw_places):
+    for idx, p in enumerate(top_candidates):
         simplified_places.append({
             "id": idx,
             "name": p.get("name", ""),
@@ -95,8 +118,8 @@ async def rank_and_explain_places(user_preferences: list, raw_places: list, cate
                 if "id" in item:
                     try:
                         idx = int(item["id"])
-                        if 0 <= idx < len(raw_places):
-                            matched_place = raw_places[idx]
+                        if 0 <= idx < len(top_candidates):
+                            matched_place = top_candidates[idx]
                     except (ValueError, TypeError):
                         pass
                 

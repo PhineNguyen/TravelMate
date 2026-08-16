@@ -7,6 +7,25 @@ CATEGORY_MAPPING = {
     "accommodation": "accommodation.hotel,accommodation.guest_house"
 }
 
+async def geocode_destination(destination: str):
+    url = "https://api.geoapify.com/v1/geocode/search"
+    params = {
+        "text": destination,
+        "limit": 1,
+        "apiKey": settings.GEOAPIFY_API_KEY
+    }
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
+            if data.get("features"):
+                props = data["features"][0]["properties"]
+                return props.get("lat"), props.get("lon")
+    except Exception as e:
+        print(f"Error geocoding destination {destination}: {e}")
+    return None, None
+
 async def fetch_places_from_geoapify(lat: float, lon: float, radius_km: float, category: str, limit: int = 20):
     geo_category = CATEGORY_MAPPING.get(category, "tourism.sights")
     radius_meters = int(radius_km * 1000)

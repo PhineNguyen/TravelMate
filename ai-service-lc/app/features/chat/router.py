@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException
 from app.features.chat.schemas import ChatRequest, ChatResponse, ChatMessageItem, ChatHistoryResponse
 from app.features.chat.service import chat_with_ai_llm, get_chat_history_llm, clear_chat_history_llm
 
+from fastapi.responses import StreamingResponse
+from app.features.chat.service import chat_with_ai_llm, get_chat_history_llm, clear_chat_history_llm, chat_with_ai_stream
+
 router = APIRouter(prefix="/ai", tags=["Assistant Chat"])
 
 @router.post("/chat", response_model=ChatResponse)
@@ -13,6 +16,19 @@ async def chat(payload: ChatRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi khi chat với AI: {str(e)}"
+        )
+
+@router.post("/chat/stream")
+async def chat_stream(payload: ChatRequest):
+    try:
+        return StreamingResponse(
+            chat_with_ai_stream(payload.session_id, payload.message),
+            media_type="text/event-stream"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi stream chat với AI: {str(e)}"
         )
 
 @router.get("/chat/{session_id}", response_model=ChatHistoryResponse)

@@ -109,3 +109,24 @@ def get_weather_adjustment_prompt(weather_alert: str, budget_limit: float, activ
       "adjustment_reason": "Giải thích chi tiết lý do và tính hợp lý của sự thay đổi lịch trình theo thời tiết."
     }}
     """
+
+def get_hybrid_itinerary_prompt(destination: str, travel_style: str, preferences: list, activities: list) -> str:
+    return f"""
+    Bạn là chuyên gia viết lời giới thiệu du lịch.
+    Hãy viết mô tả ngắn gọn cho các địa điểm tham quan/ăn uống dưới đây của chuyến đi {destination} với phong cách {travel_style} và sở thích {', '.join(preferences) if preferences else 'Không có'}:
+
+    Danh sách địa điểm:
+    {json.dumps(activities, ensure_ascii=False, indent=2)}
+
+    Yêu cầu:
+    1. Trả về một đối tượng JSON có trường `summary` (tóm tắt chuyến đi dưới 15 từ) và trường `descriptions` (là mảng chứa đúng {len(activities)} chuỗi mô tả tương ứng theo thứ tự của danh sách trên).
+    2. Mỗi chuỗi mô tả phải cực kỳ ngắn gọn và cô đọng (Dưới 10 từ).
+    3. Định dạng trả về bắt buộc là JSON như sau:
+    {{
+      "summary": "Tóm tắt chuyến đi...",
+      "descriptions": [
+        "Mô tả địa điểm 1",
+        "Mô tả địa điểm 2"
+      ]
+    }}
+    """
