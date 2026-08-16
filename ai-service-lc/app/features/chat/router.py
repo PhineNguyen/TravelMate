@@ -10,7 +10,7 @@ router = APIRouter(prefix="/ai", tags=["Assistant Chat"])
 @router.post("/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest):
     try:
-        reply = await chat_with_ai_llm(payload.session_id, payload.message)
+        reply = await chat_with_ai_llm(payload.session_id, payload.message, payload.destination, payload.preferences)
         return ChatResponse(reply=reply)
     except Exception as e:
         raise HTTPException(
@@ -22,7 +22,7 @@ async def chat(payload: ChatRequest):
 async def chat_stream(payload: ChatRequest):
     try:
         return StreamingResponse(
-            chat_with_ai_stream(payload.session_id, payload.message),
+            chat_with_ai_stream(payload.session_id, payload.message, payload.destination, payload.preferences),
             media_type="text/event-stream"
         )
     except Exception as e:

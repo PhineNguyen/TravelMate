@@ -22,18 +22,23 @@ public class AiServiceClientImpl implements AiServiceClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
-    public String getChatReply(String sessionId, String message) {
+    public String getChatReply(String sessionId, String message, String destination, String preferences) {
         String url = aiServiceUrl + "/ai/chat";
 
-        Map<String, Object> body = Map.of(
-            "session_id", sessionId,
-            "message", message
-        );
+        java.util.Map<String, Object> body = new java.util.HashMap<>();
+        body.put("session_id", sessionId);
+        body.put("message", message);
+        if (destination != null) {
+            body.put("destination", destination);
+        }
+        if (preferences != null) {
+            body.put("preferences", preferences);
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        HttpEntity<java.util.Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);

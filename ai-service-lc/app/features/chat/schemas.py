@@ -4,6 +4,8 @@ from typing import List
 class ChatRequest(BaseModel):
     session_id: str = Field(..., description="ID định danh phiên chat (Ví dụ: trip_123_chat)")
     message: str = Field(..., description="Tin nhắn người dùng gửi cho AI")
+    destination: str = Field(default=None, description="Địa điểm của chuyến đi hiện tại (nếu có)")
+    preferences: str = Field(default=None, description="Sở thích và phong cách của người dùng (nếu có)")
 
 class ChatResponse(BaseModel):
     reply: str = Field(..., description="Câu trả lời từ AI")

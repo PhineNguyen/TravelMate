@@ -7,6 +7,9 @@ import com.travelmate.backend.entity.enums.SenderType;
 import com.travelmate.backend.mapper.AIMessageMapper;
 import com.travelmate.backend.repository.AIConversationRepository;
 import com.travelmate.backend.repository.AIMessageRepository;
+import com.travelmate.backend.repository.UserPreferenceRepository;
+import com.travelmate.backend.entity.User;
+import com.travelmate.backend.entity.UserPreference;
 import com.travelmate.backend.service.AIMessageService;
 import com.travelmate.backend.service.AiServiceClient;
 
@@ -24,6 +27,7 @@ public class AIMessageServiceImpl implements AIMessageService {
 
     private final AIMessageRepository aiMessageRepository;
     private final AIConversationRepository aiConversationRepository;
+    private final UserPreferenceRepository userPreferenceRepository;
     private final AiServiceClient aiServiceClient;
 
     // Persona của TravelMate AI 
@@ -55,8 +59,29 @@ public class AIMessageServiceImpl implements AIMessageService {
                 .build();
         aiMessageRepository.save(userMsg);
 
+        // Lấy thông tin destination từ Trip để làm ngữ cảnh cho AI
+        String destination = (conv.getTrip() != null) ? conv.getTrip().getDestination() : null;
+
+        // Lấy thông tin sở thích (UserPreference) của User
+        String preferences = null;
+        if (conv.getUser() != null) {
+            UserPreference pref = userPreferenceRepository.findByUserId(conv.getUser().getId()).orElse(null);
+            if (pref != null) {
+                StringBuilder sb = new StringBuilder();
+                if (pref.getPreferredStyle() != null && !pref.getPreferredStyle().isEmpty()) {
+                    sb.append("Phong cách: ").append(pref.getPreferredStyle()).append(". ");
+                }
+                if (pref.getFavoriteCategories() != null && !pref.getFavoriteCategories().isEmpty()) {
+                    sb.append("Thể loại yêu thích: ").append(pref.getFavoriteCategories()).append(". ");
+                }
+                if (sb.length() > 0) {
+                    preferences = sb.toString().trim();
+                }
+            }
+        }
+
         // 3. Gọi API của ai-service để lấy câu trả lời (Phiên chat tự động quản lý lịch sử ở phía ai-service)
-        String aiReplyText = aiServiceClient.getChatReply("conversation_" + conversationId, userContent);
+        String aiReplyText = aiServiceClient.getChatReply("conversation_" + conversationId, userContent, destination, preferences);
 
         // 4. Lưu tin nhắn phản hồi của AI vào PostgreSQL (Java Backend DB)
         AIMessage aiMsg = AIMessage.builder()
