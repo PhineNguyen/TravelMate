@@ -87,21 +87,65 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                         ExpenseCategory.ENTERTAINMENT, ExpenseCategory.ENTERTAINMENT,
                                         ExpenseCategory.FOOD };
 
-                        String[] templateTitles = { "Sài Gòn 3 Ngày 2 Đêm", "Hà Nội - Sapa", "Đà Nẵng - Hội An",
-                                        "Hạ Long Cuối Tuần", "Khám phá Phú Quốc" };
+                        String[] templateTitles = {
+                                        "Sài Gòn 3 Ngày 2 Đêm",
+                                        "Hà Nội - Sapa",
+                                        "Đà Nẵng - Hội An",
+                                        "Hạ Long Cuối Tuần",
+                                        "Khám phá Phú Quốc",
+                                        "Tokyo Foodie Journey",
+                                        "Bali Beach Escape",
+                                        "Paris Culture Weekend",
+                                        "Swiss Alps Explorer",
+                                        "Kyoto Slow Travel"
+                        };
+                        String[] templateCategories = {
+                                        "Culinary",
+                                        "Nature",
+                                        "Culture",
+                                        "Beach",
+                                        "Luxury",
+                                        "Culinary",
+                                        "Beach",
+                                        "Culture",
+                                        "Nature",
+                                        "Luxury"
+                        };
+                        String[] templateDestinations = {
+                                        "Hồ Chí Minh",
+                                        "Hà Nội",
+                                        "Đà Nẵng",
+                                        "Hạ Long",
+                                        "Phú Quốc",
+                                        "Tokyo",
+                                        "Bali",
+                                        "Paris",
+                                        "Lucerne",
+                                        "Kyoto"
+                        };
                         String[] descriptions = {
                                         "Khám phá trung tâm Sài Gòn sôi động.",
                                         "Hành trình từ thủ đô đến vùng núi mờ sương.",
                                         "Tận hưởng vẻ đẹp miền Trung.",
                                         "Trải nghiệm di sản thiên nhiên thế giới.",
-                                        "Nghỉ dưỡng tại đảo ngọc Phú Quốc."
+                                        "Nghỉ dưỡng tại đảo ngọc Phú Quốc.",
+                                        "Trải nghiệm ẩm thực Nhật Bản trong 4 ngày.",
+                                        "Một kỳ nghỉ biển với sunset, spa và trải nghiệm địa phương.",
+                                        "Lên lịch tham quan bảo tàng, quán cà phê và phố đi bộ.",
+                                        "Leo núi, ngắm hồ và tận hưởng không khí Alpine.",
+                                        "Khám phá đền chùa, con đường cỏ và văn hóa Nhật cổ."
                         };
                         String[] thumbnailUrls = {
-                                        "https://example.com/saigon.jpg",
-                                        "https://example.com/hanoi.jpg",
-                                        "https://example.com/danang.jpg",
-                                        "https://example.com/halong.jpg",
-                                        "https://example.com/phuquoc.jpg"
+                                        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1509660933844-6910e1276c0f?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200",
+                                        "https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=1200"
                         };
 
                         // ==========================================
@@ -139,14 +183,14 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
 
                         // 3. Bảng TripTemplate
                         List<TripTemplate> templates = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
+                        for (int i = 0; i < 10; i++) {
                                 TripTemplate template = TripTemplate.builder()
                                                 .title(templateTitles[i])
-                                                .destination(cities[i])
-                                                .category(i % 2 == 0 ? "Nghỉ dưỡng" : "Khám phá")
-                                                .duration(3 + (i % 3))
-                                                .estimatedBudget(BigDecimal.valueOf(2000000 + i * 500000))
-                                                .popularityScore(4.0 + (i * 0.2))
+                                                .destination(templateDestinations[i])
+                                                .category(templateCategories[i])
+                                                .duration(3 + (i % 4))
+                                                .estimatedBudget(BigDecimal.valueOf(1500000 + i * 550000))
+                                                .popularityScore(4.2 + (i * 0.18))
                                                 .description(descriptions[i])
                                                 .thumbnailUrl(thumbnailUrls[i])
                                                 .build();
@@ -235,17 +279,17 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
 
                         // 10. Bảng Trip
                         List<Trip> trips = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
+                        for (int i = 0; i < 8; i++) {
                                 trips.add(Trip.builder()
-                                                .owner(users.get(i))
-                                                .template(templates.get(i))
-                                                .destination(cities[i])
+                                                .owner(users.get(i % users.size()))
+                                                .template(templates.get(i % templates.size()))
+                                                .destination(templateDestinations[i % templateDestinations.length])
                                                 .startDate(LocalDate.now().plusDays(i * 7))
-                                                .duration(3 + (i % 3))
-                                                .travelerCount(2 + i)
-                                                .totalBudget(BigDecimal.valueOf(5000000 + i * 1000000))
+                                                .duration(3 + (i % 5))
+                                                .travelerCount(2 + (i % 4))
+                                                .totalBudget(BigDecimal.valueOf(5000000 + i * 1100000))
                                                 .planningMode(PlanningMode.MANUAL)
-                                                .tripStatus(TripStatus.PLANNED)
+                                                .tripStatus(i % 2 == 0 ? TripStatus.PLANNED : TripStatus.ACTIVE)
                                                 .inviteCode(UUID.randomUUID().toString().substring(0, 8))
                                                 .isCustomized(true)
                                                 .build());
@@ -427,13 +471,14 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
 
                         // 23. Bảng WeatherAlert
                         List<WeatherAlert> weatherAlerts = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
+                        for (int i = 0; i < trips.size(); i++) {
                                 WeatherAlert alert = WeatherAlert.builder()
                                                 .trip(trips.get(i))
-                                                .snapshot(weatherSnapshots.get(i))
-                                                .severity(AlertSeverity.MEDIUM)
-                                                .alertType(AlertType.RAIN)
-                                                .suggestedAction("Nên mang theo ô hoặc áo mưa.")
+                                                .snapshot(weatherSnapshots.get(i % weatherSnapshots.size()))
+                                                .severity(i % 2 == 0 ? AlertSeverity.MEDIUM : AlertSeverity.HIGH)
+                                                .alertType(i % 2 == 0 ? AlertType.RAIN : AlertType.STORM)
+                                                .suggestedAction(i % 2 == 0 ? "Nên mang theo ô hoặc áo mưa."
+                                                                : "Dời hoạt động ngoài trời sang buổi chiều.")
                                                 .isResolved(false)
                                                 .build();
                                 weatherAlerts.add(alert);

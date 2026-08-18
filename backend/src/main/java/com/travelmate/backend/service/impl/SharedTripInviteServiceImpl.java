@@ -94,6 +94,22 @@ public class SharedTripInviteServiceImpl implements SharedTripInviteService {
     }
 
     @Override
+    @Transactional
+    public void delete(Long id) {
+        if (id == null)
+            throw new IllegalArgumentException("id is required");
+        if (!repository.existsById(id))
+            throw new IllegalArgumentException("SharedTripInvite not found");
+        SharedTripInvite existing = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("SharedTripInvite not found"));
+        if (existing.getStatus() == InviteStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Accepted invitation cannot be deleted");
+        }
+        existing.setStatus(InviteStatus.REVOKED);
+        repository.save(existing);
+    }
+
+    @Override
     public SharedTripInviteDTO findById(Long id) {
         if (id == null)
             throw new IllegalArgumentException("id is required");
@@ -103,19 +119,6 @@ public class SharedTripInviteServiceImpl implements SharedTripInviteService {
     @Override
     public List<SharedTripInviteDTO> listAll() {
         return repository.findAll().stream().map(SharedTripInviteMapper::toDto).collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional
-    public void delete(Long id) {
-        if (id == null)
-            throw new IllegalArgumentException("id is required");
-        if (!repository.existsById(id))
-            throw new IllegalArgumentException("SharedTripInvite not found");
-        SharedTripInvite existing = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("SharedTripInvite not found"));
-        existing.setStatus(InviteStatus.REVOKED);
-        repository.save(existing);
     }
 
     @Override

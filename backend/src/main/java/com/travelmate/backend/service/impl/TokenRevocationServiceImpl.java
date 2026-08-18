@@ -46,6 +46,15 @@ public class TokenRevocationServiceImpl implements TokenRevocationService {
 
     @Override
     @Transactional
+    public void revokeAllForUser(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        accessTokenRevocationRepository.deleteAll();
+    }
+
+    @Override
+    @Transactional
     public void cleanupExpired() {
         accessTokenRevocationRepository.deleteByExpiresAtBefore(Instant.now());
     }

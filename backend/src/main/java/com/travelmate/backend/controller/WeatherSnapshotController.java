@@ -31,12 +31,14 @@ public class WeatherSnapshotController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<WeatherSnapshotDTO> get(@PathVariable Long id) {
         WeatherSnapshotDTO dto = weatherSnapshotService.findById(id);
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<WeatherSnapshotDTO>> list() {
         return ResponseEntity.ok(weatherSnapshotService.listAll());
     }

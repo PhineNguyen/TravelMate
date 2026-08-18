@@ -238,6 +238,11 @@ public class AuthServiceImpl implements AuthService {
         resetToken.setUsed(true);
         resetToken.setUsedAt(LocalDateTime.now());
         passwordResetTokenRepository.save(resetToken);
+        tokenRevocationService.revokeAllForUser(user.getId());
+
+        resetToken.setUsed(true);
+        resetToken.setUsedAt(LocalDateTime.now());
+        passwordResetTokenRepository.save(resetToken);
 
     }
 
