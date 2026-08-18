@@ -7,5 +7,7 @@ public interface TokenRevocationService {
 
     boolean isRevoked(String jti);
 
+    void revokeAllForUser(Long userId);
+
     void cleanupExpired();
 }

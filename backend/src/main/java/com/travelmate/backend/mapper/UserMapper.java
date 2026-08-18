@@ -6,8 +6,6 @@ import com.travelmate.backend.dto.response.UserResponse;
 import com.travelmate.backend.entity.User;
 
 import org.mapstruct.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Mapper(componentModel = "spring", // creating a spring bean (@component)
         unmappedTargetPolicy = ReportingPolicy.IGNORE, // ignore warnings when execute
@@ -15,26 +13,45 @@ import org.springframework.security.crypto.password.PasswordEncoder;
                                                                                     // overwrite
 
 public abstract class UserMapper {
-    @Autowired
-    protected PasswordEncoder passwordEncoder;
-
-    @Mapping(target = "password", expression = "java(passwordEncoder.encode(req.getPassword()))")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "avatarUrl", source = "avatarUrl")
     @Mapping(target = "active", constant = "true")
+    @Mapping(target = "password", ignore = true)
     public abstract User toUser(AuthRegisterRequest req);
 
+    @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "avatarUrl", source = "avatarUrl")
+    @Mapping(target = "active", source = "active")
+    @Mapping(target = "phoneNumber", source = "phoneNumber")
+    @Mapping(target = "location", source = "location")
+    @Mapping(target = "plan", source = "plan")
     @Mapping(target = "password", ignore = true) // Password must be handled separately in the service
     public abstract User toUser(UserRequest request);
 
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "phoneNumber", source = "phoneNumber")
+    @Mapping(target = "location", source = "location")
+    @Mapping(target = "plan", source = "plan")
+    @Mapping(target = "avatarUrl", source = "avatarUrl")
+    @Mapping(target = "active", source = "active")
     public abstract UserResponse toResponse(User user);
 
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "avatarUrl", source = "avatarUrl")
+    @Mapping(target = "active", source = "active")
+    @Mapping(target = "phoneNumber", source = "phoneNumber")
+    @Mapping(target = "location", source = "location")
+    @Mapping(target = "plan", source = "plan")
     @Mapping(target = "password", ignore = true)
     public abstract void updateUserFromRequest(UserRequest request, @MappingTarget User user);
-
-    @AfterMapping
-    protected void handlePasswordUpdate(UserRequest request, @MappingTarget User user) {
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-    }
 }

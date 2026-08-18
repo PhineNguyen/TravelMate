@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/network/api_client.dart';
+import '../../data/models/notification_model.dart';
+
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
@@ -10,73 +13,107 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   int _selectedIndex = 0;
   final List<String> _tabs = ["All", "Unread", "Budget", "Weather"];
+  bool _isLoading = true;
+  List<NotificationModel> _notifications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      final notifications = await ApiClient.fetchNotifications();
+      if (!mounted) return;
+      setState(() {
+        _notifications = notifications;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _notifications = const [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<NotificationModel> get _filteredNotifications {
+    switch (_selectedIndex) {
+      case 1:
+        return _notifications.where((n) => !(n.isRead)).toList();
+      case 2:
+        return _notifications
+            .where((n) =>
+                n.type.toUpperCase() == 'BUDGET' ||
+                n.title.toLowerCase().contains('budget'))
+            .toList();
+      case 3:
+        return _notifications
+            .where((n) =>
+                n.type.toUpperCase() == 'WEATHER' ||
+                n.title.toLowerCase().contains('weather'))
+            .toList();
+      default:
+        return _notifications;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final visibleNotifications = _filteredNotifications;
+    final unreadCount = _notifications.where((n) => !n.isRead).length;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context),
+            _buildHeader(context, unreadCount),
             const SizedBox(height: 15),
             _buildFilterTabs(),
             const SizedBox(height: 15),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  _buildNotificationCard(
-                    icon: Icons.warning_amber_rounded,
-                    title: "Weather alert — Japan Discovery",
-                    description:
-                        "Heavy rain (120mm) expected Apr 16–17 in Kyoto. AI has rescheduled 3 outdoor activities.",
-                    time: "2 hours ago",
-                    color: const Color(0xFFD32F2F),
-                    isUnread: true,
-                  ),
-                  _buildNotificationCard(
-                    icon: Icons.account_balance_wallet_rounded,
-                    title: "Budget warning — Japan Discovery",
-                    description:
-                        "Actual spending has reached 90% of your configured budget (\$4,200).",
-                    time: "5 hours ago",
-                    color: Colors.orange.shade700,
-                    isUnread: true,
-                  ),
-                  _buildNotificationCard(
-                    icon: Icons.person_add_rounded,
-                    title: "Invitation accepted",
-                    description:
-                        "Sarah Kim joined Japan Discovery as a collaborator.",
-                    time: "Yesterday, 14:22",
-                    color: const Color(0xFF2D7132),
-                    isUnread: true,
-                  ),
-                  _buildNotificationCard(
-                    icon: Icons.smart_toy_rounded,
-                    title: "AI itinerary ready",
-                    description:
-                        "Your 22-day Japan Discovery itinerary has been generated successfully.",
-                    time: "2 days ago",
-                    color: Colors.purple.shade700,
-                    isUnread: false,
-                  ),
-                  _buildNotificationCard(
-                    icon: Icons.check_circle_rounded,
-                    title: "Route optimised",
-                    description:
-                        "Your Japan route was optimised. You'll save approximately 4h 20min of travel time.",
-                    time: "3 days ago",
-                    color: const Color(0xFF2D7132),
-                    isUnread: false,
-                  ),
-                  const SizedBox(height: 30),
-                  _buildMarkAsReadButton(),
-                  const SizedBox(height: 40),
-                ],
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      physics: const BouncingScrollPhysics(),
+                      children: [
+                        if (visibleNotifications.isEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(top: 40),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'No notifications match this filter.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF71768E),
+                                fontSize: 14,
+                              ),
+                            ),
+                          )
+                        else
+                          for (final notification in visibleNotifications) ...[
+                            _buildNotificationCard(
+                              icon: _iconForType(notification.type),
+                              title: notification.title,
+                              description: notification.description,
+                              time: _formatTime(notification.createdAt),
+                              color: _colorForType(notification.type),
+                              isUnread: !notification.isRead,
+                            ),
+                          ],
+                        const SizedBox(height: 30),
+                        _buildMarkAsReadButton(),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -84,7 +121,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, int unreadCount) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -110,9 +147,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
               color: const Color(0xFF2D7132).withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text(
-              "3 unread",
-              style: TextStyle(
+            child: Text(
+              "$unreadCount unread",
+              style: const TextStyle(
                 color: Color(0xFF2D7132),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -284,7 +321,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Widget _buildMarkAsReadButton() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () async {
+        try {
+          await ApiClient.markAllNotificationsRead();
+          await _loadNotifications();
+        } catch (error) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cannot update notifications: $error')),
+          );
+        }
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -316,5 +363,42 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
       ),
     );
+  }
+
+  IconData _iconForType(String type) {
+    switch (type.toUpperCase()) {
+      case 'BUDGET':
+        return Icons.account_balance_wallet_rounded;
+      case 'WEATHER':
+        return Icons.warning_amber_rounded;
+      case 'INVITE':
+      case 'GROUP_INVITE':
+        return Icons.person_add_rounded;
+      default:
+        return Icons.notifications_rounded;
+    }
+  }
+
+  Color _colorForType(String type) {
+    switch (type.toUpperCase()) {
+      case 'BUDGET':
+        return Colors.orange.shade700;
+      case 'WEATHER':
+        return const Color(0xFFD32F2F);
+      case 'INVITE':
+      case 'GROUP_INVITE':
+        return const Color(0xFF2D7132);
+      default:
+        return Colors.purple.shade700;
+    }
+  }
+
+  String _formatTime(DateTime? dateTime) {
+    if (dateTime == null) return 'Recently';
+    final diff = DateTime.now().difference(dateTime);
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    return 'Just now';
   }
 }

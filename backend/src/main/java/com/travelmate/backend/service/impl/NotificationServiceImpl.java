@@ -116,7 +116,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationDTO> listAll() {
-        return notificationRepository.findAll().stream().map(NotificationMapper::toDto).collect(Collectors.toList());
+        return notificationRepository.findAll()
+                .stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .map(NotificationMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override

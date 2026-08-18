@@ -40,12 +40,14 @@ public class TripController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<TripResponse> get(@PathVariable Long id) {
         TripResponse dto = tripService.findById(id);
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Page<TripResponse>> list(
             @RequestParam(required = false) Long ownerId,
             @RequestParam(required = false) TripStatus status,
