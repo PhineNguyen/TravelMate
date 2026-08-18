@@ -1,11 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
+import 'package:frontend/features/finance/expense/data/models/expense_model.dart';
 import 'package:frontend/features/finance/expense/presentation/pages/AddExpensePage.dart';
 
 import '../../../../../core/widgets/app_header.dart';
 
-class BudgetPage extends StatelessWidget {
+class BudgetPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
-  const BudgetPage({super.key, this.onBackToHome});
+  final int tripId;
+
+  const BudgetPage({super.key, this.onBackToHome, this.tripId = 1});
+
+  @override
+  State<BudgetPage> createState() => _BudgetPageState();
+}
+
+class _BudgetPageState extends State<BudgetPage> {
+  List<ExpenseModel> _expenses = const [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExpenses();
+  }
+
+  Future<void> _loadExpenses() async {
+    try {
+      final expenses = await ApiClient.fetchExpenses(tripId: widget.tripId);
+      if (!mounted) return;
+      setState(() {
+        _expenses = expenses;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _expenses = const [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  double get _totalSpent => _expenses
+      .where((expense) => !expense.isDeleted)
+      .fold(0.0, (total, expense) => total + expense.amount);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +57,7 @@ class BudgetPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: AppHeader(
                 title: "Budget Tracker",
-                onBack: onBackToHome,
+                onBack: widget.onBackToHome,
                 trailing: Row(
                   children: [
                     _buildCircleAddButton(context),
@@ -98,7 +137,7 @@ class BudgetPage extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const AddExpensePage()));
+          MaterialPageRoute(builder: (context) => AddExpensePage(tripId: widget.tripId)));
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -173,7 +212,7 @@ class BudgetPage extends StatelessWidget {
       child: Column(
         children: [
           const Text(
-            "Total spent — Japan Discovery",
+            "Total spent — current trip",
             style: TextStyle(fontSize: 14, color: Color(0xFF71768E)),
           ),
           const SizedBox(height: 15),
@@ -189,7 +228,7 @@ class BudgetPage extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF2D7132).withOpacity(0.5))),
               ),
-              const Text("1,842",
+              Text(_isLoading ? "..." : _totalSpent.toStringAsFixed(0),
                   style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
@@ -197,8 +236,12 @@ class BudgetPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 5),
-          const Text("of \$4,200 · 26 days remaining",
-              style: TextStyle(fontSize: 13, color: Color(0xFFB0B3C1))),
+          Text(
+            _isLoading
+                ? "Loading expenses..."
+                : "${_expenses.length} expense records loaded",
+            style: const TextStyle(fontSize: 13, color: Color(0xFFB0B3C1)),
+          ),
           const SizedBox(height: 40),
           _buildDonutChart(),
           const SizedBox(height: 40),

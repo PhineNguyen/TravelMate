@@ -1,7 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
+import 'package:frontend/features/trip_details/share/data/models/shared_trip_invite_model.dart';
 
-class ShareTripPage extends StatelessWidget {
-  const ShareTripPage({super.key});
+class ShareTripPage extends StatefulWidget {
+  final int tripId;
+  final int senderId;
+
+  const ShareTripPage({super.key, this.tripId = 1, this.senderId = 1});
+
+  @override
+  State<ShareTripPage> createState() => _ShareTripPageState();
+}
+
+class _ShareTripPageState extends State<ShareTripPage> {
+  final TextEditingController _emailController = TextEditingController();
+  SharedTripInviteModel? _invite;
+  bool _isSending = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendInvite() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid email address.')),
+      );
+      return;
+    }
+
+    setState(() => _isSending = true);
+    try {
+      final invite = await ApiClient.createInvite(
+        tripId: widget.tripId,
+        senderId: widget.senderId,
+        receiverEmail: email,
+      );
+      if (!mounted) return;
+      setState(() {
+        _invite = invite;
+        _isSending = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invitation created successfully.')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isSending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not create invitation: $error')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +92,31 @@ class ShareTripPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                hintText: 'Friend email address',
+                prefixIcon: const Icon(Icons.email_outlined),
+                suffixIcon: IconButton(
+                  onPressed: _isSending ? null : _sendInvite,
+                  icon: _isSending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send_rounded),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             _buildQRCodeSection(),
             const SizedBox(height: 25),
             const Text(
@@ -185,8 +263,8 @@ class ShareTripPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            "TM - 7 K 4 R 2",
+          Text(
+            _invite?.inviteCode ?? "Create an invite to get a code",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

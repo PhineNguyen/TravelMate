@@ -6,7 +6,8 @@ import '../../../../../core/widgets/app_header.dart';
 
 class ItineraryPage extends StatelessWidget {
   final VoidCallback? onBackToHome;
-  const ItineraryPage({super.key, this.onBackToHome});
+  final int tripId;
+  const ItineraryPage({super.key, this.onBackToHome, this.tripId = 1});
 
   void _showResetConfirmation(BuildContext context) {
     showDialog(

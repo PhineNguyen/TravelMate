@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/finance/budget/presentation/pages/BudgetPage.dart';
 
 class AddExpensePage extends StatefulWidget {
-  const AddExpensePage({super.key});
+  final int tripId;
+  final int createdById;
+
+  const AddExpensePage({
+    super.key,
+    this.tripId = 1,
+    this.createdById = 1,
+  });
 
   @override
   State<AddExpensePage> createState() => _AddExpensePageState();
@@ -11,6 +19,16 @@ class AddExpensePage extends StatefulWidget {
 class _AddExpensePageState extends State<AddExpensePage> {
   String selectedCategory = 'Flights';
   bool isShared = true;
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +65,18 @@ class _AddExpensePageState extends State<AddExpensePage> {
             const SizedBox(height: 30),
             _buildSectionTitle("AMOUNT"),
             const SizedBox(height: 12),
-            _buildTextField(hint: "0.00", keyboardType: TextInputType.number),
+            _buildTextField(
+              hint: "0.00",
+              keyboardType: TextInputType.number,
+              controller: _amountController,
+            ),
             const SizedBox(height: 25),
             _buildSectionTitle("DESCRIPTION (OPTIONAL)"),
             const SizedBox(height: 12),
-            _buildTextField(hint: "e.g. Ramen dinner at T's TanTan"),
+            _buildTextField(
+              hint: "e.g. Ramen dinner at T's TanTan",
+              controller: _descriptionController,
+            ),
             const SizedBox(height: 25),
             _buildSectionTitle("DATE"),
             const SizedBox(height: 12),
@@ -146,7 +171,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
         "icon": Icons.flight_takeoff_rounded,
         "color": Colors.deepPurple.shade600
       },
-      {"name": "Hotel", "icon": Icons.hotel_rounded, "color": Colors.teal.shade600},
+      {
+        "name": "Hotel",
+        "icon": Icons.hotel_rounded,
+        "color": Colors.teal.shade600
+      },
       {
         "name": "Food",
         "icon": Icons.restaurant_rounded,
@@ -157,7 +186,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
         "icon": Icons.confirmation_number_rounded,
         "color": Colors.red.shade600
       },
-      {"name": "Transport", "icon": Icons.train_rounded, "color": Colors.cyan.shade700},
+      {
+        "name": "Transport",
+        "icon": Icons.train_rounded,
+        "color": Colors.cyan.shade700
+      },
       {
         "name": "Shopping",
         "icon": Icons.shopping_bag_rounded,
@@ -187,13 +220,15 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   ? category['color'].withOpacity(0.1)
                   : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: isSelected ? null : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: isSelected
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
               border: Border.all(
                 color: isSelected ? category['color'] : Colors.transparent,
                 width: 1.5,
@@ -203,7 +238,9 @@ class _AddExpensePageState extends State<AddExpensePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(category['icon'],
-                    color: isSelected ? category['color'] : const Color(0xFFB0B3C1),
+                    color: isSelected
+                        ? category['color']
+                        : const Color(0xFFB0B3C1),
                     size: 26),
                 const SizedBox(height: 10),
                 Text(
@@ -211,7 +248,9 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected ? category['color'] : const Color(0xFF71768E),
+                    color: isSelected
+                        ? category['color']
+                        : const Color(0xFF71768E),
                   ),
                 ),
               ],
@@ -225,6 +264,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
   Widget _buildTextField(
       {required String hint,
       TextInputType? keyboardType,
+      TextEditingController? controller,
       IconData? suffixIcon}) {
     return Container(
       decoration: BoxDecoration(
@@ -239,6 +279,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
         ],
       ),
       child: TextField(
+        controller: controller,
         keyboardType: keyboardType,
         style: const TextStyle(color: Color(0xFF1A1D2D)),
         decoration: InputDecoration(
@@ -295,10 +336,9 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   Widget _buildSaveButton() {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const BudgetPage()));
-      },
+      onTap: _isSaving
+          ? null
+          : _saveExpense, // Đã xóa dấu }, bị dư ở ngay bên dưới dòng này
       child: Container(
         width: double.infinity,
         height: 58,
@@ -313,15 +353,15 @@ class _AddExpensePageState extends State<AddExpensePage> {
             ),
           ],
         ),
-        child: const Center(
+        child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check, size: 22, color: Colors.white),
-              SizedBox(width: 12),
+              const Icon(Icons.check, size: 22, color: Colors.white),
+              const SizedBox(width: 12),
               Text(
-                "Save expense",
-                style: TextStyle(
+                _isSaving ? "Saving..." : "Save expense",
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
@@ -332,5 +372,58 @@ class _AddExpensePageState extends State<AddExpensePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _saveExpense() async {
+    final amount = double.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid amount.')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await ApiClient.createExpense(
+        tripId: widget.tripId,
+        createdById: widget.createdById,
+        amount: amount,
+        category: _apiCategory(selectedCategory),
+        description: _descriptionController.text.trim(),
+        isShared: isShared,
+      );
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BudgetPage(tripId: widget.tripId),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save expense: $error')),
+      );
+    }
+  }
+
+  String _apiCategory(String category) {
+    switch (category) {
+      case 'Flights':
+      case 'Transport':
+        return 'TRANSPORT';
+      case 'Hotel':
+        return 'HOTEL';
+      case 'Food':
+        return 'FOOD';
+      case 'Shopping':
+        return 'SHOPPING';
+      case 'Activities':
+        return 'ENTERTAINMENT';
+      default:
+        return 'OTHER';
+    }
   }
 }

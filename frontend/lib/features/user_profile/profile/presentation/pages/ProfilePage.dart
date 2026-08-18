@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
 import 'package:frontend/features/user_profile/profile/presentation/pages/HelpCentrePage.dart';
 import 'package:frontend/features/user_profile/profile/presentation/pages/PersonalInformationPage.dart';
@@ -243,10 +244,13 @@ class ProfilePage extends StatelessWidget {
     bool isDestructive = false,
   }) {
     return ListTile(
-      onTap: page != null
-          ? () {
+      onTap: page == null
+          ? null
+          : () async {
               if (isDestructive) {
-                Navigator.of(context!).pushAndRemoveUntil(
+                await ApiClient.clearSession();
+                if (!context!.mounted) return;
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => page),
                   (route) => false,
                 );
@@ -254,12 +258,9 @@ class ProfilePage extends StatelessWidget {
               }
               Navigator.push(
                 context!,
-                MaterialPageRoute(
-                  builder: (context) => page,
-                ),
+                MaterialPageRoute(builder: (context) => page),
               );
-            }
-          : null,
+            },
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(10),

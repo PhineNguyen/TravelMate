@@ -1,13 +1,48 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/network/api_client.dart';
 import '../../../../../core/widgets/app_header.dart';
+import '../../data/models/analytics_snapshot_model.dart';
 
-class AnalyticsPage extends StatelessWidget {
+class AnalyticsPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
   const AnalyticsPage({super.key, this.onBackToHome});
 
   @override
+  State<AnalyticsPage> createState() => _AnalyticsPageState();
+}
+
+class _AnalyticsPageState extends State<AnalyticsPage> {
+  bool _isLoading = true;
+  List<AnalyticsSnapshotModel> _snapshots = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSnapshots();
+  }
+
+  Future<void> _loadSnapshots() async {
+    try {
+      final snapshots = await ApiClient.fetchAnalyticsSnapshots();
+      if (!mounted) return;
+      setState(() {
+        _snapshots = snapshots;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _snapshots = const [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final latest = _snapshots.isNotEmpty ? _snapshots.first : null;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF1F4FA),
       body: SafeArea(
@@ -17,29 +52,31 @@ class AnalyticsPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: AppHeader(
                 title: "Travel insights",
-                onBack: onBackToHome,
+                onBack: widget.onBackToHome,
               ),
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    _buildSummaryGrid(),
-                    const SizedBox(height: 30),
-                    _buildSpendingSection(),
-                    const SizedBox(height: 30),
-                    _buildRegionsSection(),
-                    const SizedBox(height: 30),
-                    _buildAiAcceptanceSection(),
-                    const SizedBox(height: 40),
-                  ],
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          _buildSummaryGrid(latest),
+                          const SizedBox(height: 30),
+                          _buildSpendingSection(latest),
+                          const SizedBox(height: 30),
+                          _buildRegionsSection(),
+                          const SizedBox(height: 30),
+                          _buildAiAcceptanceSection(),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
             ),
           ],
         ),
@@ -47,7 +84,11 @@ class AnalyticsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryGrid() {
+  Widget _buildSummaryGrid(AnalyticsSnapshotModel? latest) {
+    final totalTrips = latest?.totalTrips ?? 4;
+    final totalSpent = latest?.totalSpent ?? 12400;
+    final favoriteCategory = latest?.favoriteCategory ?? 'Food';
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -57,30 +98,30 @@ class AnalyticsPage extends StatelessWidget {
       childAspectRatio: 1.1,
       children: [
         _buildStatCard(
-          "COUNTRIES",
-          "24",
-          "↑ 2 this year",
+          "TRIPS",
+          "$totalTrips",
+          "Latest snapshot",
           const Color(0xFF2D7132),
           Icons.public_rounded,
         ),
         _buildStatCard(
-          "DAYS ABROAD",
-          "62",
-          "↑ 18 vs 2024",
+          "AVG BUDGET",
+          '\$${((latest?.avgBudget ?? 3200) / 1000).toStringAsFixed(1)}k',
+          "Per trip",
           Colors.blue.shade700,
           Icons.calendar_today_rounded,
         ),
         _buildStatCard(
-          "TOTAL 2025",
-          "\$12.4k",
-          "↓ 8% vs 2024",
+          "TOTAL SPENT",
+          '\$${(totalSpent / 1000).toStringAsFixed(1)}k',
+          "Across trips",
           Colors.purple.shade700,
           Icons.account_balance_wallet_rounded,
         ),
         _buildStatCard(
-          "AI SAVINGS",
-          "\$1.2k",
-          "vs manual",
+          "TOP CATEGORY",
+          favoriteCategory,
+          "Favorite",
           Colors.orange.shade700,
           Icons.auto_awesome_rounded,
         ),
@@ -144,7 +185,8 @@ class AnalyticsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSpendingSection() {
+  Widget _buildSpendingSection(AnalyticsSnapshotModel? latest) {
+    final totalSpent = latest?.totalSpent ?? 4200.0;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -162,7 +204,7 @@ class AnalyticsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "SPENDING BY MONTH",
+            "SPENDING OVERVIEW",
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -170,7 +212,37 @@ class AnalyticsPage extends StatelessWidget {
               letterSpacing: 1.2,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
+          Text(
+            'Total spent: \$${totalSpent.toStringAsFixed(0)}',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D2D),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Most visited: ${latest?.mostVisitedDestination ?? 'Tokyo'}',
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF71768E),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Travel personality: ${latest?.travelPersonality ?? 'Balanced Explorer'}',
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF71768E),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(),
+          const SizedBox(height: 16),
           SizedBox(
             height: 180,
             child: Row(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class MapPage extends StatelessWidget {
-  const MapPage({super.key});
+  final int tripId;
+  const MapPage({super.key, this.tripId = 1});
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/core/widgets/confirmation_dialog.dart';
 import 'package:frontend/features/chat/presentation/pages/ChatPage.dart';
 import 'package:frontend/features/finance/budget/presentation/pages/BudgetPage.dart';
@@ -6,9 +7,45 @@ import 'package:frontend/features/finance/expense/presentation/pages/AddExpenseP
 import 'package:frontend/features/trip_details/itinerary/presentation/pages/ItineraryPage.dart';
 import 'package:frontend/features/trip_details/map/presentation/pages/MapPage.dart';
 import 'package:frontend/features/trip_details/share/presentation/pages/ShareTripPage.dart';
+import 'package:frontend/features/trip_planning/home/data/models/trip_model.dart';
 
-class TripDetailPage extends StatelessWidget {
-  const TripDetailPage({super.key});
+class TripDetailPage extends StatefulWidget {
+  final int tripId;
+
+  const TripDetailPage({super.key, this.tripId = 1});
+
+  @override
+  State<TripDetailPage> createState() => _TripDetailPageState();
+}
+
+class _TripDetailPageState extends State<TripDetailPage> {
+  TripModel? _trip;
+  bool _isLoading = true;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrip();
+  }
+
+  Future<void> _loadTrip() async {
+    try {
+      final trip = await ApiClient.fetchTrip(widget.tripId);
+      if (!mounted) return;
+      setState(() {
+        _trip = trip;
+        _isLoading = false;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _loadError = error.toString();
+      });
+    }
+  }
 
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
@@ -16,11 +53,21 @@ class TripDetailPage extends StatelessWidget {
       builder: (context) => ConfirmationDialog(
         title: "Delete Trip",
         message:
-            "Are you sure you want to delete 'Japan Discovery'? All your itinerary and budget data will be permanently removed.",
+            "Are you sure you want to delete '${_trip?.destination ?? 'this trip'}'?",
         confirmLabel: "Delete",
         isDestructive: true,
-        onConfirm: () {
-          Navigator.pop(context); // Go back after delete
+        onConfirm: () async {
+          try {
+            await ApiClient.deleteTrip(widget.tripId);
+            if (!mounted) return;
+            Navigator.pop(context);
+            Navigator.pop(context);
+          } catch (error) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Delete failed: $error')),
+            );
+          }
         },
       ),
     );
@@ -28,6 +75,19 @@ class TripDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF1F4FA),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_loadError != null || _trip == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF1F4FA),
+        body: Center(child: Text(_loadError ?? 'Trip not found')),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF1F4FA),
       body: SingleChildScrollView(
@@ -125,14 +185,14 @@ class TripDetailPage extends StatelessWidget {
           const SizedBox(height: 30),
           Row(
             children: [
-              _buildBadge("Active", const Color(0xFF2D7132), Colors.white),
+              _buildBadge(_trip!.status, const Color(0xFF2D7132), Colors.white),
               const SizedBox(width: 10),
               _buildBadge("Day 8 of 22", Colors.white, const Color(0xFF71768E)),
             ],
           ),
           const SizedBox(height: 20),
-          const Text(
-            "JAPAN DISCOVERY 2025",
+          Text(
+            _trip!.destination.toUpperCase(),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -141,8 +201,8 @@ class TripDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            "Tokyo · Kyoto · Osaka",
+          Text(
+            _trip!.destination,
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -230,18 +290,24 @@ class TripDetailPage extends StatelessWidget {
       children: [
         _buildActionItem(
             Icons.list_alt_rounded, "Itinerary", const Color(0xFF2D7132), () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const ItineraryPage()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ItineraryPage(tripId: widget.tripId)));
         }),
         _buildActionItem(Icons.account_balance_wallet_outlined, "Budget",
             const Color(0xFF009688), () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const BudgetPage()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => BudgetPage(tripId: widget.tripId)));
         }),
         _buildActionItem(Icons.map_outlined, "Map", const Color(0xFF673AB7),
             () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const MapPage()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => MapPage(tripId: widget.tripId)));
         }),
         _buildActionItem(
             Icons.chat_bubble_outline_rounded, "Chat", const Color(0xFFD84315),
@@ -319,7 +385,9 @@ class TripDetailPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildSectionLabel("TRIP INFO"),
-              _buildBadge("PLANNED", const Color(0xFF2D7132).withOpacity(0.1),
+              _buildBadge(
+                  _trip!.status,
+                  const Color(0xFF2D7132).withOpacity(0.1),
                   const Color(0xFF2D7132)),
             ],
           ),
@@ -327,17 +395,18 @@ class TripDetailPage extends StatelessWidget {
           Row(
             children: [
               _buildInfoColumn(
-                  Icons.calendar_today_rounded, "Dates", "Apr 12 – May 3"),
-              _buildInfoColumn(Icons.timer_outlined, "Duration", "22 days"),
+                  Icons.calendar_today_rounded, "Start date", _trip!.startDate),
+              _buildInfoColumn(
+                  Icons.timer_outlined, "Duration", "${_trip!.duration} days"),
             ],
           ),
           const SizedBox(height: 20),
           Row(
             children: [
-              _buildInfoColumn(
-                  Icons.people_outline_rounded, "Travellers", "2 persons"),
-              _buildInfoColumn(
-                  Icons.account_balance_wallet_outlined, "Budget", "\$4,200"),
+              _buildInfoColumn(Icons.people_outline_rounded, "Travellers",
+                  "${_trip!.travelerCount} persons"),
+              _buildInfoColumn(Icons.account_balance_wallet_outlined, "Budget",
+                  "\$${_trip!.totalBudget.toStringAsFixed(0)}"),
             ],
           ),
         ],
@@ -393,7 +462,8 @@ class TripDetailPage extends StatelessWidget {
               _buildTextButton(
                 "Invite",
                 context: context,
-                page: const ShareTripPage(),
+                page: ShareTripPage(
+                    tripId: widget.tripId, senderId: _trip!.ownerId),
               ),
             ],
           ),
@@ -464,19 +534,21 @@ class TripDetailPage extends StatelessWidget {
             children: [
               _buildSectionLabel("BUDGET OVERVIEW"),
               _buildTextButton("Add expense",
-                  context: context, page: const AddExpensePage()),
+                  context: context,
+                  page: AddExpensePage(
+                      tripId: widget.tripId, createdById: _trip!.ownerId)),
             ],
           ),
           const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Spent \$1,842",
+              Text("Spent \$${_trip!.totalBudget.toStringAsFixed(0)} budget",
                   style: TextStyle(
                       color: Color(0xFF1A1D2D),
                       fontSize: 14,
                       fontWeight: FontWeight.bold)),
-              const Text("44% of \$4,200",
+              Text("${_trip!.travelerCount} travellers",
                   style: TextStyle(color: Color(0xFF71768E), fontSize: 12)),
             ],
           ),

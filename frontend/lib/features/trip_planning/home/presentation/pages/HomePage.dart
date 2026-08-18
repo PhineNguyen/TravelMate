@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/core/widgets/confirmation_dialog.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 import 'package:frontend/features/ai_assistant/chat/presentation/pages/AiChatPage.dart';
 import 'package:frontend/features/trip_details/weather/presentation/pages/WeatherPage.dart';
 import 'package:frontend/features/trip_planning/create_trip/presentation/pages/CreateTripPage.dart';
+import 'package:frontend/features/trip_planning/home/data/models/trip_model.dart';
 import 'package:frontend/features/trip_planning/home/presentation/pages/AllTripPage.dart';
 import 'package:frontend/features/trip_planning/templates/presentation/pages/TemplatesPage.dart';
 import 'package:frontend/features/user_profile/notifications/presentation/pages/NotificationsPage.dart';
@@ -17,7 +19,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool hasTrips = true; // Demo toggle
+  bool hasTrips = false;
+  bool _isLoading = true;
+  List<TripModel> _trips = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrips();
+  }
+
+  Future<void> _loadTrips() async {
+    try {
+      final trips = await ApiClient.fetchTrips();
+      if (!mounted) return;
+      setState(() {
+        _trips = trips;
+        hasTrips = trips.isNotEmpty;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _trips = const [];
+        hasTrips = false;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,24 +75,25 @@ class _HomePageState extends State<HomePage> {
                 page: const AllTripsPage(),
               ),
               const SizedBox(height: 15),
-              if (hasTrips) ...[
-                _buildTripCard(
-                  "Japan Discovery",
-                  "Tokyo · Kyoto · Osaka",
-                  "Apr 12 – May 3  ·  2 pax  ·  \$4,200",
-                  0.36,
-                  "Active",
-                  const Color(0xFF2D7132),
-                ),
-                const SizedBox(height: 15),
-                _buildTripCard(
-                  "Amalfi Weekend",
-                  "Positano · Ravello · Capri",
-                  "Jun 18 – 22  ·  4 pax  ·  \$2,800",
-                  0.0,
-                  "Upcoming",
-                  Colors.orange.shade700,
-                ),
+              if (_isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (hasTrips) ...[
+                for (int index = 0; index < _trips.length; index++) ...[
+                  _buildTripCard(
+                    _trips[index].destination,
+                    _formatTripLocations(_trips[index]),
+                    _formatTripInfo(_trips[index]),
+                    _calculateProgress(_trips[index]),
+                    _tripStatusToDisplay(_trips[index].status),
+                    index.isEven ? const Color(0xFF2D7132) : Colors.orange.shade700,
+                  ),
+                  if (index < _trips.length - 1) const SizedBox(height: 15),
+                ],
               ] else
                 EmptyState(
                   title: "No trips planned yet",
@@ -91,6 +121,34 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  String _formatTripLocations(TripModel trip) {
+    return trip.destination.isNotEmpty ? trip.destination : 'Destination updated';
+  }
+
+  String _formatTripInfo(TripModel trip) {
+    final budget = trip.totalBudget > 0 ? ' · \$${trip.totalBudget.toStringAsFixed(0)}' : '';
+    return '${trip.startDate}${budget}  ·  ${trip.travelerCount} pax';
+  }
+
+  double _calculateProgress(TripModel trip) {
+    if (trip.duration <= 0) return 0.0;
+    final ratio = (trip.duration / 12.0).clamp(0.0, 1.0);
+    return ratio;
+  }
+
+  String _tripStatusToDisplay(String status) {
+    switch (status) {
+      case 'ACTIVE':
+        return 'Active';
+      case 'PLANNED':
+        return 'Upcoming';
+      case 'DRAFT':
+        return 'Draft';
+      default:
+        return status.isNotEmpty ? status : 'Active';
+    }
   }
 
   Widget _buildHeader(BuildContext context) {

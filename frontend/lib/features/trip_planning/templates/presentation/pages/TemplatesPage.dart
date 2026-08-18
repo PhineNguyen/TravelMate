@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/trip_details/trip_detail/presentation/pages/TripDetailPage.dart';
+import 'package:frontend/features/trip_planning/templates/data/models/trip_template_model.dart';
 
 import '../../../../../core/widgets/app_button.dart';
 import '../../../../../core/widgets/app_header.dart';
@@ -14,6 +16,59 @@ class TemplatesPage extends StatefulWidget {
 
 class _TripTemplatesState extends State<TemplatesPage> {
   final Set<String> _selectedCategories = {"All"};
+  final List<String> _categoryOptions = [
+    'All',
+    'Culinary',
+    'Beach',
+    'Luxury',
+    'Budget',
+    'Nature',
+    'Culture',
+  ];
+  List<TripTemplateModel> _templates = [];
+  bool _isLoading = true;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTemplates();
+  }
+
+  Future<void> _loadTemplates() async {
+    try {
+      final templates = await ApiClient.fetchTripTemplates();
+      if (!mounted) return;
+      setState(() {
+        _templates = templates;
+        _isLoading = false;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _templates = const [];
+        _isLoading = false;
+        _loadError = error.toString();
+      });
+    }
+  }
+
+  List<TripTemplateModel> get _filteredTemplates {
+    if (_selectedCategories.contains('All') || _selectedCategories.isEmpty) {
+      return _templates;
+    }
+
+    final selected = _selectedCategories
+        .where((item) => item != 'All')
+        .map((item) => item.toLowerCase())
+        .toSet();
+
+    return _templates.where((template) {
+      final category = (template.category ?? '').toLowerCase();
+      return selected.contains(category);
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,44 +122,79 @@ class _TripTemplatesState extends State<TemplatesPage> {
               const SizedBox(height: 30),
               _buildSectionHeader("TRENDING THIS WEEK", "View all"),
               const SizedBox(height: 15),
-              _buildTemplateCard(
-                category: "Cultural",
-                usage: "2.4k used",
-                title: "Japan Discovery 14D",
-                locations: "Tokyo · Kyoto · Osaka · Hiroshima",
-                duration: "14 days",
-                pax: "2-4 pax",
-                rating: "4.9",
-                price: "\$2,800",
-                color: const Color(0xFF2D7132),
-                bgIcon: Icons.temple_buddhist_outlined,
-              ),
-              _buildTemplateCard(
-                category: "Culinary",
-                usage: "1.8k used",
-                title: "Paris & Côte d'Azur 10D",
-                locations: "Paris · Nice · Monaco · Cannes",
-                duration: "10 days",
-                pax: "2 pax",
-                rating: "4.8",
-                price: "\$3,200",
-                color: Colors.orange.shade700,
-                bgIcon: Icons.castle_outlined,
-              ),
-              _buildTemplateCard(
-                category: "Adventure",
-                usage: "1.2k used",
-                title: "Swiss Alps Explorer",
-                locations: "Zermatt · Interlaken · Lucerne",
-                duration: "7 days",
-                pax: "1-2 pax",
-                rating: "4.7",
-                price: "\$1,950",
-                color: Colors.blue.shade700,
-                bgIcon: Icons.terrain_outlined,
-              ),
+              if (_isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 30),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (_loadError != null)
+                _buildLoadError()
+              else if (_filteredTemplates.isEmpty)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 30),
+                    child: Text('No templates found'),
+                  ),
+                )
+              else
+                for (final template in _filteredTemplates) ...[
+                  _buildTemplateCard(
+                    category: template.category ?? 'General',
+                    usage: '${template.popularityScore?.toStringAsFixed(1) ?? '4.5'}k used',
+                    title: template.title ?? 'Trip Template',
+                    locations: template.destination ?? 'Destination',
+                    duration: '${template.duration ?? 0} days',
+                    pax: '${template.duration ?? 1} pax',
+                    rating: '${template.popularityScore ?? 4.5}',
+                    price: _formatPrice(template.estimatedBudget),
+                    color: _colorForCategory(template.category ?? 'General'),
+                    bgIcon: _iconForCategory(template.category ?? 'General'),
+                  ),
+                ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 30),
+        child: Column(
+          children: [
+            const Icon(Icons.cloud_off_rounded,
+                color: Color(0xFFD32F2F), size: 42),
+            const SizedBox(height: 12),
+            const Text(
+              'Không thể tải dữ liệu template',
+              style: TextStyle(
+                color: Color(0xFF1A1D2D),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _loadError ?? 'Kiểm tra backend và kết nối mạng.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF71768E), fontSize: 12),
+            ),
+            const SizedBox(height: 14),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _loadError = null;
+                });
+                _loadTemplates();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Thử lại'),
+            ),
+          ],
         ),
       ),
     );
@@ -156,15 +246,7 @@ class _TripTemplatesState extends State<TemplatesPage> {
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
       child: Row(
-        children: [
-          _buildCategoriesChip("All"),
-          _buildCategoriesChip("Culinary"),
-          _buildCategoriesChip("Beach"),
-          _buildCategoriesChip("Luxury"),
-          _buildCategoriesChip("Budget"),
-          _buildCategoriesChip("Nature"),
-          _buildCategoriesChip("Culture"),
-        ],
+        children: _categoryOptions.map((label) => _buildCategoriesChip(label)).toList(),
       ),
     );
   }
@@ -419,5 +501,48 @@ class _TripTemplatesState extends State<TemplatesPage> {
                 fontWeight: FontWeight.bold)),
       ],
     );
+  }
+
+  String _formatPrice(dynamic amount) {
+    if (amount == null) return '\$0';
+    if (amount is num) {
+      return '\$${amount.toStringAsFixed(0)}';
+    }
+    final value = double.tryParse(amount.toString()) ?? 0;
+    return '\$${value.toStringAsFixed(0)}';
+  }
+
+  Color _colorForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'culinary':
+        return Colors.orange.shade700;
+      case 'beach':
+        return const Color(0xFF1E88E5);
+      case 'luxury':
+        return const Color(0xFF8E24AA);
+      case 'nature':
+        return const Color(0xFF2D7132);
+      case 'culture':
+        return const Color(0xFFFB8C00);
+      default:
+        return const Color(0xFF2D7132);
+    }
+  }
+
+  IconData _iconForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'culinary':
+        return Icons.food_bank_outlined;
+      case 'beach':
+        return Icons.beach_access_outlined;
+      case 'luxury':
+        return Icons.celebration_outlined;
+      case 'nature':
+        return Icons.terrain_outlined;
+      case 'culture':
+        return Icons.temple_buddhist_outlined;
+      default:
+        return Icons.explore_outlined;
+    }
   }
 }

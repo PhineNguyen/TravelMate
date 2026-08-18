@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/core/widgets/confirmation_dialog.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 import 'package:frontend/features/trip_planning/create_trip/presentation/pages/CreateTripPage.dart';
+import 'package:frontend/features/trip_planning/home/data/models/trip_model.dart';
 
 class AllTripsPage extends StatefulWidget {
   const AllTripsPage({super.key});
@@ -11,30 +13,67 @@ class AllTripsPage extends StatefulWidget {
 }
 
 class _AllTripsState extends State<AllTripsPage> {
-  // Bảng màu theo phong cách Preferences mới (Light & Fresh Green)
   static const Color kBackgroundColor = Color(0xFFF3F5F9);
-  static const Color kPrimaryGreen = Color(0xFF6BB04D); // Xanh lục nút bấm
-  static const Color kLightGreen = Color(0xFFEAF4E1); // Nền item được chọn
-  static const Color kTextColor = Color(0xFF1A1D2D); // Chữ chính đậm
-  static const Color kTextSubColor = Color(0xFF71768E); // Chữ phụ xám xanh
+  static const Color kPrimaryGreen = Color(0xFF6BB04D);
+  static const Color kLightGreen = Color(0xFFEAF4E1);
+  static const Color kTextColor = Color(0xFF1A1D2D);
+  static const Color kTextSubColor = Color(0xFF71768E);
   static const Color kCardColor = Colors.white;
 
-  bool _hasTrips = true; // Demo toggle
+  bool _hasTrips = false;
+  bool _isLoading = true;
+  List<TripModel> _trips = [];
 
-  void _showDeleteConfirmation(String tripName) {
+  @override
+  void initState() {
+    super.initState();
+    _loadTrips();
+  }
+
+  Future<void> _loadTrips() async {
+    try {
+      final trips = await ApiClient.fetchTrips();
+      if (!mounted) return;
+      setState(() {
+        _trips = trips;
+        _hasTrips = trips.isNotEmpty;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _trips = const [];
+        _hasTrips = false;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showDeleteConfirmation(TripModel trip) {
     showDialog(
       context: context,
       builder: (context) => ConfirmationDialog(
         title: "Delete Trip",
         message:
-            "Are you sure you want to delete '$tripName'? This action cannot be undone.",
+            "Are you sure you want to delete '${trip.destination}'?",
         confirmLabel: "Delete",
         isDestructive: true,
-        onConfirm: () {
-          // Logic xóa chuyến đi thực tế sẽ ở đây
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Trip '$tripName' deleted")),
-          );
+        onConfirm: () async {
+          try {
+            await ApiClient.deleteTrip(trip.id);
+            if (!mounted) return;
+            Navigator.pop(context);
+            await _loadTrips();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Trip '${trip.destination}' deleted")),
+            );
+          } catch (error) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Delete failed: $error')),
+            );
+          }
         },
       ),
     );
@@ -72,28 +111,28 @@ class _AllTripsState extends State<AllTripsPage> {
   }
 
   Widget _buildTripList() {
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 30),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       physics: const BouncingScrollPhysics(),
       children: [
         const SizedBox(height: 10),
-        _buildTripCard(
-            "Japan Discovery",
-            "Mar 12 - Mar 25, 2024",
-            "12 places visited",
-            "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070"),
-        const SizedBox(height: 16),
-        _buildTripCard(
-            "Paris Getaway",
-            "Jan 05 - Jan 12, 2024",
-            "8 places visited",
-            "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073"),
-        const SizedBox(height: 16),
-        _buildTripCard(
-            "Bali Adventure",
-            "Dec 20 - Dec 28, 2023",
-            "15 places visited",
-            "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2076"),
+        for (int i = 0; i < _trips.length; i++) ...[
+            _buildTripCard(
+              _trips[i],
+              _trips[i].startDate,
+              '${_trips[i].travelerCount} travelers · \$${_trips[i].totalBudget.toStringAsFixed(0)}',
+              'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070'),
+          if (i < _trips.length - 1) const SizedBox(height: 16),
+        ],
         const SizedBox(height: 24),
       ],
     );
@@ -155,7 +194,7 @@ class _AllTripsState extends State<AllTripsPage> {
       ],
       onSelected: (value) {
         if (value == "clear") {
-          setState(() => _hasTrips = !_hasTrips); // Toggle for demo
+          _loadTrips();
         }
       },
       child: Container(
@@ -211,8 +250,8 @@ class _AllTripsState extends State<AllTripsPage> {
     );
   }
 
-  Widget _buildTripCard(
-      String title, String date, String stats, String imageUrl) {
+    Widget _buildTripCard(
+      TripModel trip, String date, String stats, String imageUrl) {
     return Container(
       decoration: BoxDecoration(
           color: kCardColor,
@@ -250,14 +289,14 @@ class _AllTripsState extends State<AllTripsPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(title,
+                            child: Text(trip.destination,
                                 style: const TextStyle(
                                     color: kTextColor,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18)),
                           ),
                           GestureDetector(
-                            onTap: () => _showDeleteConfirmation(title),
+                            onTap: () => _showDeleteConfirmation(trip),
                             child: const Icon(Icons.close,
                                 size: 18, color: Colors.redAccent),
                           ),
