@@ -1,12 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/auth/session_service.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/auth/forgot_password/presentation/pages/ResetPwPage.dart';
 import 'package:frontend/features/auth/register/presentation/pages/RegisterPage.dart';
 import 'package:frontend/features/navigation/MainNavigator.dart';
 
 import '../../../../../core/widgets/app_button.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Enter your email and password.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final result = await ApiClient.login(email: email, password: password);
+      final token = result['accessToken'] as String?;
+      if (token == null || token.isEmpty) {
+        throw Exception('Login response did not contain an access token.');
+      }
+      await SessionService.saveToken(token);
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainNavigator()),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _errorMessage = error.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,10 +142,10 @@ class LoginPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildLabel("EMAIL ADDRESS"),
-        _buildInputField("example@email.com", false),
+        _buildInputField("example@email.com", false, _emailController),
         const SizedBox(height: 20),
         _buildLabel("PASSWORD"),
-        _buildInputField("Your password", true),
+        _buildInputField("Your password", true, _passwordController),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
@@ -110,14 +161,15 @@ class LoginPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
+        if (_errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(_errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 13)),
+          ),
         AppButton(
-          label: "Sign in",
-          onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MainNavigator()),
-            );
-          },
+          label: _isLoading ? "Signing in..." : "Sign in",
+          onTap: _isLoading ? () {} : _handleLogin,
         ),
       ],
     );
@@ -136,7 +188,8 @@ class LoginPage extends StatelessWidget {
         ),
       );
 
-  Widget _buildInputField(String hint, bool isPassword) {
+  Widget _buildInputField(String hint, bool isPassword,
+      TextEditingController controller) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -150,6 +203,7 @@ class LoginPage extends StatelessWidget {
         ],
       ),
       child: TextFormField(
+        controller: controller,
         obscureText: isPassword,
         style: const TextStyle(color: Color(0xFF1A1D2D)),
         decoration: InputDecoration(

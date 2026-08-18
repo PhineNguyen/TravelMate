@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/core/auth/session_service.dart';
+import 'package:frontend/core/network/api_client.dart';
+import 'package:frontend/features/navigation/MainNavigator.dart';
 import 'package:frontend/features/auth/onboarding/presentation/pages/OnboardPage.dart';
 
 import '../../../../../core/widgets/app_button.dart';
 
-class SplashPage extends StatelessWidget {
+class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    _restoreSession();
+  }
+
+  Future<void> _restoreSession() async {
+    await ApiClient.restoreSession();
+    if (!mounted || !SessionService.isLoggedIn) return;
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainNavigator()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

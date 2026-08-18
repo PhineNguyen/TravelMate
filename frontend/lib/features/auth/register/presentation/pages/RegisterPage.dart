@@ -1,11 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/auth/session_service.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/auth/login/presentation/pages/LoginPage.dart';
 import 'package:frontend/features/trip_planning/preferences/presentation/pages/PreferencesPage.dart';
 
 import '../../../../../core/widgets/app_button.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleRegister() async {
+    final fullName = _fullNameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Complete all required fields.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final result = await ApiClient.register(
+        fullName: fullName,
+        email: email,
+        password: password,
+      );
+      final token = result['accessToken'] as String?;
+      if (token == null || token.isEmpty) {
+        throw Exception('Register response did not contain an access token.');
+      }
+      await SessionService.saveToken(token);
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const PreferencesPage()),
+        (route) => false,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _errorMessage = error.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +83,15 @@ class RegisterPage extends StatelessWidget {
                 const SizedBox(height: 32),
                 _buildRegistrationForm(),
                 const SizedBox(height: 40),
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(_errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 13)),
+                  ),
                 AppButton(
-                  label: "Create account",
-                  onTap: () {
-                    // Chuyển đến trang Preferences sau khi đăng ký thành công
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const PreferencesPage()));
-                  },
+                  label: _isLoading ? "Creating account..." : "Create account",
+                  onTap: _isLoading ? () {} : _handleRegister,
                 ),
                 const SizedBox(height: 20),
                 _buildFooter(context),
@@ -100,20 +159,22 @@ class RegisterPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInputField("FULL NAME", "Your full name", TextInputType.name),
+        _buildInputField("FULL NAME", "Your full name", TextInputType.name,
+          controller: _fullNameController),
+        const SizedBox(height: 20),
+      _buildInputField(
+        "EMAIL", "example@email.com", TextInputType.emailAddress,
+        controller: _emailController),
         const SizedBox(height: 20),
         _buildInputField(
-            "EMAIL", "example@email.com", TextInputType.emailAddress),
-        const SizedBox(height: 20),
-        _buildInputField(
-            "PASSWORD", "Your password", TextInputType.visiblePassword,
-            isPassword: true),
+          "PASSWORD", "Your password", TextInputType.visiblePassword,
+          isPassword: true, controller: _passwordController),
       ],
     );
   }
 
-  Widget _buildInputField(String label, String hint, TextInputType type,
-      {bool isPassword = false}) {
+    Widget _buildInputField(String label, String hint, TextInputType type,
+      {bool isPassword = false, TextEditingController? controller}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -141,6 +202,7 @@ class RegisterPage extends StatelessWidget {
             ],
           ),
           child: TextFormField(
+            controller: controller,
             obscureText: isPassword,
             keyboardType: type,
             style: const TextStyle(color: Color(0xFF1A1D2D)),
