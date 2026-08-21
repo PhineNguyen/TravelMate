@@ -16,7 +16,7 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
     3. Ước tính chi phí chi tiết sao cho tổng chi phí gần bằng hoặc nhỏ hơn ngân sách.
     4. Gán category rõ ràng: "restaurant", "attraction", "accommodation", "activity".
     5. Hãy tính toán chính xác và điền các trường `start_time` (mốc giờ bắt đầu hoạt động, ví dụ "08:00") và `duration_minutes` (khoảng thời gian hoạt động kéo dài bao nhiêu phút, dạng số nguyên).
-    6. TỐI ƯU TỐC ĐỘ: Trường `summary` và `description` của từng hoạt động phải viết CỰC KỲ NGẮN GỌN và CÔ ĐỌNG (Mỗi description tối đa 10 từ). Tuyệt đối không viết dài dòng.
+    6. TỐI ƯU TỐC ĐỘ: Trường `summary` và `description` của từng hoạt động phải viết ngắn gọn và cô đọng (Mỗi description tối đa 30 từ). Tuyệt đối không viết quá dài dòng.
 
     Trả về ĐÚNG cấu trúc JSON theo mẫu sau, không kèm bất kỳ câu thoại thừa nào:
     {{
@@ -36,7 +36,7 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
               "place_name": "Tên địa điểm/Quán ăn",
               "category": "restaurant",
               "estimated_cost": 100000,
-              "description": "Mô tả siêu ngắn dưới 10 từ"
+              "description": "Mô tả ngắn dưới 30 từ"
             }}
           ]
         }}
