@@ -90,7 +90,9 @@ class _HomePageState extends State<HomePage> {
                     _formatTripInfo(_trips[index]),
                     _calculateProgress(_trips[index]),
                     _tripStatusToDisplay(_trips[index].status),
-                    index.isEven ? const Color(0xFF2D7132) : Colors.orange.shade700,
+                    index.isEven
+                        ? const Color(0xFF2D7132)
+                        : Colors.orange.shade700,
                   ),
                   if (index < _trips.length - 1) const SizedBox(height: 15),
                 ],
@@ -112,7 +114,9 @@ class _HomePageState extends State<HomePage> {
                 "WEATHER ALERT",
                 actionText: "Details",
                 context: context,
-                page: const WeatherPage(),
+                page: _trips.isNotEmpty
+                    ? WeatherPage(tripId: _trips.first.id)
+                    : const WeatherPage(),
               ),
               const SizedBox(height: 10),
               _buildWeatherAlert(),
@@ -124,11 +128,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _formatTripLocations(TripModel trip) {
-    return trip.destination.isNotEmpty ? trip.destination : 'Destination updated';
+    return trip.destination.isNotEmpty
+        ? trip.destination
+        : 'Destination updated';
   }
 
   String _formatTripInfo(TripModel trip) {
-    final budget = trip.totalBudget > 0 ? ' · \$${trip.totalBudget.toStringAsFixed(0)}' : '';
+    final budget = trip.totalBudget > 0
+        ? ' · \$${trip.totalBudget.toStringAsFixed(0)}'
+        : '';
     return '${trip.startDate}${budget}  ·  ${trip.travelerCount} pax';
   }
 
@@ -381,8 +389,12 @@ class _HomePageState extends State<HomePage> {
         }),
         _buildActionItem(
             Icons.cloud_queue_rounded, "Weather", const Color(0xFFD32F2F), () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const WeatherPage()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => WeatherPage(
+                        tripId: _trips.isNotEmpty ? _trips.first.id : null,
+                      )));
         }),
       ],
     );

@@ -7,6 +7,7 @@ import com.travelmate.backend.repository.TripRepository;
 import com.travelmate.backend.repository.WeatherSnapshotRepository;
 import com.travelmate.backend.service.WeatherSnapshotService;
 import com.travelmate.backend.mapper.WeatherSnapshotMapper;
+import com.travelmate.backend.dto.WeatherForecastDTO;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,8 @@ public class WeatherSnapshotServiceimpl implements WeatherSnapshotService {
                 .trip(trip)
                 .date(dto.getDate())
                 .temperature(dto.getTemperature())
+                .temperatureHigh(dto.getTemperatureHigh())
+                .temperatureLow(dto.getTemperatureLow())
                 .humidity(dto.getHumidity())
                 .rainProbability(dto.getRainProbability())
                 .condition(trimToNull(dto.getCondition()))
@@ -60,7 +63,7 @@ public class WeatherSnapshotServiceimpl implements WeatherSnapshotService {
                 .visibility(dto.getVisibility())
                 .alertLevel(trimToNull(dto.getAlertLevel()))
                 .city(trimToNull(dto.getCity()))
-                .isOutdoorSafe(dto.getIsOutdoorSafe())
+                .isOutdoorSafe(Boolean.TRUE.equals(dto.getIsOutdoorSafe()))
                 .expiresAt(dto.getExpiresAt())
                 .providerName(trimToNull(dto.getProviderName()))
                 .providerRecordedAt(dto.getProviderRecordedAt())
@@ -109,6 +112,10 @@ public class WeatherSnapshotServiceimpl implements WeatherSnapshotService {
 
         if (dto.getTemperature() != null)
             existing.setTemperature(dto.getTemperature());
+        if (dto.getTemperatureHigh() != null)
+            existing.setTemperatureHigh(dto.getTemperatureHigh());
+        if (dto.getTemperatureLow() != null)
+            existing.setTemperatureLow(dto.getTemperatureLow());
         if (dto.getHumidity() != null)
             existing.setHumidity(dto.getHumidity());
         if (dto.getRainProbability() != null)
@@ -143,6 +150,37 @@ public class WeatherSnapshotServiceimpl implements WeatherSnapshotService {
         } catch (DataIntegrityViolationException ex) {
             throw new IllegalArgumentException("Database constraint violated", ex);
         }
+    }
+
+    @Override
+    public List<WeatherForecastDTO> findForecastByTripId(Long tripId) {
+        if (tripId == null) {
+            throw new IllegalArgumentException("tripId is required");
+        }
+
+        return weatherSnapshotRepository
+                .findByTripIdOrderByDateAsc(tripId)
+                .stream()
+                .map(snapshot -> {
+                    Double temperatureHigh = snapshot.getTemperatureHigh() != null
+                            ? snapshot.getTemperatureHigh()
+                            : snapshot.getTemperature();
+
+                    Double temperatureLow = snapshot.getTemperatureLow() != null
+                            ? snapshot.getTemperatureLow()
+                            : snapshot.getTemperature();
+
+                    return new WeatherForecastDTO(
+                            snapshot.getDate(),
+                            temperatureHigh,
+                            temperatureLow,
+                            snapshot.getCondition(),
+                            snapshot.getHumidity(),
+                            snapshot.getWindSpeed(),
+                            snapshot.getRainProbability(),
+                            snapshot.isOutdoorSafe());
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -11,7 +11,9 @@ import 'package:http/http.dart' as http;
 import '../../features/finance/expense/data/models/expense_model.dart';
 import '../../features/trip_details/share/data/models/shared_trip_invite_model.dart';
 import '../../features/trip_details/weather/data/models/weather_alert_model.dart';
+import '../../features/trip_details/weather/data/models/weather_forecast_model.dart';
 import '../../features/trip_details/weather/data/models/weather_snapshot_model.dart';
+import '../../features/trip_details/weather/data/models/current_weather_model.dart';
 import '../../features/trip_planning/home/data/models/trip_model.dart';
 import '../../features/trip_planning/templates/data/models/trip_template_model.dart';
 import '../../features/user_profile/analytics/data/models/analytics_snapshot_model.dart';
@@ -427,6 +429,21 @@ class ApiClient {
         Map<String, dynamic>.from(_decodeBody(response)));
   }
 
+  static Future<CurrentWeatherModel> fetchCurrentWeatherByGps(
+      double latitude, double longitude) async {
+    final uri = Uri.parse('$baseUrl/api/weather/current').replace(
+      queryParameters: {
+        'latitude': latitude.toString(),
+        'longitude': longitude.toString(),
+      },
+    );
+    final response = await http.get(uri, headers: _headers());
+    _requireStatus(response, {200});
+    return CurrentWeatherModel.fromJson(
+      Map<String, dynamic>.from(_decodeBody(response)),
+    );
+  }
+
   // Lấy danh sách cảnh báo thời tiết của chuyến đi
   static Future<List<WeatherAlertModel>> fetchWeatherAlerts(int tripId) async {
     final response = await http.get(
@@ -440,6 +457,22 @@ class ApiClient {
     return data
         .map((item) =>
             WeatherAlertModel.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  // Lấy dự báo thời tiết theo ngày của chuyến đi.
+  static Future<List<WeatherForecastModel>> fetchWeatherForecast(
+      int tripId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/weather-snapshots/trip/$tripId/forecast'),
+      headers: _headers(),
+    );
+    _requireStatus(response, {200});
+    final data = _extractList(_decodeBody(response));
+    return data
+        .map((item) => WeatherForecastModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ))
         .toList();
   }
 }

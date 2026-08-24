@@ -1,43 +1,42 @@
-class WeatherSnapshotModel {
-  final int id;
-  final int tripId;
+class CurrentWeatherModel {
+  final double latitude;
+  final double longitude;
   final String city;
   final double temperature;
-  final String condition;
   final double humidity;
   final double windSpeed;
   final double rainProbability;
+  final String condition;
   final bool isOutdoorSafe;
-  final String? alertLevel;
-  final DateTime? date;
+  final DateTime? providerRecordedAt;
 
-  const WeatherSnapshotModel({
-    required this.id,
-    required this.tripId,
+  const CurrentWeatherModel({
+    required this.latitude,
+    required this.longitude,
     required this.city,
     required this.temperature,
-    required this.condition,
     required this.humidity,
     required this.windSpeed,
     required this.rainProbability,
+    required this.condition,
     required this.isOutdoorSafe,
-    this.alertLevel,
-    this.date,
+    this.providerRecordedAt,
   });
 
-  factory WeatherSnapshotModel.fromJson(Map<String, dynamic> json) {
-    return WeatherSnapshotModel(
-      id: (json['id'] as num?)?.toInt() ?? 0,
-      tripId: (json['tripId'] as num?)?.toInt() ?? 0,
+  factory CurrentWeatherModel.fromJson(Map<String, dynamic> json) {
+    return CurrentWeatherModel(
+      latitude: _parseDouble(json['latitude']),
+      longitude: _parseDouble(json['longitude']),
       city: json['city'] as String? ?? 'Unknown',
       temperature: _parseDouble(json['temperature']),
-      condition: json['condition'] as String? ?? 'Clear',
       humidity: _parseDouble(json['humidity']),
       windSpeed: _parseDouble(json['windSpeed']),
       rainProbability: _parseDouble(json['rainProbability']),
+      condition: json['condition'] as String? ?? 'Unknown',
       isOutdoorSafe: json['isOutdoorSafe'] as bool? ?? true,
-      alertLevel: json['alertLevel'] as String?,
-      date: _parseDateTime(json['date']),
+      providerRecordedAt: DateTime.tryParse(
+        json['providerRecordedAt']?.toString() ?? '',
+      ),
     );
   }
 
@@ -45,12 +44,5 @@ class WeatherSnapshotModel {
     if (value is num) return value.toDouble();
     if (value is String) return double.tryParse(value) ?? 0.0;
     return 0.0;
-  }
-
-  static DateTime? _parseDateTime(dynamic value) {
-    if (value == null) return null;
-    if (value is DateTime) return value;
-    if (value is String) return DateTime.tryParse(value);
-    return null;
   }
 }

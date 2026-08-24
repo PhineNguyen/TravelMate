@@ -1,5 +1,6 @@
 package com.travelmate.backend.controller;
 
+import com.travelmate.backend.dto.WeatherForecastDTO;
 import com.travelmate.backend.dto.WeatherSnapshotDTO;
 import com.travelmate.backend.service.WeatherSnapshotService;
 import jakarta.validation.Valid;
@@ -42,6 +43,14 @@ public class WeatherSnapshotController {
     public ResponseEntity<WeatherSnapshotDTO> getLatestByTrip(@PathVariable Long tripId) {
         WeatherSnapshotDTO dto = weatherSnapshotService.findLatestByTripId(tripId);
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/trip/{tripId}/forecast")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<List<WeatherForecastDTO>> getForecast(
+            @PathVariable Long tripId) {
+        return ResponseEntity.ok(
+                weatherSnapshotService.findForecastByTripId(tripId));
     }
 
     @GetMapping

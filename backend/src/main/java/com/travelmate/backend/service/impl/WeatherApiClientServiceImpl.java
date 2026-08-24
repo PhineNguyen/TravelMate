@@ -1,5 +1,6 @@
 package com.travelmate.backend.service.impl;
 
+import com.travelmate.backend.dto.CurrentWeatherDTO;
 import com.travelmate.backend.entity.Trip;
 import com.travelmate.backend.entity.WeatherAlert;
 import com.travelmate.backend.entity.enums.AlertSeverity;
@@ -18,6 +19,10 @@ import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,6 +42,43 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
     private static final double RAIN_PROBABILITY_THRESHOLD = 0.7; // 70%
 
     @Override
+    public CurrentWeatherDTO fetchCurrentWeather(double latitude, double longitude) {
+        CurrentWeatherResponse response = restClient.get()
+                .uri(apiUrl + "/weather", uriBuilder -> uriBuilder
+                        .queryParam("lat", latitude)
+                        .queryParam("lon", longitude)
+                        .queryParam("appid", apiKey)
+                        .queryParam("units", "metric")
+                        .build())
+                .retrieve()
+                .body(CurrentWeatherResponse.class);
+
+        if (response == null || response.main() == null) {
+            throw new IllegalStateException("Weather provider returned no data");
+        }
+
+        String condition = response.weather() == null || response.weather().isEmpty()
+                ? "Unknown"
+                : response.weather().get(0).description();
+        double windSpeed = response.wind() == null ? 0.0 : response.wind().speed();
+        double humidity = response.main().humidity();
+        double temperature = response.main().temp();
+        boolean isOutdoorSafe = windSpeed < 10.0;
+
+        return new CurrentWeatherDTO(
+                latitude,
+                longitude,
+                response.name() == null ? "Unknown" : response.name(),
+                temperature,
+                humidity,
+                windSpeed,
+                0.0,
+                condition,
+                isOutdoorSafe,
+                Instant.now());
+    }
+
+    @Override
     @Transactional
     public void fetchAndProcessWeatherData(String city, Trip trip) {
         try {
@@ -49,24 +91,41 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
                     .retrieve()
                     .body(OpenWeatherResponse.class);
 
-            if (response != null && response.list() != null && !response.list().isEmpty()) {
-                ForecastItem forecast = response.list().get(0); // Get the most immediate forecast
-                double rainProbability = forecast.pop();
+            if (response == null
+                    || response.list() == null
+                    || response.list().isEmpty()) {
+                log.warn("No weather forecast returned for city {}", city);
+                return;
+            }
 
-                boolean isOutdoorSafe = calculateIsOutdoorSafe(forecast);
+            Map<LocalDate, List<ForecastItem>> forecastsByDate = response.list()
+                    .stream()
+                    .collect(Collectors.groupingBy(forecast -> Instant.ofEpochSecond(forecast.dt())
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()));
 
-                // Create and save a snapshot of the current weather data
-                WeatherSnapshot snapshot = createAndSaveWeatherSnapshot(trip, city, forecast, isOutdoorSafe);
+            for (Map.Entry<LocalDate, List<ForecastItem>> entry : forecastsByDate.entrySet()) {
 
-                log.info("Weather for {}: Rain probability: {}, Outdoor safe: {}", city, rainProbability,
-                        isOutdoorSafe);
+                WeatherSnapshot snapshot = saveDailyForecast(
+                        trip,
+                        city,
+                        entry.getKey(),
+                        entry.getValue());
 
-                if (rainProbability > RAIN_PROBABILITY_THRESHOLD) {
-                    createWeatherAlert(trip, snapshot, rainProbability);
+                if (snapshot.getRainProbability() != null
+                        && snapshot.getRainProbability() >= RAIN_PROBABILITY_THRESHOLD * 100) {
+
+                    createWeatherAlert(
+                            trip,
+                            snapshot,
+                            snapshot.getRainProbability() / 100);
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to fetch or process weather data for city {}: {}", city, e.getMessage());
+            log.error(
+                    "Failed to fetch or process weather data for city {}",
+                    city,
+                    e);
         }
     }
 
@@ -75,19 +134,76 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
         return forecast.pop() < 0.5 && forecast.wind().speed() < 10; // wind speed in meter/sec
     }
 
-    private WeatherSnapshot createAndSaveWeatherSnapshot(Trip trip, String city, ForecastItem forecast,
-            boolean isOutdoorSafe) {
-        WeatherSnapshot snapshot = WeatherSnapshot.builder()
-                .trip(trip)
-                .date(LocalDate.now()) // Using current date for the snapshot
-                .city(city)
-                .temperature(forecast.main().temp())
-                .rainProbability(forecast.pop())
-                .windSpeed(forecast.wind().speed())
-                .condition(forecast.weather().isEmpty() ? "N/A" : forecast.weather().get(0).description())
-                .isOutdoorSafe(isOutdoorSafe)
-                .providerName("OpenWeatherMap")
-                .build();
+    private WeatherSnapshot saveDailyForecast(
+            Trip trip,
+            String city,
+            LocalDate date,
+            List<ForecastItem> dailyForecasts) {
+
+        double temperatureHigh = dailyForecasts.stream()
+                .mapToDouble(item -> item.main().temp())
+                .max()
+                .orElse(0.0);
+
+        double temperatureLow = dailyForecasts.stream()
+                .mapToDouble(item -> item.main().temp())
+                .min()
+                .orElse(0.0);
+
+        double humidity = dailyForecasts.stream()
+                .mapToDouble(item -> item.main().humidity())
+                .average()
+                .orElse(0.0);
+
+        double windSpeed = dailyForecasts.stream()
+                .mapToDouble(item -> item.wind().speed())
+                .max()
+                .orElse(0.0);
+
+        double rainProbabilityRatio = dailyForecasts.stream()
+                .mapToDouble(ForecastItem::pop)
+                .max()
+                .orElse(0.0);
+
+        double rainProbabilityPercent = rainProbabilityRatio * 100;
+
+        ForecastItem representative = dailyForecasts.stream()
+                .max((first, second) -> Double.compare(first.pop(), second.pop()))
+                .orElse(dailyForecasts.get(0));
+
+        boolean isOutdoorSafe = rainProbabilityPercent < 50.0
+                && windSpeed < 10.0;
+
+        WeatherSnapshot snapshot = weatherSnapshotRepository
+                .findByTripIdAndDate(trip.getId(), date)
+                .orElseGet(WeatherSnapshot::new);
+
+        snapshot.setTrip(trip);
+        snapshot.setDate(date);
+        snapshot.setCity(city);
+
+        snapshot.setTemperature(
+                (temperatureHigh + temperatureLow) / 2);
+
+        snapshot.setTemperatureHigh(temperatureHigh);
+        snapshot.setTemperatureLow(temperatureLow);
+
+        snapshot.setHumidity(humidity);
+        snapshot.setWindSpeed(windSpeed);
+        snapshot.setRainProbability(rainProbabilityPercent);
+
+        snapshot.setCondition(
+                representative.weather().isEmpty()
+                        ? "N/A"
+                        : representative.weather()
+                                .get(0)
+                                .description());
+
+        snapshot.setOutdoorSafe(isOutdoorSafe);
+        snapshot.setAlertLevel(
+                isOutdoorSafe ? "NORMAL" : "WARNING");
+        snapshot.setProviderName("OpenWeatherMap");
+
         return weatherSnapshotRepository.save(snapshot);
     }
 
@@ -119,10 +235,22 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
     private record OpenWeatherResponse(List<ForecastItem> list) {
     }
 
-    private record ForecastItem(Main main, List<Weather> weather, Wind wind, double pop) {
+    private record CurrentWeatherResponse(
+            Main main,
+            List<Weather> weather,
+            Wind wind,
+            String name) {
     }
 
-    private record Main(double temp) {
+    private record ForecastItem(
+            long dt,
+            Main main,
+            List<Weather> weather,
+            Wind wind,
+            double pop) {
+    }
+
+    private record Main(double temp, double humidity) {
     }
 
     private record Weather(String main, String description) {

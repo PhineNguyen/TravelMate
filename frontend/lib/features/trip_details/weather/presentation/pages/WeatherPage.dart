@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/location/location_service.dart';
 import '../../../../../core/network/api_client.dart';
 import '../../../../../core/widgets/app_header.dart';
 import '../../data/models/weather_alert_model.dart';
+import '../../data/models/weather_forecast_model.dart';
 import '../../data/models/weather_snapshot_model.dart';
+import '../../data/models/current_weather_model.dart';
 
 class WeatherPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
-  final int tripId; // Nhận tripId để biết đang xem thời tiết của chuyến đi nào
+  final int? tripId;
 
-  const WeatherPage({super.key, this.onBackToHome, this.tripId = 1});
+  const WeatherPage({super.key, this.onBackToHome, this.tripId});
 
   @override
   State<WeatherPage> createState() => _WeatherPageState();
@@ -19,7 +22,9 @@ class _WeatherPageState extends State<WeatherPage> {
   bool _isLoading = true;
   String? _error;
   WeatherSnapshotModel? _snapshot;
+  CurrentWeatherModel? _gpsWeather;
   List<WeatherAlertModel> _alerts = [];
+  List<WeatherForecastModel> _forecast = [];
 
   @override
   void initState() {
@@ -35,16 +40,33 @@ class _WeatherPageState extends State<WeatherPage> {
     });
 
     try {
-      // Chạy cả 2 API cùng lúc cho nhanh
-      final results = await Future.wait([
-        ApiClient.fetchWeatherSnapshot(widget.tripId),
-        ApiClient.fetchWeatherAlerts(widget.tripId),
-      ]);
+      final position = await LocationService.getCurrentPosition();
+      final gpsWeather = await ApiClient.fetchCurrentWeatherByGps(
+        position.latitude,
+        position.longitude,
+      );
+
+      WeatherSnapshotModel? snapshot;
+      List<WeatherAlertModel> alerts = [];
+      List<WeatherForecastModel> forecast = [];
+      final tripId = widget.tripId;
+      if (tripId != null) {
+        final results = await Future.wait([
+          ApiClient.fetchWeatherSnapshot(tripId),
+          ApiClient.fetchWeatherAlerts(tripId),
+          ApiClient.fetchWeatherForecast(tripId),
+        ]);
+        snapshot = results[0] as WeatherSnapshotModel?;
+        alerts = results[1] as List<WeatherAlertModel>;
+        forecast = results[2] as List<WeatherForecastModel>;
+      }
 
       if (!mounted) return;
       setState(() {
-        _snapshot = results[0] as WeatherSnapshotModel?;
-        _alerts = results[1] as List<WeatherAlertModel>;
+        _gpsWeather = gpsWeather;
+        _snapshot = snapshot;
+        _alerts = alerts;
+        _forecast = forecast;
         _isLoading = false;
       });
     } catch (e) {
@@ -190,10 +212,12 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   Widget _buildCurrentWeatherCard() {
-    // Nếu chưa có snapshot, hiển thị mặc định
-    final city = _snapshot?.city ?? "Đang cập nhật...";
-    final temp = _snapshot?.temperature.toStringAsFixed(0) ?? "--";
-    final condition = _snapshot?.condition ?? "Chưa có dữ liệu";
+    final city = _gpsWeather?.city ?? _snapshot?.city ?? "Đang cập nhật...";
+    final temp = _gpsWeather?.temperature.toStringAsFixed(0) ??
+        _snapshot?.temperature.toStringAsFixed(0) ??
+        "--";
+    final condition =
+        _gpsWeather?.condition ?? _snapshot?.condition ?? "Chưa có dữ liệu";
 
     return Container(
       width: double.infinity,
@@ -237,16 +261,60 @@ class _WeatherPageState extends State<WeatherPage> {
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1D2D))),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 18,
+                runSpacing: 14,
+                children: [
+                  _buildWeatherMetric(
+                    Icons.water_drop_outlined,
+                    "Humidity",
+                    "${(_gpsWeather?.humidity ?? _snapshot?.humidity)?.toStringAsFixed(0) ?? '--'}%",
+                  ),
+                  _buildWeatherMetric(
+                    Icons.air,
+                    "Wind",
+                    "${(_gpsWeather?.windSpeed ?? _snapshot?.windSpeed)?.toStringAsFixed(1) ?? '--'} m/s",
+                  ),
+                  _buildWeatherMetric(
+                    Icons.umbrella_outlined,
+                    "Rain",
+                    "${(_gpsWeather?.rainProbability ?? _snapshot?.rainProbability)?.toStringAsFixed(0) ?? '--'}%",
+                  ),
+                ],
+              ),
             ],
           ),
           Positioned(
             right: 0,
             top: 10,
-            child: Icon(Icons.wb_cloudy_rounded,
+            child: Icon(_getWeatherIcon(condition),
                 size: 100, color: Colors.blue.shade200),
           )
         ],
       ),
+    );
+  }
+
+  Widget _buildWeatherMetric(IconData icon, String label, String value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF2D7132)),
+        const SizedBox(width: 7),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label,
+                style: const TextStyle(fontSize: 10, color: Color(0xFF71768E))),
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1D2D))),
+          ],
+        ),
+      ],
     );
   }
 
@@ -289,35 +357,17 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   Widget _buildForecastList() {
-    // Chỗ này bạn có thể giữ nguyên mock data hoặc mở rộng API để lấy dự báo 7 ngày sau
-    final List<Map<String, dynamic>> forecast = [
-      {
-        "day": "Today",
-        "icon": Icons.wb_cloudy_rounded,
-        "high": "18°",
-        "low": "11°"
-      },
-      {
-        "day": "Fri",
-        "icon": Icons.wb_sunny_rounded,
-        "high": "22°",
-        "low": "13°"
-      },
-      {
-        "day": "Sat",
-        "icon": Icons.beach_access_rounded,
-        "high": "14°",
-        "low": "10°",
-        "active": true
-      },
-    ];
+    if (_forecast.isEmpty) {
+      return const Text("Không có dữ liệu dự báo.",
+          style: TextStyle(color: Color(0xFF71768E)));
+    }
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
       child: Row(
-        children: forecast.map((item) {
-          bool isActive = item['active'] ?? false;
+        children: _forecast.map((item) {
+          final isActive = _isSameDay(item.date, DateTime.now());
           return Container(
             margin: const EdgeInsets.only(right: 15),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -336,24 +386,24 @@ class _WeatherPageState extends State<WeatherPage> {
             ),
             child: Column(
               children: [
-                Text(item['day'],
+                Text(_formatForecastDay(item.date),
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color:
                             isActive ? Colors.white : const Color(0xFFB0B3C1))),
                 const SizedBox(height: 15),
-                Icon(item['icon'],
+                Icon(_getWeatherIcon(item.condition),
                     color: isActive ? Colors.white : Colors.orange.shade700,
                     size: 32),
                 const SizedBox(height: 15),
-                Text(item['high'],
+                Text('${item.temperatureHigh.toStringAsFixed(0)}°',
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color:
                             isActive ? Colors.white : const Color(0xFF1A1D2D))),
-                Text(item['low'],
+                Text('${item.temperatureLow.toStringAsFixed(0)}°',
                     style: TextStyle(
                         fontSize: 12,
                         color: isActive
@@ -365,6 +415,39 @@ class _WeatherPageState extends State<WeatherPage> {
         }).toList(),
       ),
     );
+  }
+
+  bool _isSameDay(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  String _formatForecastDay(DateTime date) {
+    if (_isSameDay(date, DateTime.now())) return "Today";
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    return days[date.weekday - 1];
+  }
+
+  IconData _getWeatherIcon(String condition) {
+    final value = condition.toLowerCase();
+    if (value.contains("thunder") || value.contains("storm")) {
+      return Icons.thunderstorm_rounded;
+    }
+    if (value.contains("rain") ||
+        value.contains("drizzle") ||
+        value.contains("mưa")) {
+      return Icons.water_drop_rounded;
+    }
+    if (value.contains("cloud") || value.contains("mây")) {
+      return Icons.cloud_rounded;
+    }
+    if (value.contains("clear") ||
+        value.contains("sun") ||
+        value.contains("nắng")) {
+      return Icons.wb_sunny_rounded;
+    }
+    return Icons.cloud_queue_rounded;
   }
 
   // Hàm phụ trợ để đổi màu dựa theo mức độ cảnh báo (Severity)

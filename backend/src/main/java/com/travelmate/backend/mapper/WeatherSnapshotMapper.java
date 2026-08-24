@@ -12,6 +12,8 @@ public class WeatherSnapshotMapper {
                 .tripId(e.getTrip() != null ? e.getTrip().getId() : null)
                 .date(e.getDate())
                 .temperature(e.getTemperature())
+                .temperatureHigh(e.getTemperatureHigh())
+                .temperatureLow(e.getTemperatureLow())
                 .humidity(e.getHumidity())
                 .rainProbability(e.getRainProbability())
                 .condition(e.getCondition())

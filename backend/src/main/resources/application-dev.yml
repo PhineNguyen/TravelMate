@@ -28,7 +28,7 @@ spring:
 openweathermap:
   api:
     url: ${OPENWEATHERMAP_API_URL:https://api.openweathermap.org/data/2.5}
-    key: ${OPENWEATHERMAP_API_KEY:{OPENWEATHER_API_KEY}}
+    key: ${OPENWEATHER_API_KEY:}
 
 gemini:
   api-key: ${GEMINI_API_KEY:{GEMINI_API_KEY}}

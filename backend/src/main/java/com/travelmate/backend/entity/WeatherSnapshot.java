@@ -37,6 +37,12 @@ public class WeatherSnapshot {
     @Column(name = "temperature")
     private Double temperature;
 
+    @Column(name = "temperature_high")
+    private Double temperatureHigh;
+
+    @Column(name = "temperature_low")
+    private Double temperatureLow;
+
     @Column(name = "humidity")
     private Double humidity;
 

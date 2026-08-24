@@ -12,11 +12,11 @@ import java.util.Optional;
 
 public interface WeatherSnapshotRepository extends JpaRepository<WeatherSnapshot, Long> {
 
-    List<WeatherSnapshot> findByTripId(Long tripId);
-
     Page<WeatherSnapshot> findByTripId(Long tripId, Pageable pageable);
 
     Optional<WeatherSnapshot> findByTripIdAndDate(Long tripId, LocalDate date);
+
+    Optional<WeatherSnapshot> findTopByTripIdOrderByDateDesc(Long tripId);
 
     boolean existsByTripIdAndDate(Long tripId, LocalDate date);
 
@@ -32,5 +32,8 @@ public interface WeatherSnapshotRepository extends JpaRepository<WeatherSnapshot
 
     List<WeatherSnapshot> findByTripIdOrderByDateDesc(Long tripId);
 
-    Optional<WeatherSnapshot> findTopByTripIdOrderByDateDesc(Long tripId);
+    List<WeatherSnapshot> findByTripIdOrderByDateAsc(Long tripId);
+
+    List<WeatherSnapshot> findByTripId(Long tripId);
+
 }
