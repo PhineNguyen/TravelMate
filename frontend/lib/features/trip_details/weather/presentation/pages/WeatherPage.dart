@@ -1,10 +1,60 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/network/api_client.dart';
 import '../../../../../core/widgets/app_header.dart';
+import '../../data/models/weather_alert_model.dart';
+import '../../data/models/weather_snapshot_model.dart';
 
-class WeatherPage extends StatelessWidget {
+class WeatherPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
-  const WeatherPage({super.key, this.onBackToHome});
+  final int tripId; // Nhận tripId để biết đang xem thời tiết của chuyến đi nào
+
+  const WeatherPage({super.key, this.onBackToHome, this.tripId = 1});
+
+  @override
+  State<WeatherPage> createState() => _WeatherPageState();
+}
+
+class _WeatherPageState extends State<WeatherPage> {
+  bool _isLoading = true;
+  String? _error;
+  WeatherSnapshotModel? _snapshot;
+  List<WeatherAlertModel> _alerts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWeatherData();
+  }
+
+  // Hàm gọi API lấy dữ liệu thời tiết
+  Future<void> _loadWeatherData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // Chạy cả 2 API cùng lúc cho nhanh
+      final results = await Future.wait([
+        ApiClient.fetchWeatherSnapshot(widget.tripId),
+        ApiClient.fetchWeatherAlerts(widget.tripId),
+      ]);
+
+      if (!mounted) return;
+      setState(() {
+        _snapshot = results[0] as WeatherSnapshotModel?;
+        _alerts = results[1] as List<WeatherAlertModel>;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +67,7 @@ class WeatherPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: AppHeader(
                 title: "Weather Alerts",
-                onBack: onBackToHome,
+                onBack: widget.onBackToHome ?? () => Navigator.pop(context),
                 trailing: PopupMenuButton<String>(
                   offset: const Offset(0, 50),
                   color: Colors.white,
@@ -30,6 +80,11 @@ class WeatherPage extends StatelessWidget {
                         Icons.location_on_outlined, "Change location"),
                     _buildPopupItem(Icons.settings_outlined, "Alert settings"),
                   ],
+                  onSelected: (value) {
+                    if (value == "Refresh data") {
+                      _loadWeatherData(); // Bấm refresh thì tải lại dữ liệu
+                    }
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -51,42 +106,43 @@ class WeatherPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCurrentWeatherCard(),
-                    const SizedBox(height: 30),
-                    _buildSectionHeader("ACTIVE ALERTS", null),
-                    const SizedBox(height: 15),
-                    _buildAlertCard(
-                      icon: Icons.warning_amber_rounded,
-                      title: "Heavy rain — Apr 16–17",
-                      message:
-                          "120mm expected. AI rescheduled 3 outdoor activities automatically.",
-                      color: const Color(0xFFD32F2F),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildAlertCard(
-                      icon: Icons.air_rounded,
-                      title: "Wind advisory — Apr 19",
-                      message:
-                          "Gusts 60 km/h near coastal areas. Miyajima ferry postponed.",
-                      color: Colors.orange.shade800,
-                    ),
-                    const SizedBox(height: 30),
-                    _buildSectionHeader("7-DAY FORECAST", "Details"),
-                    const SizedBox(height: 15),
-                    _buildForecastList(),
-                    const SizedBox(height: 30),
-                    _buildSectionHeader("PRECIPITATION PROBABILITY", null),
-                    const SizedBox(height: 15),
-                    _buildPrecipitationChart(),
-                    const SizedBox(height: 30),
-                  ],
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(child: Text('Lỗi: $_error'))
+                      : SingleChildScrollView(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildCurrentWeatherCard(),
+                              const SizedBox(height: 30),
+                              _buildSectionHeader("ACTIVE ALERTS", null),
+                              const SizedBox(height: 15),
+
+                              // HIỂN THỊ DANH SÁCH CẢNH BÁO TỪ API
+                              if (_alerts.isEmpty)
+                                const Text("Không có cảnh báo thời tiết nào.",
+                                    style: TextStyle(color: Color(0xFF71768E))),
+                              for (var alert in _alerts) ...[
+                                _buildAlertCard(
+                                  icon: _getIconForSeverity(alert.severity),
+                                  title: alert.alertType,
+                                  message: alert.suggestedAction.isNotEmpty
+                                      ? alert.suggestedAction
+                                      : "Hãy chú ý thời tiết.",
+                                  color: _getColorForSeverity(alert.severity),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+
+                              const SizedBox(height: 30),
+                              _buildSectionHeader("7-DAY FORECAST", "Details"),
+                              const SizedBox(height: 15),
+                              _buildForecastList(),
+                            ],
+                          ),
+                        ),
             ),
           ],
         ),
@@ -123,7 +179,7 @@ class WeatherPage extends StatelessWidget {
             onTap: () {},
             child: Text(
               actionText,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF2D7132)),
@@ -134,6 +190,11 @@ class WeatherPage extends StatelessWidget {
   }
 
   Widget _buildCurrentWeatherCard() {
+    // Nếu chưa có snapshot, hiển thị mặc định
+    final city = _snapshot?.city ?? "Đang cập nhật...";
+    final temp = _snapshot?.temperature.toStringAsFixed(0) ?? "--";
+    final condition = _snapshot?.condition ?? "Chưa có dữ liệu";
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -158,21 +219,21 @@ class WeatherPage extends StatelessWidget {
                   const Icon(Icons.location_on_rounded,
                       size: 16, color: Color(0xFF2D7132)),
                   const SizedBox(width: 8),
-                  const Text("Kyoto, Japan",
-                      style: TextStyle(
+                  Text(city,
+                      style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF71768E))),
                 ],
               ),
               const SizedBox(height: 15),
-              const Text("18°c",
-                  style: TextStyle(
+              Text("$temp°",
+                  style: const TextStyle(
                       fontSize: 72,
                       fontWeight: FontWeight.w200,
                       color: Color(0xFF1A1D2D))),
-              const Text("Partly cloudy",
-                  style: TextStyle(
+              Text(condition,
+                  style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1D2D))),
@@ -181,8 +242,8 @@ class WeatherPage extends StatelessWidget {
           Positioned(
             right: 0,
             top: 10,
-            child: Icon(Icons.wb_twilight_rounded,
-                size: 100, color: Colors.orange.shade400),
+            child: Icon(Icons.wb_cloudy_rounded,
+                size: 100, color: Colors.blue.shade200),
           )
         ],
       ),
@@ -228,6 +289,7 @@ class WeatherPage extends StatelessWidget {
   }
 
   Widget _buildForecastList() {
+    // Chỗ này bạn có thể giữ nguyên mock data hoặc mở rộng API để lấy dự báo 7 ngày sau
     final List<Map<String, dynamic>> forecast = [
       {
         "day": "Today",
@@ -247,18 +309,6 @@ class WeatherPage extends StatelessWidget {
         "high": "14°",
         "low": "10°",
         "active": true
-      },
-      {
-        "day": "Sun",
-        "icon": Icons.beach_access_rounded,
-        "high": "13°",
-        "low": "9°"
-      },
-      {
-        "day": "Mon",
-        "icon": Icons.wb_cloudy_rounded,
-        "high": "16°",
-        "low": "10°"
       },
     ];
 
@@ -317,70 +367,31 @@ class WeatherPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPrecipitationChart() {
-    final List<Map<String, dynamic>> data = [
-      {"day": "Thu", "value": 15},
-      {"day": "Fri", "value": 5},
-      {"day": "Sat", "value": 90},
-      {"day": "Sun", "value": 85},
-      {"day": "Mon", "value": 40},
-      {"day": "Tue", "value": 10},
-      {"day": "Wed", "value": 5},
-    ];
+  // Hàm phụ trợ để đổi màu dựa theo mức độ cảnh báo (Severity)
+  Color _getColorForSeverity(String severity) {
+    switch (severity.toUpperCase()) {
+      case 'CRITICAL':
+      case 'HIGH':
+        return const Color(0xFFD32F2F); // Đỏ
+      case 'MEDIUM':
+      case 'WARNING':
+        return Colors.orange.shade800; // Cam
+      default:
+        return Colors.blue.shade700; // Xanh thông báo
+    }
+  }
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: data.map((item) {
-          double height = item['value'].toDouble();
-          bool isHigh = height > 50;
-          return Column(
-            children: [
-              Text("${item['value']}%",
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: isHigh
-                          ? const Color(0xFF2D7132)
-                          : const Color(0xFFB0B3C1))),
-              const SizedBox(height: 10),
-              Container(
-                width: 32,
-                height: height * 0.8,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isHigh
-                        ? [const Color(0xFF2D7132), const Color(0xFF8BC34A)]
-                        : [const Color(0xFFF1F4FA), const Color(0xFFE2E4EB)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(item['day'],
-                  style: const TextStyle(
-                      fontSize: 10,
-                      color: Color(0xFFB0B3C1),
-                      fontWeight: FontWeight.bold)),
-            ],
-          );
-        }).toList(),
-      ),
-    );
+  // Hàm phụ trợ đổi icon dựa theo mức độ
+  IconData _getIconForSeverity(String severity) {
+    switch (severity.toUpperCase()) {
+      case 'CRITICAL':
+      case 'HIGH':
+        return Icons.warning_amber_rounded;
+      case 'MEDIUM':
+      case 'WARNING':
+        return Icons.air_rounded;
+      default:
+        return Icons.info_outline_rounded;
+    }
   }
 }

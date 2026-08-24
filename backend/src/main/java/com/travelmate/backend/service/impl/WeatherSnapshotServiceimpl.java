@@ -156,6 +156,16 @@ public class WeatherSnapshotServiceimpl implements WeatherSnapshotService {
     }
 
     @Override
+    public WeatherSnapshotDTO findLatestByTripId(Long tripId) {
+        if (tripId == null) {
+            throw new IllegalArgumentException("tripId is required");
+        }
+        return weatherSnapshotRepository.findTopByTripIdOrderByDateDesc(tripId)
+                .map(WeatherSnapshotMapper::toDto)
+                .orElse(null);
+    }
+
+    @Override
     public List<WeatherSnapshotDTO> listAll() {
         return weatherSnapshotRepository.findAll()
                 .stream()

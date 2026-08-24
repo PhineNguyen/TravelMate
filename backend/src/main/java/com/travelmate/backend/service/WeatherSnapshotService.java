@@ -10,6 +10,8 @@ public interface WeatherSnapshotService {
 
     WeatherSnapshotDTO findById(Long id);
 
+    WeatherSnapshotDTO findLatestByTripId(Long tripId);
+
     List<WeatherSnapshotDTO> listAll();
 
     void delete(Long id);

@@ -3,14 +3,15 @@ import 'dart:convert';
 
 // Xac dinh ung dung dang chay tren Web hay tren mobile/desktop.
 import 'package:flutter/foundation.dart';
-
+import 'package:frontend/core/auth/session_service.dart';
 // Thu vien HTTP dung de gui request den backend Spring Boot.
 import 'package:http/http.dart' as http;
-import 'package:frontend/core/auth/session_service.dart';
 
 // Cac model dung de chuyen JSON response thanh object Dart.
 import '../../features/finance/expense/data/models/expense_model.dart';
 import '../../features/trip_details/share/data/models/shared_trip_invite_model.dart';
+import '../../features/trip_details/weather/data/models/weather_alert_model.dart';
+import '../../features/trip_details/weather/data/models/weather_snapshot_model.dart';
 import '../../features/trip_planning/home/data/models/trip_model.dart';
 import '../../features/trip_planning/templates/data/models/trip_template_model.dart';
 import '../../features/user_profile/analytics/data/models/analytics_snapshot_model.dart';
@@ -313,12 +314,14 @@ class ApiClient {
         'amount': amount,
         'category': category,
         'description': description,
-        'expenseDate': expenseDate ?? DateTime.now().toIso8601String().substring(0, 10),
+        'expenseDate':
+            expenseDate ?? DateTime.now().toIso8601String().substring(0, 10),
         'isShared': isShared,
       }),
     );
     _requireStatus(response, {200, 201});
-    return ExpenseModel.fromJson(Map<String, dynamic>.from(_decodeBody(response)));
+    return ExpenseModel.fromJson(
+        Map<String, dynamic>.from(_decodeBody(response)));
   }
 
   // Xoa mem khoan chi.
@@ -407,4 +410,36 @@ class ApiClient {
     return result;
   }
 
+  // Lấy thông tin thời tiết hiện tại của chuyến đi
+  static Future<WeatherSnapshotModel?> fetchWeatherSnapshot(int tripId) async {
+    // Dùng query parameter hoặc path tùy theo cách bạn viết ở Backend
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/api/weather-snapshots/trip/$tripId'), // Sửa lại URL nếu Backend yêu cầu khác
+      headers: _headers(),
+    );
+
+    // Nếu chưa có dữ liệu thời tiết, backend có thể trả về 404 hoặc rỗng
+    if (response.statusCode == 404 || response.body.isEmpty) return null;
+
+    _requireStatus(response, {200});
+    return WeatherSnapshotModel.fromJson(
+        Map<String, dynamic>.from(_decodeBody(response)));
+  }
+
+  // Lấy danh sách cảnh báo thời tiết của chuyến đi
+  static Future<List<WeatherAlertModel>> fetchWeatherAlerts(int tripId) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/api/weather-alerts/trip/$tripId'), // Sửa lại URL nếu Backend yêu cầu khác
+      headers: _headers(),
+    );
+    _requireStatus(response, {200});
+    final decoded = _decodeBody(response);
+    final data = _extractList(decoded);
+    return data
+        .map((item) =>
+            WeatherAlertModel.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
 }

@@ -37,6 +37,13 @@ public class WeatherSnapshotController {
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/trip/{tripId}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<WeatherSnapshotDTO> getLatestByTrip(@PathVariable Long tripId) {
+        WeatherSnapshotDTO dto = weatherSnapshotService.findLatestByTripId(tripId);
+        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
+    }
+
     @GetMapping
     @PreAuthorize("permitAll()")
     public ResponseEntity<List<WeatherSnapshotDTO>> list() {
