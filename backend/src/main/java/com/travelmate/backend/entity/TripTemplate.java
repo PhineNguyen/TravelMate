@@ -10,7 +10,7 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Table(name = "tripTemplate")
+@Table(name = "trip_template")
 @Getter
 @Setter
 @AllArgsConstructor
