@@ -16,6 +16,7 @@ public class UserResponse {
     private String phoneNumber;
     private String location;
     private String plan;
+    private Boolean onboardingCompleted;
     private String avatarUrl;
     private Boolean active;
 }

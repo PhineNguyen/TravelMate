@@ -5,8 +5,8 @@ import com.travelmate.backend.dto.response.UserResponse;
 import com.travelmate.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,15 +19,17 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest userRequest) {
-        UserResponse createdUser = userService.create(userRequest);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userRequest));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserRequest userRequest) {
-        UserResponse updatedUser = userService.update(id, userRequest);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(userService.update(id, userRequest));
+    }
+
+    @PutMapping("/{id}/onboarding/complete")
+    public ResponseEntity<UserResponse> completeOnboarding(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.completeOnboarding(id));
     }
 
     @GetMapping("/{id}")

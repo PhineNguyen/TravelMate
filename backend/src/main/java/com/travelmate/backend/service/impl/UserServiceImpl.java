@@ -6,12 +6,16 @@ import com.travelmate.backend.mapper.UserMapper;
 import com.travelmate.backend.repository.UserRepository;
 import com.travelmate.backend.service.UserService;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
 
 import lombok.RequiredArgsConstructor; //tự tạo constructor cho tất cả các trường được đánh dấu là final hoặc @NonNull
 import com.travelmate.backend.entity.User;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -24,6 +28,24 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User user) {
+            return user;
+        }
+        // JwtAuthenticationFilter sets a CustomUserDetails principal, not the User
+        // entity
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            return userRepository.findByEmailAndActiveTrue(userDetails.getUsername())
+                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
+        }
+        throw new IllegalStateException("Unsupported authentication principal type: " + principal.getClass().getName());
+    }
 
     @Override
     @Transactional
@@ -72,6 +94,21 @@ public class UserServiceImpl implements UserService {
         }
 
         return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserResponse completeOnboarding(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Id must not be null");
+        }
+
+        User currentUser = getCurrentUser();
+        if (!currentUser.getId().equals(id)) {
+            throw new AccessDeniedException("You can only complete onboarding for your own account");
+        }
+        currentUser.setOnboardingCompleted(true);
+        return userMapper.toResponse(userRepository.save(currentUser));
     }
 
     @Override

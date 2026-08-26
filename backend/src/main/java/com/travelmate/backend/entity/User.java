@@ -58,6 +58,12 @@ public class User implements UserDetails {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
+    @Column(name = "onboarding_completed", nullable = false)
+    private boolean onboardingCompleted = false;
+
+    @Column(name = "locked", nullable = false)
+    private boolean locked = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false) // updatable = false cột chỉ được phép thiết lập khi vừa tạo bản
     private LocalDateTime createdAt;
@@ -131,7 +137,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !locked;
     }
 
     @Override
@@ -143,4 +149,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return active;
     }
+
 }

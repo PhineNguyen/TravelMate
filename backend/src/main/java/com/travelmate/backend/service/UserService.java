@@ -9,6 +9,8 @@ public interface UserService {
 
     UserResponse update(Long id, UserRequest userRequest);
 
+    UserResponse completeOnboarding(Long id);
+
     UserResponse findById(Long id);
 
     List<UserResponse> listAll();

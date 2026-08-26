@@ -44,19 +44,25 @@ public class AuthServiceImpl implements AuthService {
     private final TokenRevocationService tokenRevocationService;
     private final UserMapper userMapper; // 1. Khai báo private final để Lombok inject bean
 
+    private String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase();
+    }
+
     @Override
     @Transactional
     public AuthResponse register(AuthRegisterRequest request) {
         validateRegisterRequest(request);
         validatePasswordPolicy(request.getPassword());
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String normalizeEmail = normalizeEmail(request.getEmail());
+        if (userRepository.existsByEmail(normalizeEmail)) {
             throw new IllegalArgumentException("Email already exists");
         }
 
         User user = new User();
         user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
+        user.setEmail(normalizeEmail);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setOnboardingCompleted(false);
         user.setAvatarUrl(request.getAvatarUrl());
         user.setActive(true);
 
@@ -76,9 +82,13 @@ public class AuthServiceImpl implements AuthService {
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("Password is required");
         }
-
-        User user = userRepository.findByEmailAndActiveTrue(request.getEmail())
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        User user = userRepository.findByEmailAndActiveTrue(normalizedEmail)
                 .orElseThrow(() -> new NoSuchElementException("User not found or inactive"));
+
+        if (user.isLocked()) {
+            throw new IllegalArgumentException("Account is locked");
+        }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Invalid email or password");
@@ -112,13 +122,14 @@ public class AuthServiceImpl implements AuthService {
         if (existingAccount != null) {
             user = existingAccount.getUser();
         } else {
-            user = userRepository.findByEmail(request.getEmail())
+            String normalizedEmail = normalizeEmail(request.getEmail());
+            user = userRepository.findByEmail(normalizedEmail)
                     .orElseGet(() -> {
                         User newUser = new User();
                         newUser.setFullName(request.getFullName() != null && !request.getFullName().isBlank()
                                 ? request.getFullName()
                                 : request.getEmail().split("@")[0]);
-                        newUser.setEmail(request.getEmail());
+                        newUser.setEmail(normalizedEmail);
                         newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                         newUser.setAvatarUrl(request.getAvatarUrl());
                         newUser.setActive(true);
@@ -133,7 +144,7 @@ public class AuthServiceImpl implements AuthService {
                     .user(user)
                     .provider(provider)
                     .providerUserId(request.getProviderUserId())
-                    .email(request.getEmail())
+                    .email(normalizedEmail)
                     .displayName(request.getFullName())
                     .avatarUrl(request.getAvatarUrl())
                     .build());
@@ -141,6 +152,10 @@ public class AuthServiceImpl implements AuthService {
 
         if (!user.isActive()) {
             throw new IllegalArgumentException("User account is inactive");
+        }
+
+        if (user.isLocked()) {
+            throw new IllegalArgumentException("Account is locked");
         }
 
         return issueTokens(user);
@@ -174,7 +189,8 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Email is required");
         }
 
-        User user = userRepository.findByEmailAndActiveTrue(request.getEmail())
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        User user = userRepository.findByEmailAndActiveTrue(normalizedEmail)
                 .orElseThrow(() -> new NoSuchElementException("Unknown email"));
 
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
@@ -239,10 +255,6 @@ public class AuthServiceImpl implements AuthService {
         resetToken.setUsedAt(LocalDateTime.now());
         passwordResetTokenRepository.save(resetToken);
         tokenRevocationService.revokeAllForUser(user.getId());
-
-        resetToken.setUsed(true);
-        resetToken.setUsedAt(LocalDateTime.now());
-        passwordResetTokenRepository.save(resetToken);
 
     }
 

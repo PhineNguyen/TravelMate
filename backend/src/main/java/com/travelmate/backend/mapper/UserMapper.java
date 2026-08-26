@@ -17,6 +17,8 @@ public abstract class UserMapper {
     @Mapping(target = "fullName", source = "fullName")
     @Mapping(target = "email", source = "email")
     @Mapping(target = "avatarUrl", source = "avatarUrl")
+    @Mapping(target = "locked", constant = "false")
+    @Mapping(target = "onboardingCompleted", constant = "false")
     @Mapping(target = "active", constant = "true")
     @Mapping(target = "password", ignore = true)
     public abstract User toUser(AuthRegisterRequest req);
@@ -40,6 +42,7 @@ public abstract class UserMapper {
     @Mapping(target = "phoneNumber", source = "phoneNumber")
     @Mapping(target = "location", source = "location")
     @Mapping(target = "plan", source = "plan")
+    @Mapping(target = "onboardingCompleted", source = "onboardingCompleted")
     @Mapping(target = "avatarUrl", source = "avatarUrl")
     @Mapping(target = "active", source = "active")
     public abstract UserResponse toResponse(User user);

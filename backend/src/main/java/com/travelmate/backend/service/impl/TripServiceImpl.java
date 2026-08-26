@@ -19,7 +19,7 @@ import com.travelmate.backend.service.TripService;
 import com.travelmate.backend.mapper.TripMapper;
 import com.travelmate.backend.dto.ItineraryItemDTO;
 import com.travelmate.backend.mapper.ItineraryItemMapper;
-
+import com.travelmate.backend.security.CustomUserDetails;
 import com.travelmate.backend.entity.TripTemplate;
 import com.travelmate.backend.entity.User;
 import com.travelmate.backend.entity.enums.TripStatus;
@@ -55,6 +55,7 @@ public class TripServiceImpl implements TripService {
     private final AiServiceClient aiServiceClient;
     private final ItineraryItemRepository itineraryItemRepository;
     private final PlaceRepository placeRepository;
+    private final CustomUserDetails customUserDetails;
 
     private void checkOwnership(Trip trip, User user) {
         if (!trip.getOwner().getId().equals(user.getId())) {
@@ -67,17 +68,14 @@ public class TripServiceImpl implements TripService {
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() == null) {
             throw new IllegalStateException("User not authenticated");
         }
-
         Object principal = authentication.getPrincipal();
         if (principal instanceof User user) {
             return user;
         }
-
         if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
-            return userRepository.findByEmailAndActiveTrue(userDetails.getUsername())
+            return userRepository.findById(customUserDetails.getId())
                     .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
         }
-
         throw new IllegalStateException("Unsupported authentication principal type: " + principal.getClass().getName());
     }
 
@@ -408,13 +406,12 @@ public class TripServiceImpl implements TripService {
 
         // 3. Gọi AI Service
         AiItineraryGenerateResponse response = aiServiceClient.generateItinerary(
-            trip.getDestination(),
-            duration,
-            budget,
-            request.getTravelStyle(),
-            travelerCount,
-            request.getPreferences()
-        );
+                trip.getDestination(),
+                duration,
+                budget,
+                request.getTravelStyle(),
+                travelerCount,
+                request.getPreferences());
 
         // 4. Xóa sạch lịch trình cũ nếu có
         List<ItineraryItem> oldItems = itineraryItemRepository.findByTripId(id);
@@ -428,7 +425,8 @@ public class TripServiceImpl implements TripService {
                 if (day.getActivities() != null) {
                     for (AiItineraryGenerateResponse.AiActivity act : day.getActivities()) {
                         // Tìm hoặc tạo mới Place
-                        Place place = findOrCreatePlace(act.getPlace_name(), act.getDescription(), trip.getDestination(), act.getCategory());
+                        Place place = findOrCreatePlace(act.getPlace_name(), act.getDescription(),
+                                trip.getDestination(), act.getCategory());
 
                         // Parse Start Time
                         LocalTime startTime = LocalTime.of(8, 0); // Default fallback
@@ -451,7 +449,9 @@ public class TripServiceImpl implements TripService {
                                 .startTime(startTime)
                                 .duration(act.getDuration_minutes() != null ? act.getDuration_minutes() : 60)
                                 .note(act.getDescription())
-                                .costEstimate(act.getEstimated_cost() != null ? BigDecimal.valueOf(act.getEstimated_cost()) : BigDecimal.ZERO)
+                                .costEstimate(
+                                        act.getEstimated_cost() != null ? BigDecimal.valueOf(act.getEstimated_cost())
+                                                : BigDecimal.ZERO)
                                 .orderIndex(orderIndex++)
                                 .sourceType(SourceType.AI)
                                 .isLocked(false)
