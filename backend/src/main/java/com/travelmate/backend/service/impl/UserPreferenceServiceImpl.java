@@ -12,10 +12,11 @@ import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -26,43 +27,51 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
     private final UserPreferenceRepository userPreferenceRepository;
     private final UserRepository userRepository;
 
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal() == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User user) {
+            return user;
+        }
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            return userRepository.findByEmailAndActiveTrue(userDetails.getUsername())
+                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
+        }
+        throw new IllegalStateException("Unsupported authentication principal type: "
+                + principal.getClass().getName());
+    }
+
     @Override
     @Transactional // đảm bảo chương trình được rollback nếu có lỗi xảy ra
     public UserPreferenceDTO create(UserPreferenceDTO dto) {
-        // validation input
-        if (dto == null)
+        if (dto == null) {
             throw new IllegalArgumentException("UserPreferenceDTO must not be null");
-        if (dto.getId() != null)
-            throw new IllegalArgumentException("Preference Id must be not null ");
-        Long userId = dto.getUserId();
-        if (userId == null)
-            throw new IllegalArgumentException("UserId is required");
+        }
+        if (dto.getId() != null) {
+            throw new IllegalArgumentException("Preference id must be null when creating");
+        }
 
-        // available
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = getCurrentUser();
+        Long userId = user.getId();
 
         if (userPreferenceRepository.findByUserId(userId).isPresent()) {
             throw new IllegalArgumentException("Preference already exists");
         }
         BigDecimal minBudget = dto.getMinBudget();
         BigDecimal maxBudget = dto.getMaxBudget();
-        // signum method return the sign of the number
-        // BigDecimal is a object
-        if (minBudget != null && minBudget.signum() < 0)
-            throw new IllegalArgumentException("Min budget must be greater than 0 and not null");
-        if (maxBudget != null && maxBudget.signum() < 0)
-            throw new IllegalArgumentException("Max budget must be greater than 0 and not null");
-        if (minBudget != null && maxBudget != null && minBudget.compareTo(maxBudget) > 0) // -1 0 1
-            throw new IllegalArgumentException("minBudget must be less than maxBudget");
-        // round up
+        validateBudget(minBudget, maxBudget);
         if (minBudget != null)
             minBudget = minBudget.setScale(2, RoundingMode.HALF_UP);
         if (maxBudget != null)
             maxBudget = maxBudget.setScale(2, RoundingMode.HALF_UP);
 
         Integer avgTripDays = dto.getAvgTripDays();
-        if (avgTripDays != null && (avgTripDays <= 0 || avgTripDays > 365))
-            throw new IllegalArgumentException("average trip day must be between 0 and 365");
+        validateAvgTripDays(avgTripDays);
 
         String preferredStyle = trimAndLimit(dto.getPreferredStyle(), 100);
         if (preferredStyle != null && preferredStyle.isEmpty())
@@ -71,9 +80,7 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
         if (preferredRegion != null && preferredRegion.isEmpty())
             throw new IllegalArgumentException("PreferredRegion is required");
 
-        String favoriteCategories = dto.getFavoriteCategories().trim();
-        if (favoriteCategories != null && favoriteCategories.isBlank())
-            throw new IllegalArgumentException("favoriteCategories is required");
+        String favoriteCategories = trimToNull(dto.getFavoriteCategories());
 
         UserPreference pref = UserPreference.builder()
                 .user(user)
@@ -96,23 +103,26 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
     @Override
     @Transactional
     public UserPreferenceDTO update(UserPreferenceDTO dto) {
-        if (dto == null)
+        if (dto == null) {
             throw new IllegalArgumentException("UserPreferenceDTO must be not null");
-        if (dto.getId() == null)
+        }
+        if (dto.getId() == null) {
             throw new IllegalArgumentException("Id is required for update");
+        }
+
+        User currentUser = getCurrentUser();
 
         UserPreference existing = userPreferenceRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Preference not found"));
 
+        if (!existing.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You can only update your own preferences");
+        }
+
         // Budget
         BigDecimal minBudget = dto.getMinBudget() != null ? dto.getMinBudget() : existing.getMinBudget();
         BigDecimal maxBudget = dto.getMaxBudget() != null ? dto.getMaxBudget() : existing.getMaxBudget();
-        if (minBudget != null && minBudget.signum() < 0)
-            throw new IllegalArgumentException("minBudget must be greater than 0");
-        if (maxBudget != null && maxBudget.signum() < 0)
-            throw new IllegalArgumentException("maxBudget must be greater than 0");
-        if (minBudget != null && maxBudget != null && minBudget.compareTo(maxBudget) > 0)
-            throw new IllegalArgumentException("minBudget must be less than maxBudget");
+        validateBudget(minBudget, maxBudget);
         if (minBudget != null)
             minBudget = minBudget.setScale(2, RoundingMode.HALF_UP);
         if (maxBudget != null)
@@ -122,32 +132,21 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
 
         // AverageTrip
         if (dto.getAvgTripDays() != null) {
-            int avgTripDays = dto.getAvgTripDays();
-            if (avgTripDays <= 0 || avgTripDays > 365)
-                throw new IllegalArgumentException("average trip day must be between 0 and 365");
-            existing.setAvgTripDays(avgTripDays);
+            validateAvgTripDays(dto.getAvgTripDays());
+            existing.setAvgTripDays(dto.getAvgTripDays());
         }
 
         // preferedStyle
         if (dto.getPreferredStyle() != null) {
-            String prefStyle = trimAndLimit(dto.getPreferredStyle(), 100);
-            if (prefStyle.isEmpty())
-                throw new IllegalArgumentException("Prefered style must not be empty");
-            existing.setPreferredStyle(prefStyle);
+            existing.setPreferredStyle(trimAndLimit(dto.getPreferredStyle(), 100));
         }
         // favoritedCategories
         if (dto.getFavoriteCategories() != null) {
-            String favCategories = dto.getFavoriteCategories().trim();
-            if (favCategories.isEmpty())
-                throw new IllegalArgumentException("favorite category must be not null");
-            existing.setFavoriteCategories(favCategories);
+            existing.setFavoriteCategories(trimToNull(dto.getFavoriteCategories()));
         }
         // perferedRegion
         if (dto.getPreferredRegion() != null) {
-            String prefRegion = trimAndLimit(dto.getPreferredRegion(), 100);
-            if (prefRegion.isEmpty())
-                throw new IllegalArgumentException("Prefered region must not be empty");
-            existing.setPreferredRegion(prefRegion);
+            existing.setPreferredRegion(trimAndLimit(dto.getPreferredRegion(), 100));
         }
         try {
             return UserPreferenceMapper.toDto(userPreferenceRepository.save(existing));
@@ -159,39 +158,70 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
 
     @Override
     public UserPreferenceDTO findByIdUser(Long userId) {
-        if (userId == null)
+        if (userId == null) {
             throw new IllegalArgumentException("userId not found");
+        }
+        User currentUser = getCurrentUser();
+        if (!currentUser.getId().equals(userId)) {
+            throw new AccessDeniedException("You can only view your own preferences");
+        }
         return userPreferenceRepository.findByUserId(userId)
                 .map(UserPreferenceMapper::toDto)
                 .orElse(null);
     }
 
     @Override
-    public List<UserPreferenceDTO> listAll() {
-        return userPreferenceRepository.findAll()
-                .stream()
-                .map(UserPreferenceMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     @Transactional
     public void delete(Long id) {
-        if (id == null)
+        if (id == null) {
             throw new IllegalArgumentException("Id is required");
-        if (!userPreferenceRepository.existsById(id)) {
-            throw new IllegalArgumentException("Preference not found");
         }
-        userPreferenceRepository.deleteById(id);
+
+        User currentUser = getCurrentUser();
+        UserPreference existing = userPreferenceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Preference not found"));
+        if (!existing.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You can only delete your own preferences");
+        }
+        userPreferenceRepository.delete(existing);
 
     }
 
-    // length text limit
-    private String trimAndLimit(String s, int maxLen) {
-        if (s == null)
+    private void validateBudget(BigDecimal minBudget, BigDecimal maxBudget) {
+        if (minBudget != null && minBudget.signum() < 0) {
+            throw new IllegalArgumentException("minBudget must be greater than or equal to zero");
+        }
+        if (maxBudget != null && maxBudget.signum() < 0) {
+            throw new IllegalArgumentException("maxBudget must be greater than or equal to zero");
+        }
+        if (minBudget != null && maxBudget != null && minBudget.compareTo(maxBudget) > 0) {
+            throw new IllegalArgumentException("minBudget must not be greater than maxBudget");
+        }
+    }
+
+    private void validateAvgTripDays(Integer avgTripDays) {
+        if (avgTripDays != null && (avgTripDays <= 0 || avgTripDays > 365)) {
+            throw new IllegalArgumentException("avgTripDays must be between 1 and 365");
+        }
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
             return null;
-        String t = s.trim();
-        return t.length() <= maxLen ? t : t.substring(0, maxLen);
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String trimAndLimit(String s, int maxLen) {
+        String trimmed = trimToNull(s);
+        if (trimmed == null) {
+            return null;
+        }
+        if (trimmed.length() > maxLen) {
+            throw new IllegalArgumentException("Value must not exceed " + maxLen + " characters");
+        }
+        return trimmed;
     }
 
 }

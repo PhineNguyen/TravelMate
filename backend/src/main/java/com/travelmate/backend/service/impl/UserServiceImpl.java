@@ -1,5 +1,6 @@
 package com.travelmate.backend.service.impl;
 
+import com.travelmate.backend.dto.request.ProfileUpdateRequest;
 import com.travelmate.backend.dto.request.UserRequest;
 import com.travelmate.backend.dto.response.UserResponse;
 import com.travelmate.backend.mapper.UserMapper;
@@ -74,24 +75,47 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse update(Long id, UserRequest userRequest) {
+    public UserResponse update(Long id, ProfileUpdateRequest request) {
+        if (id == null) {
+            throw new IllegalArgumentException("User id must not be null");
+        }
+
+        if (request == null) {
+            throw new IllegalArgumentException("Profile request must not be null");
+        }
+
+        User currentUser = getCurrentUser();
+
+        if (!currentUser.getId().equals(id)) {
+            throw new AccessDeniedException("You can only update your own profile");
+        }
+
+        if (request.getFullName() != null) {
+            String fullName = request.getFullName().trim();
+
+            if (fullName.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Full name must not be blank");
+            }
+
+            request.setFullName(fullName);
+        }
+
+        if (request.getPhoneNumber() != null) {
+            request.setPhoneNumber(request.getPhoneNumber().trim());
+        }
+
+        if (request.getLocation() != null) {
+            request.setLocation(request.getLocation().trim());
+        }
+
+        if (request.getAvatarUrl() != null) {
+            request.setAvatarUrl(request.getAvatarUrl().trim());
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
 
-        // Check if email is being changed and if the new one is already taken
-        if (userRequest.getEmail() != null && !userRequest.getEmail().isBlank()
-                && !userRequest.getEmail().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(userRequest.getEmail())) {
-                throw new IllegalArgumentException("Email already exists");
-            }
-        }
-
-        // Use the mapper to update the entity from the request
-        userMapper.updateUserFromRequest(userRequest, user);
-
-        if (userRequest.getPassword() != null && !userRequest.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        }
+        userMapper.updateProfile(request, user);
 
         return userMapper.toResponse(userRepository.save(user));
     }
@@ -116,10 +140,14 @@ public class UserServiceImpl implements UserService {
         if (id == null) {
             throw new IllegalArgumentException("Id must not be null");
         }
+        User currentUser = getCurrentUser();
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
-        return userMapper.toResponse(user);
+        if (!currentUser.getId().equals(id)) {
+            throw new AccessDeniedException(
+                    "You can only view your own profile");
+        }
+
+        return userMapper.toResponse(currentUser);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.travelmate.backend.controller;
 
 import com.travelmate.backend.dto.request.UserRequest;
+import com.travelmate.backend.dto.request.ProfileUpdateRequest;
 import com.travelmate.backend.dto.response.UserResponse;
 import com.travelmate.backend.service.UserService;
 import jakarta.validation.Valid;
@@ -23,8 +24,10 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserRequest userRequest) {
-        return ResponseEntity.ok(userService.update(id, userRequest));
+    public ResponseEntity<UserResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody ProfileUpdateRequest request) {
+        return ResponseEntity.ok(userService.update(id, request));
     }
 
     @PutMapping("/{id}/onboarding/complete")

@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/user-preferences")
 @RequiredArgsConstructor
@@ -33,11 +31,6 @@ public class UserPreferenceController {
     public ResponseEntity<UserPreferenceDTO> findByUserId(@PathVariable Long userId) {
         UserPreferenceDTO dto = userPreferenceService.findByIdUser(userId);
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<UserPreferenceDTO>> list() {
-        return ResponseEntity.ok(userPreferenceService.listAll());
     }
 
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.travelmate.backend.mapper;
 
+import com.travelmate.backend.dto.request.ProfileUpdateRequest;
 import com.travelmate.backend.dto.request.AuthRegisterRequest;
 import com.travelmate.backend.dto.request.UserRequest;
 import com.travelmate.backend.dto.response.UserResponse;
@@ -13,6 +14,13 @@ import org.mapstruct.*;
                                                                                     // overwrite
 
 public abstract class UserMapper {
+    @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "avatarUrl", source = "avatarUrl")
+    @Mapping(target = "phoneNumber", source = "phoneNumber")
+    @Mapping(target = "location", source = "location")
+    public abstract void updateProfile(ProfileUpdateRequest request, @MappingTarget User user);
+
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "fullName", source = "fullName")
     @Mapping(target = "email", source = "email")
@@ -49,12 +57,8 @@ public abstract class UserMapper {
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "fullName", source = "fullName")
-    @Mapping(target = "email", source = "email")
     @Mapping(target = "avatarUrl", source = "avatarUrl")
-    @Mapping(target = "active", source = "active")
     @Mapping(target = "phoneNumber", source = "phoneNumber")
     @Mapping(target = "location", source = "location")
-    @Mapping(target = "plan", source = "plan")
-    @Mapping(target = "password", ignore = true)
     public abstract void updateUserFromRequest(UserRequest request, @MappingTarget User user);
 }
