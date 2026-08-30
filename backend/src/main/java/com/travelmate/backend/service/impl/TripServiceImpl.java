@@ -19,7 +19,6 @@ import com.travelmate.backend.service.TripService;
 import com.travelmate.backend.mapper.TripMapper;
 import com.travelmate.backend.dto.ItineraryItemDTO;
 import com.travelmate.backend.mapper.ItineraryItemMapper;
-import com.travelmate.backend.security.CustomUserDetails;
 import com.travelmate.backend.entity.TripTemplate;
 import com.travelmate.backend.entity.User;
 import com.travelmate.backend.entity.enums.TripStatus;
@@ -55,7 +54,6 @@ public class TripServiceImpl implements TripService {
     private final AiServiceClient aiServiceClient;
     private final ItineraryItemRepository itineraryItemRepository;
     private final PlaceRepository placeRepository;
-    private final CustomUserDetails customUserDetails;
 
     private void checkOwnership(Trip trip, User user) {
         if (!trip.getOwner().getId().equals(user.getId())) {
@@ -73,7 +71,7 @@ public class TripServiceImpl implements TripService {
             return user;
         }
         if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
-            return userRepository.findById(customUserDetails.getId())
+            return userRepository.findByEmailAndActiveTrue(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
         }
         throw new IllegalStateException("Unsupported authentication principal type: " + principal.getClass().getName());
