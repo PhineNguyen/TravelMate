@@ -31,6 +31,28 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     Page<Trip> findByOwnerIdAndIsDeletedFalse(Long ownerId, Pageable pageable);
 
+    @Query("""
+            select distinct t from Trip t
+            join t.tripParticipations participant
+            where participant.user.id = :userId
+              and participant.isActive = true
+              and t.isDeleted = false
+            """)
+    Page<Trip> findJoinedTrips(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("""
+            select distinct t from Trip t
+            left join t.tripParticipations participant
+            where t.isDeleted = false
+              and t.tripStatus = :status
+              and (t.owner.id = :userId or
+               (participant.user.id = :userId and participant.isActive = true))
+            """)
+    Page<Trip> findAccessibleTripsByStatus(
+            @Param("userId") Long userId,
+            @Param("status") TripStatus status,
+            Pageable pageable);
+
     List<Trip> findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(Long ownerId);
 
     // ==================== TRUY VẤN THEO TRẠNG THÁI (CHƯA XÓA) ====================

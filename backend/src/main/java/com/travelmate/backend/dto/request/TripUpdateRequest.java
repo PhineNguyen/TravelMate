@@ -22,6 +22,8 @@ public class TripUpdateRequest {
     @Min(value = 1, message = "Duration must be at least 1 day")
     private Integer duration;
 
+    private LocalDate endDate;
+
     @Min(value = 1, message = "Traveler count must be at least 1 person")
     private Integer travelerCount;
 

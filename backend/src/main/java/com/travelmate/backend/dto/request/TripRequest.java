@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.travelmate.backend.entity.enums.PlanningMode;
 import com.travelmate.backend.entity.enums.TripStatus;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,9 +21,6 @@ import lombok.NoArgsConstructor;
 public class TripRequest {
     private Long id;
 
-    @NotNull(message = "Owner ID is required")
-    private Long ownerId;
-
     @NotBlank(message = "Destination is required")
     private String destination;
 
@@ -33,10 +31,14 @@ public class TripRequest {
     @Min(value = 1, message = "Duration must be at least 1 day")
     private Integer duration;
 
+    @NotNull(message = "End date is required")
+    private LocalDate endDate;
+
     @NotNull(message = "Traveler count is required")
     @Min(value = 1, message = "Traveler count must be at least 1 person")
     private Integer travelerCount;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "Budget must not be negative")
     private BigDecimal totalBudget;
 
     @NotNull(message = "Planning mode is required")

@@ -48,6 +48,9 @@ public class Trip {
     @Column(name = "duration", nullable = false)
     private Integer duration;
 
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
+
     @Column(name = "traveler_count", nullable = false)
     private Integer travelerCount;
 

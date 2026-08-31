@@ -19,7 +19,6 @@ import com.travelmate.backend.service.TripService;
 import com.travelmate.backend.mapper.TripMapper;
 import com.travelmate.backend.dto.ItineraryItemDTO;
 import com.travelmate.backend.mapper.ItineraryItemMapper;
-import com.travelmate.backend.security.CustomUserDetails;
 import com.travelmate.backend.entity.TripTemplate;
 import com.travelmate.backend.entity.User;
 import com.travelmate.backend.entity.enums.TripStatus;
@@ -55,7 +54,6 @@ public class TripServiceImpl implements TripService {
     private final AiServiceClient aiServiceClient;
     private final ItineraryItemRepository itineraryItemRepository;
     private final PlaceRepository placeRepository;
-    private final CustomUserDetails customUserDetails;
 
     private void checkOwnership(Trip trip, User user) {
         if (!trip.getOwner().getId().equals(user.getId())) {
@@ -63,33 +61,42 @@ public class TripServiceImpl implements TripService {
         }
     }
 
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof User user) {
-            return user;
-        }
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
-            return userRepository.findById(customUserDetails.getId())
-                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
-        }
-        throw new IllegalStateException("Unsupported authentication principal type: " + principal.getClass().getName());
-    }
-
     private void checkReadAccess(Trip trip, User user) {
         if (trip.getOwner().getId().equals(user.getId())) {
             return;
         }
-
-        boolean isCollaborator = trip.getTripParticipations().stream()
-                .anyMatch(participant -> participant.getUser().getId().equals(user.getId()));
-
-        if (!isCollaborator) {
+        boolean isActiveCollaborator = trip.getTripParticipations().stream()
+                .anyMatch(participant -> participant.isActive()
+                        && participant.getUser().getId().equals(user.getId()));
+        if (!isActiveCollaborator) {
             throw new AccessDeniedException("Access denied. You are not a collaborator on this trip.");
         }
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication.getPrincipal() == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof User user) {
+            return user;
+        }
+
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            return userRepository.findByEmailAndActiveTrue(userDetails.getUsername())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Authenticated user not found in database"));
+        }
+
+        throw new IllegalStateException(
+                "Unsupported authentication principal type: "
+                        + principal.getClass().getName());
     }
 
     @Override
@@ -98,31 +105,46 @@ public class TripServiceImpl implements TripService {
         if (dto == null) {
             throw new IllegalArgumentException("TripRequest must not be null");
         }
+
         if (dto.getId() != null) {
             throw new IllegalArgumentException("Id must be null when creating");
         }
-        if (dto.getOwnerId() == null) {
-            throw new IllegalArgumentException("OwnerId is required");
-        }
-        if (trimToNull(dto.getDestination()) == null) {
+
+        User owner = getCurrentUser();
+
+        String destination = trimToNull(dto.getDestination());
+        if (destination == null) {
             throw new IllegalArgumentException("Destination is required");
         }
+
         if (dto.getStartDate() == null) {
-            throw new IllegalArgumentException("StartDate is required");
+            throw new IllegalArgumentException("Start date is required");
         }
+        if (dto.getEndDate() == null) {
+            throw new IllegalArgumentException("End date is required");
+        }
+        if (dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("End date must be greater than or equal to start date");
+        }
+
         if (dto.getDuration() == null || dto.getDuration() <= 0) {
-            throw new IllegalArgumentException("Duration must be > 0");
+            throw new IllegalArgumentException(
+                    "Duration must be greater than zero");
         }
 
         if (dto.getTravelerCount() == null || dto.getTravelerCount() <= 0) {
-            throw new IllegalArgumentException("Traveler count must be > 0");
-        }
-        if (dto.getPlanningMode() == null) {
-            throw new IllegalArgumentException("PlanningMode is required");
+            throw new IllegalArgumentException(
+                    "Traveler count must be greater than zero");
         }
 
-        User owner = userRepository.findById(dto.getOwnerId())
-                .orElseThrow(() -> new IllegalArgumentException("OwnerId not found"));
+        if (dto.getTotalBudget() != null
+                && dto.getTotalBudget().signum() < 0) {
+            throw new IllegalArgumentException("Budget must not be negative");
+        }
+
+        if (dto.getPlanningMode() == null) {
+            throw new IllegalArgumentException("Planning mode is required");
+        }
 
         TripTemplate tripTemplate = null;
         if (dto.getTemplateId() != null) {
@@ -130,7 +152,7 @@ public class TripServiceImpl implements TripService {
                     .orElseThrow(() -> new IllegalArgumentException("Template not found"));
         }
 
-        java.math.BigDecimal totalBudget = dto.getTotalBudget() != null
+        BigDecimal totalBudget = dto.getTotalBudget() != null
                 ? dto.getTotalBudget().setScale(2, RoundingMode.HALF_UP)
                 : null;
 
@@ -151,6 +173,7 @@ public class TripServiceImpl implements TripService {
                 .owner(owner)
                 .destination(trimToNull(dto.getDestination()))
                 .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
                 .duration(dto.getDuration())
                 .travelerCount(dto.getTravelerCount()) // ✅ Map trường mới vào Entity
                 .totalBudget(totalBudget)
@@ -198,6 +221,10 @@ public class TripServiceImpl implements TripService {
             existing.setDestination(trimToNull(dto.getDestination()));
         if (dto.getStartDate() != null)
             existing.setStartDate(dto.getStartDate());
+        if (dto.getEndDate() != null)
+            existing.setEndDate(dto.getEndDate());
+        if (existing.getEndDate() == null || existing.getEndDate().isBefore(existing.getStartDate()))
+            throw new IllegalArgumentException("End date must be greater than or equal to start date");
         if (dto.getDuration() != null) {
             if (dto.getDuration() <= 0)
                 throw new IllegalArgumentException("Duration must not be <= 0");
@@ -210,6 +237,8 @@ public class TripServiceImpl implements TripService {
             existing.setTravelerCount(dto.getTravelerCount());
         }
         if (dto.getTotalBudget() != null) {
+            if (dto.getTotalBudget().signum() < 0)
+                throw new IllegalArgumentException("Budget must not be negative");
             existing.setTotalBudget(dto.getTotalBudget().setScale(2, RoundingMode.HALF_UP));
         }
         if (dto.getPlanningMode() != null)
@@ -290,6 +319,22 @@ public class TripServiceImpl implements TripService {
                 .map(TripMapper::toResponse);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TripResponse> getMyTrips(String view, Pageable pageable) {
+        User currentUser = getCurrentUser();
+        String selectedView = view == null ? "owned" : view.trim().toLowerCase();
+
+        Page<Trip> trips = switch (selectedView) {
+            case "owned" -> tripRepository.findByOwnerIdAndIsDeletedFalse(currentUser.getId(), pageable);
+            case "joined" -> tripRepository.findJoinedTrips(currentUser.getId(), pageable);
+            case "completed" -> tripRepository.findAccessibleTripsByStatus(
+                    currentUser.getId(), TripStatus.COMPLETED, pageable);
+            default -> throw new IllegalArgumentException("View must be owned, joined, or completed");
+        };
+        return trips.map(TripMapper::toResponse);
+    }
+
     /**
      * ✅ THAY ĐỔI: Thực hiện logic Xóa Mềm thay vì xóa vật lý dữ liệu
      */
@@ -326,6 +371,9 @@ public class TripServiceImpl implements TripService {
         // mặc định của JPA
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        User currentUser = getCurrentUser();
+        checkOwnership(trip, currentUser);
 
         if (!trip.isDeleted()) {
             throw new IllegalArgumentException("Trip is already active and does not need restoration");

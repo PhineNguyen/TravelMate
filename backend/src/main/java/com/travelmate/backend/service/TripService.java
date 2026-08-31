@@ -24,6 +24,8 @@ public interface TripService {
 
     Page<TripResponse> searchTrips(Long ownerId, TripStatus status, String destination, Pageable pageable);
 
+    Page<TripResponse> getMyTrips(String view, Pageable pageable);
+
     void delete(Long id);
 
     TripResponse restore(Long id);

@@ -20,6 +20,7 @@ public class TripResponse {
     private String destination;
     private LocalDate startDate;
     private Integer duration;
+    private LocalDate endDate;
     private Integer travelerCount;
     private BigDecimal totalBudget;
     private PlanningMode planningMode;

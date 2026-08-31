@@ -4,7 +4,6 @@ import com.travelmate.backend.dto.request.TripRequest;
 import com.travelmate.backend.dto.request.TripUpdateRequest;
 import com.travelmate.backend.dto.request.TripItineraryGenerateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
-import com.travelmate.backend.entity.enums.TripStatus;
 import com.travelmate.backend.service.TripService;
 import com.travelmate.backend.dto.ItineraryItemDTO;
 import java.util.List;
@@ -40,23 +39,16 @@ public class TripController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("permitAll()")
     public ResponseEntity<TripResponse> get(@PathVariable Long id) {
         TripResponse dto = tripService.findById(id);
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
-    @GetMapping
-    @PreAuthorize("permitAll()")
-    public ResponseEntity<Page<TripResponse>> list(
-            @RequestParam(required = false) Long ownerId,
-            @RequestParam(required = false) TripStatus status,
-            @RequestParam(required = false) String destination,
+    @GetMapping("/my")
+    public ResponseEntity<Page<TripResponse>> myTrips(
+            @RequestParam(defaultValue = "owned") String view,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-
-        // Gọi Service xử lý lọc động theo tham số truyền lên
-        Page<TripResponse> trips = tripService.searchTrips(ownerId, status, destination, pageable);
-        return ResponseEntity.ok(trips);
+        return ResponseEntity.ok(tripService.getMyTrips(view, pageable));
     }
 
     @DeleteMapping("/{id}")
