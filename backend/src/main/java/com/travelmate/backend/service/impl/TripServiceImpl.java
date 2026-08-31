@@ -61,18 +61,6 @@ public class TripServiceImpl implements TripService {
         }
     }
 
-    private void checkReadAccess(Trip trip, User user) {
-        if (trip.getOwner().getId().equals(user.getId())) {
-            return;
-        }
-        boolean isActiveCollaborator = trip.getTripParticipations().stream()
-                .anyMatch(participant -> participant.isActive()
-                        && participant.getUser().getId().equals(user.getId()));
-        if (!isActiveCollaborator) {
-            throw new AccessDeniedException("Access denied. You are not a collaborator on this trip.");
-        }
-    }
-
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -97,6 +85,18 @@ public class TripServiceImpl implements TripService {
         throw new IllegalStateException(
                 "Unsupported authentication principal type: "
                         + principal.getClass().getName());
+    }
+
+    private void checkReadAccess(Trip trip, User user) {
+        if (trip.getOwner().getId().equals(user.getId())) {
+            return;
+        }
+        boolean isActiveCollaborator = trip.getTripParticipations().stream()
+                .anyMatch(participant -> participant.isActive()
+                        && participant.getUser().getId().equals(user.getId()));
+        if (!isActiveCollaborator) {
+            throw new AccessDeniedException("Access denied. You are not a collaborator on this trip.");
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.travelmate.backend.service.impl;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.travelmate.backend.dto.CurrentWeatherDTO;
 import com.travelmate.backend.entity.Trip;
 import com.travelmate.backend.entity.WeatherAlert;
@@ -14,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
@@ -33,59 +33,107 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
     private final WeatherAlertRepository weatherAlertRepository;
     private final WeatherSnapshotRepository weatherSnapshotRepository;
 
-    @Value("${openweathermap.api.key}")
+    @Value("${openweathermap.api.key:}")
     private String apiKey;
 
-    @Value("${openweathermap.api.url}")
+    @Value("${openweathermap.api.url:https://api.openweathermap.org/data/2.5}")
     private String apiUrl;
 
     private static final double RAIN_PROBABILITY_THRESHOLD = 0.7; // 70%
 
     @Override
     public CurrentWeatherDTO fetchCurrentWeather(double latitude, double longitude) {
-        CurrentWeatherResponse response = restClient.get()
-                .uri(apiUrl + "/weather", uriBuilder -> uriBuilder
-                        .queryParam("lat", latitude)
-                        .queryParam("lon", longitude)
-                        .queryParam("appid", apiKey)
-                        .queryParam("units", "metric")
-                        .build())
-                .retrieve()
-                .body(CurrentWeatherResponse.class);
-
-        if (response == null || response.main() == null) {
-            throw new IllegalStateException("Weather provider returned no data");
+        // Validate coordinates
+        if (Double.isNaN(latitude) || Double.isInfinite(latitude) || latitude < -90.0 || latitude > 90.0) {
+            throw new IllegalArgumentException("Latitude must be between -90 and 90");
+        }
+        if (Double.isNaN(longitude) || Double.isInfinite(longitude) || longitude < -180.0 || longitude > 180.0) {
+            throw new IllegalArgumentException("Longitude must be between -180 and 180");
         }
 
-        String condition = response.weather() == null || response.weather().isEmpty()
-                ? "Unknown"
-                : response.weather().get(0).description();
-        double windSpeed = response.wind() == null ? 0.0 : response.wind().speed();
-        double humidity = response.main().humidity();
-        double temperature = response.main().temp();
-        boolean isOutdoorSafe = windSpeed < 10.0;
+        // Handle missing API Key gracefully with fallback
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            log.warn("OpenWeatherMap API key is not configured. Returning fallback weather for coordinates [lat={}, lon={}]", latitude, longitude);
+            return CurrentWeatherDTO.fallback(latitude, longitude);
+        }
 
-        return new CurrentWeatherDTO(
-                latitude,
-                longitude,
-                response.name() == null ? "Unknown" : response.name(),
-                temperature,
-                humidity,
-                windSpeed,
-                0.0,
-                condition,
-                isOutdoorSafe,
-                Instant.now());
+        try {
+            CurrentWeatherResponse response = restClient.get()
+                    .uri(apiUrl + "/weather", uriBuilder -> uriBuilder
+                            .queryParam("lat", latitude)
+                            .queryParam("lon", longitude)
+                            .queryParam("appid", apiKey.trim())
+                            .queryParam("units", "metric")
+                            .build())
+                    .retrieve()
+                    .body(CurrentWeatherResponse.class);
+
+            if (response == null || response.main() == null) {
+                log.warn("OpenWeatherMap returned empty data for coordinates [lat={}, lon={}]. Using fallback.", latitude, longitude);
+                return CurrentWeatherDTO.fallback(latitude, longitude);
+            }
+
+            String condition = (response.weather() == null || response.weather().isEmpty() || response.weather().get(0) == null)
+                    ? "Unknown"
+                    : (response.weather().get(0).description() != null ? response.weather().get(0).description() : "Unknown");
+
+            double windSpeed = (response.wind() == null || response.wind().speed() == null)
+                    ? 0.0
+                    : response.wind().speed();
+
+            double humidity = response.main().humidity() != null ? response.main().humidity() : 0.0;
+            double temperature = response.main().temp() != null ? response.main().temp() : 0.0;
+
+            String conditionLower = condition.toLowerCase();
+            boolean isOutdoorSafe = windSpeed < 10.0
+                    && !conditionLower.contains("storm")
+                    && !conditionLower.contains("thunderstorm")
+                    && !conditionLower.contains("tornado")
+                    && !conditionLower.contains("hurricane");
+
+            String city = (response.name() == null || response.name().trim().isEmpty()) ? "Unknown" : response.name().trim();
+
+            Instant recordedAt = (response.dt() != null && response.dt() > 0)
+                    ? Instant.ofEpochSecond(response.dt())
+                    : Instant.now();
+
+            return new CurrentWeatherDTO(
+                    latitude,
+                    longitude,
+                    city,
+                    temperature,
+                    humidity,
+                    windSpeed,
+                    0.0,
+                    condition,
+                    isOutdoorSafe,
+                    recordedAt);
+        } catch (Exception e) {
+            // Mask API key: only log lat, lon and exception message
+            log.error("Failed to fetch current weather from provider for coordinates [lat={}, lon={}]: {}. Using safe fallback.",
+                    latitude, longitude, e.getMessage());
+            return CurrentWeatherDTO.fallback(latitude, longitude);
+        }
     }
 
     @Override
     @Transactional
     public void fetchAndProcessWeatherData(String city, Trip trip) {
+        if (city == null || city.trim().isEmpty() || trip == null) {
+            log.warn("City or Trip is null/empty, skipping weather forecast fetch");
+            return;
+        }
+
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            log.warn("OpenWeatherMap API key is not configured. Skipping weather forecast fetch for city {}", city);
+            return;
+        }
+
         try {
             OpenWeatherResponse response = restClient.get()
-                    .uri(apiUrl, uriBuilder -> uriBuilder
-                            .queryParam("q", city)
-                            .queryParam("appid", apiKey)
+                    .uri(apiUrl + "/forecast", uriBuilder -> uriBuilder
+                            .queryParam("q", city.trim())
+                            .queryParam("appid", apiKey.trim())
                             .queryParam("units", "metric")
                             .build())
                     .retrieve()
@@ -122,16 +170,8 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
                 }
             }
         } catch (Exception e) {
-            log.error(
-                    "Failed to fetch or process weather data for city {}",
-                    city,
-                    e);
+            log.error("Failed to fetch or process weather forecast for city {}: {}", city, e.getMessage());
         }
-    }
-
-    private boolean calculateIsOutdoorSafe(ForecastItem forecast) {
-        // Example logic: safe if rain probability < 50% and wind speed is low.
-        return forecast.pop() < 0.5 && forecast.wind().speed() < 10; // wind speed in meter/sec
     }
 
     private WeatherSnapshot saveDailyForecast(
@@ -141,21 +181,25 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
             List<ForecastItem> dailyForecasts) {
 
         double temperatureHigh = dailyForecasts.stream()
+                .filter(item -> item.main() != null && item.main().temp() != null)
                 .mapToDouble(item -> item.main().temp())
                 .max()
                 .orElse(0.0);
 
         double temperatureLow = dailyForecasts.stream()
+                .filter(item -> item.main() != null && item.main().temp() != null)
                 .mapToDouble(item -> item.main().temp())
                 .min()
                 .orElse(0.0);
 
         double humidity = dailyForecasts.stream()
+                .filter(item -> item.main() != null && item.main().humidity() != null)
                 .mapToDouble(item -> item.main().humidity())
                 .average()
                 .orElse(0.0);
 
         double windSpeed = dailyForecasts.stream()
+                .filter(item -> item.wind() != null && item.wind().speed() != null)
                 .mapToDouble(item -> item.wind().speed())
                 .max()
                 .orElse(0.0);
@@ -193,11 +237,9 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
         snapshot.setRainProbability(rainProbabilityPercent);
 
         snapshot.setCondition(
-                representative.weather().isEmpty()
+                (representative.weather() == null || representative.weather().isEmpty() || representative.weather().get(0) == null)
                         ? "N/A"
-                        : representative.weather()
-                                .get(0)
-                                .description());
+                        : representative.weather().get(0).description());
 
         snapshot.setOutdoorSafe(isOutdoorSafe);
         snapshot.setAlertLevel(
@@ -231,17 +273,21 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
         log.info("Created a high rain probability weather alert for trip {}", trip.getId());
     }
 
-    // DTOs for OpenWeatherMap Forecast API response (using records for conciseness)
+    // DTOs for OpenWeatherMap API responses (using records with Jackson ignore unknown)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private record OpenWeatherResponse(List<ForecastItem> list) {
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private record CurrentWeatherResponse(
             Main main,
             List<Weather> weather,
             Wind wind,
-            String name) {
+            String name,
+            Long dt) {
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private record ForecastItem(
             long dt,
             Main main,
@@ -250,12 +296,15 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
             double pop) {
     }
 
-    private record Main(double temp, double humidity) {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record Main(Double temp, Double humidity) {
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private record Weather(String main, String description) {
     }
 
-    private record Wind(double speed) {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record Wind(Double speed) {
     }
-}
+}
