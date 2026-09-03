@@ -160,18 +160,87 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
                         entry.getKey(),
                         entry.getValue());
 
-                if (snapshot.getRainProbability() != null
-                        && snapshot.getRainProbability() >= RAIN_PROBABILITY_THRESHOLD * 100) {
-
-                    createWeatherAlert(
-                            trip,
-                            snapshot,
-                            snapshot.getRainProbability() / 100);
-                }
+                evaluateAndCreateAlerts(trip, snapshot);
             }
         } catch (Exception e) {
             log.error("Failed to fetch or process weather forecast for city {}: {}", city, e.getMessage());
         }
+    }
+
+    private void evaluateAndCreateAlerts(Trip trip, WeatherSnapshot snapshot) {
+        if (trip == null || snapshot == null) {
+            return;
+        }
+
+        // 1. Check for Storm / Thunderstorm (Critical danger)
+        String conditionLower = snapshot.getCondition() != null ? snapshot.getCondition().toLowerCase() : "";
+        if (conditionLower.contains("storm") || conditionLower.contains("thunderstorm") || conditionLower.contains("tornado")) {
+            createAlertIfNotExist(
+                    trip,
+                    snapshot,
+                    AlertType.STORM,
+                    AlertSeverity.CRITICAL,
+                    "Severe storm or thunderstorm detected. Move outdoor activities indoors and seek shelter immediately.");
+        }
+
+        // 2. Check for High Rain Probability (Threshold >= 70%)
+        if (snapshot.getRainProbability() != null && snapshot.getRainProbability() >= RAIN_PROBABILITY_THRESHOLD * 100) {
+            String action = String.format(
+                    "High probability of rain (%.0f%%). Consider moving outdoor activities indoors or rescheduling.",
+                    snapshot.getRainProbability());
+            createAlertIfNotExist(
+                    trip,
+                    snapshot,
+                    AlertType.RAIN,
+                    AlertSeverity.HIGH,
+                    action);
+        }
+
+        // 3. Check for Strong Wind (Speed >= 15 m/s)
+        if (snapshot.getWindSpeed() != null && snapshot.getWindSpeed() >= 15.0) {
+            String action = String.format(
+                    "High wind speed (%.1f m/s). Avoid outdoor sea activities, boating, or high-altitude climbing.",
+                    snapshot.getWindSpeed());
+            createAlertIfNotExist(
+                    trip,
+                    snapshot,
+                    AlertType.STRONG_WIND,
+                    AlertSeverity.HIGH,
+                    action);
+        }
+
+        // 4. Check for Extreme Heat (High Temperature >= 38°C)
+        if (snapshot.getTemperatureHigh() != null && snapshot.getTemperatureHigh() >= 38.0) {
+            String action = String.format(
+                    "Extreme heatwave expected (up to %.1f°C). Stay hydrated, avoid midday sun exposure, and wear sunscreen.",
+                    snapshot.getTemperatureHigh());
+            createAlertIfNotExist(
+                    trip,
+                    snapshot,
+                    AlertType.HEATWAVE,
+                    AlertSeverity.MEDIUM,
+                    action);
+        }
+    }
+
+    private void createAlertIfNotExist(Trip trip, WeatherSnapshot snapshot, AlertType alertType, AlertSeverity severity, String suggestedAction) {
+        // Prevent duplicate alerts: check if an unresolved alert of the same type already exists for this trip
+        if (weatherAlertRepository.existsByTripIdAndAlertTypeAndIsResolvedFalse(trip.getId(), alertType)) {
+            log.debug("An unresolved alert of type {} already exists for trip {}. Skipping duplicate.", alertType, trip.getId());
+            return;
+        }
+
+        WeatherAlert alert = WeatherAlert.builder()
+                .trip(trip)
+                .snapshot(snapshot)
+                .alertType(alertType)
+                .severity(severity)
+                .suggestedAction(suggestedAction)
+                .isResolved(false)
+                .build();
+
+        weatherAlertRepository.save(alert);
+        log.info("Created a {} weather alert for trip {} on date {}", alertType, trip.getId(), snapshot.getDate());
     }
 
     private WeatherSnapshot saveDailyForecast(
@@ -247,30 +316,6 @@ public class WeatherApiClientServiceImpl implements WeatherApiClientService {
         snapshot.setProviderName("OpenWeatherMap");
 
         return weatherSnapshotRepository.save(snapshot);
-    }
-
-    private void createWeatherAlert(Trip trip, WeatherSnapshot snapshot, double rainProbability) {
-        // Check if a similar alert already exists to avoid duplicates
-        if (weatherAlertRepository.existsByTripIdAndAlertTypeAndIsResolvedFalse(trip.getId(), AlertType.RAIN)) {
-            log.info("An unresolved weather alert already exists for trip {}", trip.getId());
-            return;
-        }
-
-        String action = String.format(
-                "High probability of rain (%.0f%%). Consider moving outdoor activities indoors or rescheduling.",
-                rainProbability * 100);
-
-        WeatherAlert alert = WeatherAlert.builder()
-                .trip(trip)
-                .snapshot(snapshot)
-                .alertType(AlertType.RAIN)
-                .severity(AlertSeverity.HIGH)
-                .suggestedAction(action)
-                .isResolved(false)
-                .build();
-
-        weatherAlertRepository.save(alert);
-        log.info("Created a high rain probability weather alert for trip {}", trip.getId());
     }
 
     // DTOs for OpenWeatherMap API responses (using records with Jackson ignore unknown)
