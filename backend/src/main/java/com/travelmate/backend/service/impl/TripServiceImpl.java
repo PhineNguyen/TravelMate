@@ -291,9 +291,6 @@ public class TripServiceImpl implements TripService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * ✅ HOÀN THIỆN: Tìm kiếm, lọc động và phân trang danh sách chuyến đi (Chưa xóa)
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<TripResponse> searchTrips(Long ownerId, TripStatus status, String destination, Pageable pageable) {

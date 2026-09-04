@@ -12,7 +12,6 @@ The system automatically generates optimized travel itineraries based on user pr
 - Budget estimation and expense tracking
 - User preference learning and adaptive recommendations
 - Secure authentication with JWT
-- Mobile-first experience built with Flutter
 - RESTful backend architecture with Spring Boot
 - AI orchestration through FastAPI and Hugging Face models
 - Dockerized multi-service deployment
@@ -21,7 +20,6 @@ The system automatically generates optimized travel itineraries based on user pr
 
 TravelMate AI follows a distributed service architecture:
 
-- **Frontend:** Flutter (Riverpod, Dio, Hive, GoRouter)
 - **Backend API:** Spring Boot (Spring Security, JWT, JPA, Hibernate)
 - **AI Service:** FastAPI + Hugging Face Inference API
 - **Database:** PostgreSQL

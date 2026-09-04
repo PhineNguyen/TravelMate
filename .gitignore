@@ -2,6 +2,8 @@ BAO_CAO_LOI_VA_CACH_SUA.md
 .vscode/settings.json
 .gitignore
 backend/.env
+.env
+.env.*
 .idea/
 .idea
 *.md
