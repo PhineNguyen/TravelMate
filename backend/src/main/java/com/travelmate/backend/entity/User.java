@@ -96,25 +96,9 @@ public class User implements UserDetails {
     @Builder.Default
     private List<TripParticipant> tripParticipations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<SharedTripInvite> sentInvites = new ArrayList<>();
-
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Message> messages = new ArrayList<>();
-
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Expense> expenses = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ManualActionLog> actionLogs = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<RecommendationHistory> recommendationHistories = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
