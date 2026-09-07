@@ -1,0 +1,41 @@
+services:
+  ai-gpt-db:
+    image: postgres:16
+    container_name: travelmate-ai-gpt-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ai_service_gpt_chat
+      POSTGRES_USER: ai_user
+      POSTGRES_PASSWORD: ai_password
+    ports:
+      - "5435:5432"  # Map to 5435 to avoid conflict with other postgres instances
+    volumes:
+      - ai_gpt_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_user -d ai_service_gpt_chat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ai-gpt-service:
+    build: .
+    container_name: travelmate-ai-gpt-service
+    restart: unless-stopped
+    depends_on:
+      ai-gpt-db:
+        condition: service_healthy
+    environment:
+      - PORT=8001
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
+      - GEOAPIFY_API_KEY=${GEOAPIFY_API_KEY}
+      - DB_HOST=ai-gpt-db
+      - DB_PORT=5432
+      - DB_NAME=ai_service_gpt_chat
+      - DB_USER=ai_user
+      - DB_PASSWORD=ai_password
+    ports:
+      - "8001:8001"
+
+volumes:
+  ai_gpt_postgres_data: {}
