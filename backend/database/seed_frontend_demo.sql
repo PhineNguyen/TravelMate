@@ -189,12 +189,11 @@ INSERT INTO
         template_id,
         is_customized,
         trip_status,
-        invite_code,
         is_deleted,
         created_at,
         updated_at
     )
-SELECT u.id, s.destination, CURRENT_DATE + s.day_offset, s.duration, s.traveler_count, s.total_budget, 'MANUAL', t.id, TRUE, s.trip_status, md5(s.title || ':invite'), FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT u.id, s.destination, CURRENT_DATE + s.day_offset, s.duration, s.traveler_count, s.total_budget, 'MANUAL', t.id, TRUE, s.trip_status, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM (
         VALUES (
                 'Demo Vietnam Discovery',
@@ -254,32 +253,6 @@ WHERE
             AND existing.is_deleted = FALSE
     );
 
--- 6. Owner participants.
-INSERT INTO
-    trip_participants (
-        trip_id,
-        user_id,
-        role,
-        is_active
-    )
-SELECT t.id, t.owner_id, 'OWNER', TRUE
-FROM trips t
-WHERE
-    t.owner_id = (
-        SELECT id
-        FROM users
-        WHERE
-            email = 'demo@travelmate.local'
-        LIMIT 1
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM trip_participants p
-        WHERE
-            p.trip_id = t.id
-            AND p.user_id = t.owner_id
-    );
-
 -- 7. Itinerary items va expense cho cac trip demo.
 INSERT INTO
     itinerary_item (
@@ -328,10 +301,9 @@ INSERT INTO
         category,
         description,
         expense_date,
-        is_shared,
         is_deleted
     )
-SELECT t.id, t.owner_id, s.amount, s.category, s.description, CURRENT_DATE, TRUE, FALSE
+SELECT t.id, t.owner_id, s.amount, s.category, s.description, CURRENT_DATE, FALSE
 FROM trips t
     CROSS JOIN (
         VALUES (
@@ -358,155 +330,6 @@ WHERE
             AND e.description = s.description
     );
 
--- 8. Shared invites cho man hinh Share Trip.
-INSERT INTO
-    shared_trip_invites (
-        trip_id,
-        sender_id,
-        receiver_email,
-        invite_code,
-        status,
-        expires_at
-    )
-SELECT t.id, t.owner_id, 'friend@travelmate.local', md5(
-        t.id::text || ':friend@travelmate.local'
-    ), 'PENDING', CURRENT_TIMESTAMP + INTERVAL '14 days'
-FROM trips t
-WHERE
-    t.owner_id = (
-        SELECT id
-        FROM users
-        WHERE
-            email = 'demo@travelmate.local'
-        LIMIT 1
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM shared_trip_invites i
-        WHERE
-            i.trip_id = t.id
-            AND i.receiver_email = 'friend@travelmate.local'
-    );
-
--- 9. Notifications cho man hinh Notifications.
-INSERT INTO
-    notifications (
-        user_id,
-        title,
-        body,
-        type,
-        "read"
-    )
-SELECT u.id, s.title, s.body, s.type, FALSE
-FROM (
-        VALUES (
-                'Budget warning', 'Your Vietnam trip has reached 60% of the planned budget.', 'BUDGET_WARNING'
-            ), (
-                'Weather update', 'The forecast is clear for your next outdoor activity.', 'WEATHER_ALERT'
-            ), (
-                'Trip invitation', 'You have a new collaboration invitation to review.', 'GROUP_INVITE'
-            )
-    ) AS s (title, body, type)
-    CROSS JOIN (
-        SELECT id
-        FROM users
-        WHERE
-            email = 'demo@travelmate.local'
-        LIMIT 1
-    ) u
-WHERE
-    NOT EXISTS (
-        SELECT 1
-        FROM notifications n
-        WHERE
-            n.user_id = u.id
-            AND n.title = s.title
-            AND n.body = s.body
-    );
-
--- 10. Weather snapshots cho man hinh Weather.
-INSERT INTO
-    weather_snapshot (
-        trip_id,
-        date,
-        temperature,
-        humidity,
-        rain_probability,
-        condition,
-        wind_speed,
-        uv_index,
-        visibility,
-        alert_level,
-        city,
-        is_outdoor_safe,
-        provider_name,
-        provider_id,
-        created_at,
-        updated_at
-    )
-SELECT
-    t.id,
-    CURRENT_DATE + 1,
-    29.5,
-    72.0,
-    20.0,
-    'Partly cloudy',
-    12.0,
-    6.0,
-    10.0,
-    'Normal',
-    t.destination,
-    TRUE,
-    'TravelMate Demo',
-    'demo-weather-' || t.id,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-FROM trips t
-WHERE
-    t.owner_id = (
-        SELECT id
-        FROM users
-        WHERE
-            email = 'demo@travelmate.local'
-        LIMIT 1
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM weather_snapshot w
-        WHERE
-            w.trip_id = t.id
-            AND w.date = CURRENT_DATE + 1
-    );
-
--- 11. Analytics snapshots cho man hinh Travel Insights.
-INSERT INTO
-    analytics_snapshot (
-        trip_id,
-        total_trips,
-        avg_budget,
-        total_spent,
-        favorite_category,
-        most_visited_destination,
-        travel_personality,
-        generated_at
-    )
-SELECT t.id, 3, 11800000.00, 1380000.00, 'FOOD', t.destination, 'Balanced Explorer', CURRENT_TIMESTAMP
-FROM trips t
-WHERE
-    t.owner_id = (
-        SELECT id
-        FROM users
-        WHERE
-            email = 'demo@travelmate.local'
-        LIMIT 1
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM analytics_snapshot a
-        WHERE
-            a.trip_id = t.id
-    );
-
 COMMIT;
 
 -- Kiem tra nhanh sau khi chay.
@@ -520,16 +343,4 @@ SELECT 'places', COUNT(*)
 FROM places
 UNION ALL
 SELECT 'expenses', COUNT(*)
-FROM expenses
-UNION ALL
-SELECT 'notifications', COUNT(*)
-FROM notifications
-UNION ALL
-SELECT 'shared_trip_invites', COUNT(*)
-FROM shared_trip_invites
-UNION ALL
-SELECT 'weather_snapshot', COUNT(*)
-FROM weather_snapshot
-UNION ALL
-SELECT 'analytics_snapshot', COUNT(*)
-FROM analytics_snapshot;
+FROM expenses;

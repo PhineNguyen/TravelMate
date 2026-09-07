@@ -68,26 +68,11 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/api/trip-templates",
                                                                 "/api/trip-templates/**")
                                                 .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/weather-snapshots",
-                                                                "/api/weather-snapshots/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/weather-alerts",
-                                                                "/api/weather-alerts/**")
-                                                .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/weather",
                                                                 "/api/weather/**")
                                                 .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/notifications",
-                                                                "/api/notifications/**")
-                                                .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/expenses",
                                                                 "/api/expenses/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/shared-trip-invites",
-                                                                "/api/shared-trip-invites/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/analytics-snapshots",
-                                                                "/api/analytics-snapshots/**")
                                                 .permitAll()
 
                                                 // 4. Mở endpoint xử lý lỗi mặc định của Spring

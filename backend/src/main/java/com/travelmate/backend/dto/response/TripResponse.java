@@ -27,7 +27,6 @@ public class TripResponse {
     private Long templateId;
     private Boolean isCustomized;
     private TripStatus tripStatus;
-    private String inviteCode;
     private Boolean isDeleted;
     private LocalDateTime deleteAt;
     private LocalDateTime createdAt;

@@ -8,25 +8,13 @@
 TRUNCATE TABLE access_token_revocations,
 ai_messages,
 ai_conversations,
-analytics_snapshot,
-chat_room,
 expenses,
 itinerary_item,
-manual_action_log,
-messages,
-notifications,
 oauth_accounts,
 password_reset_tokens,
 places,
-recommendation_history,
-route_node,
-route_plan,
-shared_trip_invites,
 template_item,
-trip_participants,
 trips,
-weather_alert,
-weather_snapshot,
 user_preferences,
 users RESTART IDENTITY CASCADE;
 
@@ -101,9 +89,3 @@ WHERE
         'giabao@travelmate.local'
     )
 ORDER BY id;
-
-SELECT
-    COUNT(*) AS weather_snapshot_count,
-    COUNT(DISTINCT trip_id) AS trip_count,
-    COUNT(DISTINCT date) AS forecast_day_count
-FROM weather_snapshot;

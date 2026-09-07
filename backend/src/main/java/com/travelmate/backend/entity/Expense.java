@@ -54,9 +54,6 @@ public class Expense {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "is_shared", nullable = false)
-    private boolean isShared = false;
-
     @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;

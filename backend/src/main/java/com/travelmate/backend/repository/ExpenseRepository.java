@@ -27,8 +27,6 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     List<Expense> findByCreatedByIdAndIsDeletedFalse(Long createdById);
 
-    List<Expense> findByTripIdAndIsSharedTrueAndIsDeletedFalse(Long tripId);
-
     List<Expense> findByTripIdAndCategoryAndIsDeletedFalse(Long tripId, ExpenseCategory category);
 
     // Phục vụ hàm lọc động searchExpenses ở Controller (Lọc theo cả Trip

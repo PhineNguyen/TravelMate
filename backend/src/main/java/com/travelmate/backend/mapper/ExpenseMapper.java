@@ -18,7 +18,6 @@ public class ExpenseMapper {
         // Ánh xạ ngày chi tiêu thực tế từ Request (Xử lý fallback null tại ServiceImpl)
         e.setExpenseDate(req.getExpenseDate());
 
-        e.setShared(req.getIsShared() != null ? req.getIsShared() : false);
         return e;
     }
 
@@ -38,7 +37,6 @@ public class ExpenseMapper {
                 .expenseDate(e.getExpenseDate())
 
                 .createdAt(e.getCreatedAt())
-                .isShared(e.isShared())
 
                 // Trả về trạng thái xóa mềm để đồng bộ cấu trúc hệ thống
                 .isDeleted(e.isDeleted())

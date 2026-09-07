@@ -24,7 +24,6 @@ public class ExpenseResponse {
     private LocalDate expenseDate;
 
     private LocalDateTime createdAt;
-    private Boolean isShared;
 
     // Trạng thái xóa mềm phục vụ kiểm tra hoặc xử lý logic ở Client nếu cần
     private Boolean isDeleted;

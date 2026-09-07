@@ -97,8 +97,6 @@ public class ExpenseServiceImpl implements ExpenseService {
             existing.setCategory(dto.getCategory());
         if (dto.getDescription() != null)
             existing.setDescription(dto.getDescription());
-        if (dto.getIsShared() != null)
-            existing.setShared(dto.getIsShared());
 
         // ✅ ĐỒNG BỘ: Hỗ trợ cập nhật ngày chi tiêu thực tế nếu có truyền lên
         if (dto.getExpenseDate() != null)

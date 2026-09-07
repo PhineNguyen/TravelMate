@@ -47,5 +47,4 @@ public class TripRequest {
     private Long templateId;
     private Boolean isCustomized;
     private TripStatus tripStatus;
-    private String inviteCode;
 }

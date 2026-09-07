@@ -8,3 +8,5 @@ backend/.env
 .idea
 *.md
 *.xml
+*.sql
+.sql

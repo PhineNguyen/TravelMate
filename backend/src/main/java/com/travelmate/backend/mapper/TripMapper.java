@@ -20,7 +20,6 @@ public class TripMapper {
                 .templateId(e.getTemplate() != null ? e.getTemplate().getId() : null)
                 .isCustomized(e.isCustomized())
                 .tripStatus(e.getTripStatus())
-                .inviteCode(e.getInviteCode())
                 .createdAt(e.getCreatedAt())
                 .updatedAt(e.getUpdatedAt())
                 .build();

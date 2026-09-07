@@ -5,7 +5,6 @@ import com.travelmate.backend.dto.request.TripUpdateRequest;
 import com.travelmate.backend.dto.request.TripItineraryGenerateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
 import com.travelmate.backend.dto.response.AiItineraryGenerateResponse;
-import com.travelmate.backend.service.WeatherApiClientService;
 import com.travelmate.backend.service.AiServiceClient;
 import com.travelmate.backend.entity.Trip;
 import com.travelmate.backend.entity.ItineraryItem;
@@ -41,7 +40,6 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,7 +48,6 @@ public class TripServiceImpl implements TripService {
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
     private final TripTemplateRepository tripTemplateRepository;
-    private final WeatherApiClientService weatherApiClientService;
     private final AiServiceClient aiServiceClient;
     private final ItineraryItemRepository itineraryItemRepository;
     private final PlaceRepository placeRepository;
@@ -91,12 +88,7 @@ public class TripServiceImpl implements TripService {
         if (trip.getOwner().getId().equals(user.getId())) {
             return;
         }
-        boolean isActiveCollaborator = trip.getTripParticipations().stream()
-                .anyMatch(participant -> participant.isActive()
-                        && participant.getUser().getId().equals(user.getId()));
-        if (!isActiveCollaborator) {
-            throw new AccessDeniedException("Access denied. You are not a collaborator on this trip.");
-        }
+        throw new AccessDeniedException("Access denied. You are not the owner of this trip.");
     }
 
     @Override
@@ -156,15 +148,6 @@ public class TripServiceImpl implements TripService {
                 ? dto.getTotalBudget().setScale(2, RoundingMode.HALF_UP)
                 : null;
 
-        String inviteCode = trimToNull(dto.getInviteCode());
-        if (inviteCode == null) {
-            inviteCode = generateUniqueInviteCode();
-        } else {
-            if (tripRepository.existsByInviteCodeAndIsDeletedFalse(inviteCode)) {
-                throw new IllegalArgumentException("Invite code already in use");
-            }
-        }
-
         TripStatus status = dto.getTripStatus() != null ? dto.getTripStatus() : TripStatus.DRAFT;
         validateCreateStatus(status);
         boolean isCustomized = dto.getIsCustomized() != null ? dto.getIsCustomized() : false;
@@ -181,15 +164,10 @@ public class TripServiceImpl implements TripService {
                 .template(tripTemplate)
                 .isCustomized(isCustomized)
                 .tripStatus(status)
-                .inviteCode(inviteCode)
                 .isDeleted(false)
                 .build();
         try {
             Trip savedTrip = tripRepository.save(trip);
-            // Fetch weather data if trip is created as active
-            if (savedTrip.getTripStatus() == TripStatus.ACTIVE) {
-                weatherApiClientService.fetchAndProcessWeatherData(savedTrip.getDestination(), savedTrip);
-            }
             return TripMapper.toResponse(savedTrip);
         } catch (DataIntegrityViolationException ex) {
             throw new DataIntegrityViolationException("Database constraint violated, check for unique invite code.",
@@ -211,8 +189,6 @@ public class TripServiceImpl implements TripService {
 
         User currentUser = getCurrentUser();
         checkOwnership(existing, currentUser);
-
-        TripStatus previousStatus = existing.getTripStatus();
 
         if (isTerminal(existing.getTripStatus())) {
             throw new IllegalArgumentException("Trip is read-only in terminal state");
@@ -255,12 +231,6 @@ public class TripServiceImpl implements TripService {
         }
         try {
             Trip updatedTrip = tripRepository.save(existing);
-
-            // If trip status changed to ACTIVE, fetch weather data
-            if (previousStatus != TripStatus.ACTIVE && updatedTrip.getTripStatus() == TripStatus.ACTIVE) {
-                weatherApiClientService.fetchAndProcessWeatherData(updatedTrip.getDestination(), updatedTrip);
-            }
-
             return TripMapper.toResponse(updatedTrip);
         } catch (DataIntegrityViolationException ex) {
             throw new DataIntegrityViolationException("Database constraint violated on update.", ex);
@@ -324,10 +294,9 @@ public class TripServiceImpl implements TripService {
 
         Page<Trip> trips = switch (selectedView) {
             case "owned" -> tripRepository.findByOwnerIdAndIsDeletedFalse(currentUser.getId(), pageable);
-            case "joined" -> tripRepository.findJoinedTrips(currentUser.getId(), pageable);
             case "completed" -> tripRepository.findAccessibleTripsByStatus(
                     currentUser.getId(), TripStatus.COMPLETED, pageable);
-            default -> throw new IllegalArgumentException("View must be owned, joined, or completed");
+            default -> throw new IllegalArgumentException("View must be owned or completed");
         };
         return trips.map(TripMapper::toResponse);
     }
@@ -381,14 +350,6 @@ public class TripServiceImpl implements TripService {
         trip.setDeletedAt(null);
 
         return TripMapper.toResponse(tripRepository.save(trip));
-    }
-
-    private String generateUniqueInviteCode() {
-        String code;
-        do {
-            code = UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
-        } while (tripRepository.existsByInviteCodeAndIsDeletedFalse(code));
-        return code;
     }
 
     private String trimToNull(String v) {

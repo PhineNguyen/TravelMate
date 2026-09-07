@@ -33,20 +33,9 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     @Query("""
             select distinct t from Trip t
-            join t.tripParticipations participant
-            where participant.user.id = :userId
-              and participant.isActive = true
-              and t.isDeleted = false
-            """)
-    Page<Trip> findJoinedTrips(@Param("userId") Long userId, Pageable pageable);
-
-    @Query("""
-            select distinct t from Trip t
-            left join t.tripParticipations participant
             where t.isDeleted = false
               and t.tripStatus = :status
-              and (t.owner.id = :userId or
-               (participant.user.id = :userId and participant.isActive = true))
+              and t.owner.id = :userId
             """)
     Page<Trip> findAccessibleTripsByStatus(
             @Param("userId") Long userId,
@@ -61,11 +50,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     Page<Trip> findByTripStatusAndIsDeletedFalse(TripStatus tripStatus, Pageable pageable);
 
     List<Trip> findByOwnerIdAndTripStatusAndIsDeletedFalse(Long ownerId, TripStatus tripStatus);
-
-    // ==================== TRUY VẤN THEO MÃ MỜI (CHƯA XÓA) ====================
-    Optional<Trip> findByInviteCodeAndIsDeletedFalse(String inviteCode);
-
-    boolean existsByInviteCodeAndIsDeletedFalse(String inviteCode);
 
     // ==================== BỘ LỌC ĐỊA ĐIỂM & THỜI GIAN (CHƯA XÓA)
     // ====================
@@ -93,10 +77,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     Page<Trip> findByTripStatus(TripStatus tripStatus, Pageable pageable);
 
     List<Trip> findByOwnerIdAndTripStatus(Long ownerId, TripStatus tripStatus);
-
-    Optional<Trip> findByInviteCode(String inviteCode);
-
-    boolean existsByInviteCode(String inviteCode);
 
     List<Trip> findByStartDateBetween(LocalDate from, LocalDate to);
 

@@ -19,8 +19,6 @@ public class RuntimeSummaryResponse {
     private String currentDestination;
     private long completedItems;
     private long upcomingItems;
-    private long activeParticipants;
-    private long unreadNotifications;
     private BigDecimal spentBudget;
     private BigDecimal plannedBudget;
     private List<String> alerts;

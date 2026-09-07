@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -37,20 +36,13 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
 
         // 3. Kho dữ liệu Chuyến đi & Lịch trình
         private final TripRepository tripRepository;
-        private final TripParticipantRepository tripParticipantRepository;
         private final ItineraryItemRepository itineraryItemRepository;
-        private final RoutePlanRepository routePlanRepository;
-        private final RouteNodeRepository routeNodeRepository;
         private final ExpenseRepository expenseRepository;
 
         // 4. Kho dữ liệu Tương tác & Trí tuệ nhân tạo (Artificial Intelligence - AI)
-        private final NotificationRepository notificationRepository;
         private final AIConversationRepository aiConversationRepository;
         private final AIMessageRepository aiMessageRepository;
 
-        // 5. Kho dữ liệu Thời tiết & Phân tích hệ thống
-        private final WeatherSnapshotRepository weatherSnapshotRepository;
-        private final WeatherAlertRepository weatherAlertRepository;
 
         // Đổi tên hàm và bỏ tham số args, xóa @Override
         @EventListener(ApplicationReadyEvent.class)
@@ -253,20 +245,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                         }
                         templateItemRepository.saveAll(templateItems);
 
-                        // 9. Bảng Notification
-                        List<Notification> notifications = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
-                                Notification notif = Notification.builder()
-                                                .user(users.get(i))
-                                                .title("Cảnh báo thời tiết")
-                                                .body("Dự báo có mưa tại " + cities[i] + " vào ngày mai.")
-                                                .type(NotificationType.WEATHER_ALERT)
-                                                .isRead(false)
-                                                .build();
-                                notifications.add(notif);
-                        }
-                        notificationRepository.saveAll(notifications);
-
                         // ==========================================
                         // CẤP 3: BẢNG TRIP & CÁC BẢNG LIÊN QUAN ĐẾN TRIP
                         // ==========================================
@@ -284,24 +262,10 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                                 .totalBudget(BigDecimal.valueOf(5000000 + i * 1100000))
                                                 .planningMode(PlanningMode.MANUAL)
                                                 .tripStatus(i % 2 == 0 ? TripStatus.PLANNED : TripStatus.ACTIVE)
-                                                .inviteCode(UUID.randomUUID().toString().substring(0, 8))
                                                 .isCustomized(true)
                                                 .build());
                         }
                         trips = tripRepository.saveAll(trips);
-
-                        // 11. Bảng TripParticipant
-                        List<TripParticipant> participants = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
-                                TripParticipant participant = TripParticipant.builder()
-                                                .trip(trips.get(i))
-                                                .user(users.get(i))
-                                                .role(ParticipantRole.OWNER)
-                                                .isActive(true)
-                                                .build();
-                                participants.add(participant);
-                        }
-                        tripParticipantRepository.saveAll(participants);
 
                         // 13. Bảng Expense
                         List<Expense> expenses = new ArrayList<>();
@@ -313,7 +277,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                                 .category(ExpenseCategory.FOOD)
                                                 .description("Ăn tối ngày " + (i + 1))
                                                 .expenseDate(LocalDate.now().plusDays(i * 7))
-                                                .isShared(true)
                                                 .build());
                         }
                         expenseRepository.saveAll(expenses);
@@ -335,29 +298,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                                 .build());
                         }
                         itineraryItems = itineraryItemRepository.saveAll(itineraryItems);
-
-                        // 15. Bảng RoutePlan
-                        List<RoutePlan> routePlans = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
-                                RoutePlan plan = RoutePlan.builder()
-                                                .trip(trips.get(i))
-                                                .strategyType(StrategyType.FASTEST)
-                                                .build();
-                                routePlans.add(plan);
-                        }
-                        routePlans = routePlanRepository.saveAll(routePlans);
-
-                        // 16. Bảng RouteNode
-                        List<RouteNode> routeNodes = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
-                                RouteNode node = RouteNode.builder()
-                                                .routePlan(routePlans.get(i))
-                                                .place(places.get(i))
-                                                .sequenceOrder(1)
-                                                .build();
-                                routeNodes.add(node);
-                        }
-                        routeNodeRepository.saveAll(routeNodes);
 
                         // 19. Bảng AIConversation
                         List<AIConversation> aiConversations = new ArrayList<>();
@@ -388,45 +328,6 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                                 aiMessages.add(aiMsgBot);
                         }
                         aiMessageRepository.saveAll(aiMessages);
-
-                        // 22. Bảng WeatherSnapshot
-                        List<WeatherSnapshot> weatherSnapshots = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
-                                WeatherSnapshot ws = WeatherSnapshot.builder()
-                                                .trip(trips.get(i))
-                                                .date(LocalDate.now().plusDays(i * 7))
-                                                .city(cities[i])
-                                                .temperature(25.0 + (Math.random() * 8))
-                                                .humidity(60.0 + (Math.random() * 30))
-                                                .rainProbability(10.0 + (Math.random() * 50))
-                                                .condition(i % 2 == 0 ? "Trời nắng" : "Trời nhiều mây")
-                                                .windSpeed(15.5)
-                                                .uvIndex(6.0)
-                                                .visibility(10.0)
-                                                .alertLevel("Bình thường")
-                                                .providerName("OpenWeatherMap")
-                                                .providerId("provider_" + i)
-                                                .isOutdoorSafe(true)
-                                                .build();
-                                weatherSnapshots.add(ws);
-                        }
-                        weatherSnapshots = weatherSnapshotRepository.saveAll(weatherSnapshots);
-
-                        // 23. Bảng WeatherAlert
-                        List<WeatherAlert> weatherAlerts = new ArrayList<>();
-                        for (int i = 0; i < trips.size(); i++) {
-                                WeatherAlert alert = WeatherAlert.builder()
-                                                .trip(trips.get(i))
-                                                .snapshot(weatherSnapshots.get(i % weatherSnapshots.size()))
-                                                .severity(i % 2 == 0 ? AlertSeverity.MEDIUM : AlertSeverity.HIGH)
-                                                .alertType(i % 2 == 0 ? AlertType.RAIN : AlertType.STORM)
-                                                .suggestedAction(i % 2 == 0 ? "Nên mang theo ô hoặc áo mưa."
-                                                                : "Dời hoạt động ngoài trời sang buổi chiều.")
-                                                .isResolved(false)
-                                                .build();
-                                weatherAlerts.add(alert);
-                        }
-                        weatherAlertRepository.saveAll(weatherAlerts);
 
                         log.info("Khởi tạo thành công dữ liệu mặc định phong phú.");
                 }
