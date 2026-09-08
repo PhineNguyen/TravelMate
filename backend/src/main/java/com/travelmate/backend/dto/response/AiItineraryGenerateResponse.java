@@ -36,6 +36,9 @@ public class AiItineraryGenerateResponse {
         private String start_time;
         private Integer duration_minutes;
         private String place_name;
+        private String address;
+        private Double latitude;
+        private Double longitude;
         private String category;
         private Double estimated_cost;
         private String description;

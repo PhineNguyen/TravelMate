@@ -129,6 +129,28 @@ async def generate_itinerary_llm(
                 if not act.get("local_tip"):
                     act["local_tip"] = f"Nên đến sớm và thưởng thức trọn vẹn trải nghiệm tại {act.get('place_name', 'địa điểm này')}."
 
+                # Chuẩn hóa thông tin vị trí (địa chỉ, kinh độ, vĩ độ)
+                if not act.get("address"):
+                    act["address"] = f"{act.get('place_name', destination)}, {destination}"
+
+                lat = act.get("latitude")
+                if lat is not None:
+                    try:
+                        act["latitude"] = float(lat)
+                    except (ValueError, TypeError):
+                        act["latitude"] = None
+                else:
+                    act["latitude"] = None
+
+                lng = act.get("longitude")
+                if lng is not None:
+                    try:
+                        act["longitude"] = float(lng)
+                    except (ValueError, TypeError):
+                        act["longitude"] = None
+                else:
+                    act["longitude"] = None
+
                 normalized_activities.append(act)
 
             day_obj["activities"] = normalized_activities

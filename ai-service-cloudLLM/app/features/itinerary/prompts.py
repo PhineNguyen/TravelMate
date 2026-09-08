@@ -8,8 +8,12 @@ def get_itinerary_prompt(destination: str, duration_days: int, budget: float, tr
 Sở thích & yêu cầu đặc biệt: {pref_str}.
 
 Yêu cầu bắt buộc:
-1. Địa danh THỰC TẾ 100%:
+1. Địa danh & Vị trí THỰC TẾ 100%:
    - BẮT BUỘC sử dụng các danh lam thắng cảnh, di tích lịch sử, khu vui chơi, quán ăn/nhà hàng CỤ THỂ NỔI TIẾNG có thật tại {destination}.
+   - BẮT BUỘC cung cấp vị trí cho mỗi địa điểm:
+     + `address`: Địa chỉ cụ thể hoặc tên đường, phường/xã, quận/huyện tại {destination}.
+     + `latitude`: Tọa độ vĩ độ (số thực float, ví dụ: 16.0544).
+     + `longitude`: Tọa độ kinh độ (số thực float, ví dụ: 108.2022).
    - TUYỆT ĐỐI CẤM: cơ quan nhà nước, bảo hiểm xã hội, ủy ban, bệnh viện, trường học, hoặc tên đường phố chung chung không có tên quán.
 2. Giờ giấc thực tế & linh hoạt:
    - Các tour lớn (như Bà Nà Hills, Fansipan, VinWonders, vịnh Hạ Long...): PHẢI bố trí 5-7 tiếng trọn vẹn.
@@ -38,6 +42,9 @@ Trả về ĐÚNG định dạng JSON sau (không kèm văn bản nào khác ngo
           "start_time": "08:00",
           "duration_minutes": 90,
           "place_name": "Tên địa điểm cụ thể",
+          "address": "Địa chỉ cụ thể hoặc khu vực tại {destination}",
+          "latitude": 16.0544,
+          "longitude": 108.2022,
           "category": "restaurant",
           "estimated_cost": 150000,
           "description": "Mô tả ngắn gọn",

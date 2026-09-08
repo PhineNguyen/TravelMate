@@ -6,12 +6,15 @@ class ActivityItem(BaseModel):
     start_time: Optional[str] = Field(None, description="Mốc giờ bắt đầu hoạt động (ví dụ: '08:00')")
     duration_minutes: Optional[int] = Field(None, description="Khoảng thời gian hoạt động kéo dài bao nhiêu phút")
     place_name: str = Field(..., description="Tên địa điểm")
+    address: Optional[str] = Field(None, description="Địa chỉ hoặc khu vực cụ thể của địa điểm")
+    latitude: Optional[float] = Field(None, description="Vĩ độ của địa điểm")
+    longitude: Optional[float] = Field(None, description="Kinh độ của địa điểm")
     category: str = Field(..., description="Phân loại: restaurant | attraction | accommodation | activity")
     estimated_cost: float = Field(..., description="Chi phí ước tính của hoạt động (VNĐ)")
     description: str = Field(..., description="Mô tả chi tiết hoạt động")
     transport_to_next: Optional[str] = Field(None, description="Phương tiện di chuyển đến hoạt động tiếp theo (ví dụ: 'xe máy thuê', 'taxi', 'đi bộ 5 phút')")
     transport_duration_minutes: Optional[int] = Field(None, description="Thời gian di chuyển đến điểm tiếp theo (phút)")
-    local_tip: Optional[str] = Field(None, description="Mẹo nhỏ từ local: giờ nên đến, món nên gọ, điều nên tránh...")
+    local_tip: Optional[str] = Field(None, description="Mẹo nhỏ từ local: giờ nên đến, món nên gọi, điều nên tránh...")
 
 class DayItinerary(BaseModel):
     day: int = Field(..., description="Số thứ tự ngày (ví dụ: 1)")
