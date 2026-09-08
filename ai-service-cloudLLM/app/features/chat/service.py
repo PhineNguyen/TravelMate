@@ -96,7 +96,61 @@ async def _classify_intent(message: str) -> tuple[str, str | None]:
         return "general_travel", None
 
 
-async def chat_with_ai_llm(session_id: str, message: str, destination: str = None, preferences: str = None) -> str:
+async def _extract_structured_data(intent: str, reply: str, destination: str) -> dict | None:
+    """
+    After getting the chat reply, extract structured data based on intent.
+    This allows the mobile app to render rich UI cards (food lists, budget tables, etc.)
+    """
+    if intent not in ["food", "budget", "place_recommendation", "accommodation"]:
+        return None
+
+    extract_prompt = None
+    if intent == "food":
+        extract_prompt = f"""
+        Từ nội dung trả lời sau, hãy trích xuất danh sách các món ăn/quán ăn được đề cập:
+        "{reply}"
+        Trả về JSON:
+        {{"items": [{{"name": "Tên món/quán", "note": "Mô tả ngắn"}}]}}
+        """
+    elif intent == "budget":
+        extract_prompt = f"""
+        Từ nội dung trả lời sau, hãy trích xuất bảng chi phí ước tính:
+        "{reply}"
+        Trả về JSON:
+        {{"budget_items": [{{"category": "Loại chi phí", "amount": "Số tiền (VNĐ)"}}]}}
+        """
+    elif intent in ["place_recommendation", "accommodation"]:
+        extract_prompt = f"""
+        Từ nội dung trả lời sau, hãy trích xuất danh sách địa điểm được gợi ý:
+        "{reply}"
+        Trả về JSON:
+        {{"places": [{{"name": "Tên địa điểm", "note": "Mô tả ngắn", "category": "loại"}}]}}
+        """
+
+    if not extract_prompt:
+        return None
+
+    try:
+        response = await client.chat.completions.create(
+            model=settings.GROQ_MODEL,
+            messages=[{"role": "user", "content": extract_prompt}],
+            temperature=0.0,
+            max_tokens=512,
+            response_format={"type": "json_object"}
+        )
+        from app.core.helpers import clean_json_response, try_repair_json
+        raw = response.choices[0].message.content or "{}"
+        cleaned = clean_json_response(raw)
+        repaired = try_repair_json(cleaned)
+        return json.loads(repaired)
+    except Exception:
+        return None
+
+
+async def chat_with_ai_llm(session_id: str, message: str, destination: str = None, preferences: str | list = None, language: str = "vi") -> dict:
+    if isinstance(preferences, list):
+        preferences = ", ".join(str(p) for p in preferences)
+
     # 1. Fetch current history from PostgreSQL
     history = chat_store.get_history(session_id)
 
@@ -111,7 +165,7 @@ async def chat_with_ai_llm(session_id: str, message: str, destination: str = Non
         reply = "Xin lỗi, tôi là trợ lý du lịch của TravelMate và chỉ có thể hỗ trợ các thông tin liên quan đến du lịch, hành trình, ẩm thực, thời tiết hoặc chuẩn bị chuyến đi. Bạn vui lòng đặt câu hỏi liên quan đến du lịch nhé! 😊"
         chat_store.add_message(session_id, "user", message)
         chat_store.add_message(session_id, "assistant", reply)
-        return reply
+        return {"reply": reply, "intent": intent, "structured_data": None}
 
     system_content = build_dynamic_system_prompt(intent, active_destination, preferences)
 
@@ -140,11 +194,15 @@ async def chat_with_ai_llm(session_id: str, message: str, destination: str = Non
 
         # 7. Store assistant response in PostgreSQL
         chat_store.add_message(session_id, "assistant", content)
-        return content
+
+        # 8. Extract structured data based on intent (async, non-blocking for UX)
+        structured_data = await _extract_structured_data(intent, content, active_destination or "")
+
+        return {"reply": content, "intent": intent, "structured_data": structured_data}
 
     except Exception as e:
         print(f"Error in chat session {session_id}: {ascii(e)}")
-        return f"Xin lỗi, tôi gặp sự cố khi kết nối hệ thống AI: {str(e)}"
+        return {"reply": f"Xin lỗi, tôi gặp sự cố khi kết nối hệ thống AI: {str(e)}", "intent": "error", "structured_data": None}
 
 
 async def get_chat_history_llm(session_id: str) -> list:
@@ -155,10 +213,13 @@ async def clear_chat_history_llm(session_id: str):
     chat_store.clear_history(session_id)
 
 
-async def chat_with_ai_stream(session_id: str, message: str, destination: str = None, preferences: str = None):
+async def chat_with_ai_stream(session_id: str, message: str, destination: str = None, preferences: str | list = None):
     """
     Streaming chat using Groq's streaming API (Server-Sent Events).
     """
+    if isinstance(preferences, list):
+        preferences = ", ".join(str(p) for p in preferences)
+
     history = chat_store.get_history(session_id)
 
     # Classify intent and destination using Groq

@@ -10,8 +10,21 @@ router = APIRouter(prefix="/ai", tags=["Assistant Chat"])
 @router.post("/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest):
     try:
-        reply = await chat_with_ai_llm(payload.session_id, payload.message, payload.destination, payload.preferences)
-        return ChatResponse(reply=reply)
+        result = await chat_with_ai_llm(
+            payload.session_id,
+            payload.message,
+            payload.destination,
+            payload.preferences,
+            payload.language or "vi"
+        )
+        if isinstance(result, dict):
+            return ChatResponse(
+                reply=result.get("reply", ""),
+                intent=result.get("intent"),
+                structured_data=result.get("structured_data")
+            )
+        # Fallback for plain string
+        return ChatResponse(reply=result)
     except Exception as e:
         raise HTTPException(
             status_code=500,

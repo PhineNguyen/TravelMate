@@ -9,6 +9,9 @@ class ActivityItem(BaseModel):
     category: str = Field(..., description="Phân loại: restaurant | attraction | accommodation | activity")
     estimated_cost: float = Field(..., description="Chi phí ước tính của hoạt động (VNĐ)")
     description: str = Field(..., description="Mô tả chi tiết hoạt động")
+    transport_to_next: Optional[str] = Field(None, description="Phương tiện di chuyển đến hoạt động tiếp theo (ví dụ: 'xe máy thuê', 'taxi', 'đi bộ 5 phút')")
+    transport_duration_minutes: Optional[int] = Field(None, description="Thời gian di chuyển đến điểm tiếp theo (phút)")
+    local_tip: Optional[str] = Field(None, description="Mẹo nhỏ từ local: giờ nên đến, món nên gọ, điều nên tránh...")
 
 class DayItinerary(BaseModel):
     day: int = Field(..., description="Số thứ tự ngày (ví dụ: 1)")
@@ -28,6 +31,8 @@ class GenerateItineraryResponse(BaseModel):
     duration_days: int = Field(..., description="Số ngày")
     estimated_total_cost: float = Field(..., description="Tổng chi phí ước tính (VNĐ)")
     summary: str = Field(..., description="Tóm tắt chung hành trình du lịch")
+    highlights: Optional[List[str]] = Field(default=[], description="Top 3-5 điểm nổi bật nhất của chuyến đi này")
+    travel_warnings: Optional[List[str]] = Field(default=[], description="Lưu ý quan trọng: mùa cao điểm, giờ cao điểm, khu vực cần cẩn thận...")
     itinerary: List[DayItinerary] = Field(..., description="Chi tiết lịch trình từng ngày")
 
 class RouteLocationItem(BaseModel):

@@ -19,246 +19,135 @@ async def generate_itinerary_llm(
     traveler_count: int,
     preferences: list = None
 ) -> dict:
-    # 1. Try Hybrid Pipeline (Deterministic Geocoding, Clustering & Routing + GPT Synthesis)
-    try:
-        from app.features.places.geoapify import geocode_destination, fetch_places_from_geoapify
-
-        print(f"[Hybrid Pipeline] Geocoding destination: {destination}")
-        lat, lon = await geocode_destination(destination)
-        if lat is not None and lon is not None:
-            print(f"[Hybrid Pipeline] Found coords: ({lat}, {lon}). Fetching candidates from Geoapify...")
-            attractions = await fetch_places_from_geoapify(lat, lon, radius_km=15, category="attraction", limit=25)
-            restaurants = await fetch_places_from_geoapify(lat, lon, radius_km=15, category="restaurant", limit=20)
-            accommodations = await fetch_places_from_geoapify(lat, lon, radius_km=15, category="accommodation", limit=5)
-
-            print(f"[Hybrid Pipeline] Candidates found - Attractions: {len(attractions)}, Restaurants: {len(restaurants)}, Hotels: {len(accommodations)}")
-
-            if len(attractions) >= duration_days and len(restaurants) >= 2:
-                # K-Means Clustering on Attractions
-                coords = [(p["latitude"], p["longitude"]) for p in attractions]
-                k = duration_days
-                centroids = random.sample(coords, min(k, len(coords)))
-                while len(centroids) < k:
-                    centroids.append(coords[0] if coords else (0, 0))
-
-                clusters = [[] for _ in range(k)]
-                for _ in range(10):  # 10 iterations
-                    clusters = [[] for _ in range(k)]
-                    for p in attractions:
-                        plat, plon = p["latitude"], p["longitude"]
-                        min_dist = float("inf")
-                        best_c = 0
-                        for c_idx, (clat, clon) in enumerate(centroids):
-                            d = math.sqrt((plat - clat)**2 + (plon - clon)**2)
-                            if d < min_dist:
-                                min_dist = d
-                                best_c = c_idx
-                        clusters[best_c].append(p)
-                    # Update centroids
-                    for c_idx in range(k):
-                        if clusters[c_idx]:
-                            avg_lat = sum(p["latitude"] for p in clusters[c_idx]) / len(clusters[c_idx])
-                            avg_lon = sum(p["longitude"] for p in clusters[c_idx]) / len(clusters[c_idx])
-                            centroids[c_idx] = (avg_lat, avg_lon)
-
-                # TSP (Nearest Neighbor) Sorting Helper
-                def sort_by_tsp(places):
-                    if len(places) <= 1:
-                        return places
-                    sorted_places = [places[0]]
-                    remaining = places[1:]
-                    while remaining:
-                        last = sorted_places[-1]
-                        min_dist = float("inf")
-                        best_idx = 0
-                        for idx, p in enumerate(remaining):
-                            d = math.sqrt((last["latitude"] - p["latitude"])**2 + (last["longitude"] - p["longitude"])**2)
-                            if d < min_dist:
-                                min_dist = d
-                                best_idx = idx
-                        sorted_places.append(remaining.pop(best_idx))
-                    return sorted_places
-
-                # Build Skeleton Itinerary
-                itinerary_list = []
-                default_hotel = accommodations[0]["name"] if accommodations else "Khách sạn địa phương"
-                daily_budget = budget / duration_days
-                used_restaurants = set()
-
-                for day_idx in range(duration_days):
-                    day_num = day_idx + 1
-                    day_attractions = clusters[day_idx]
-                    day_attractions = sort_by_tsp(day_attractions)
-
-                    day_activities = []
-
-                    def find_nearest_restaurant(lat_bias, lon_bias):
-                        best_rest = None
-                        min_dist = float("inf")
-                        for r in restaurants:
-                            r_name = r["name"]
-                            if r_name in used_restaurants:
-                                continue
-                            d = math.sqrt((lat_bias - r["latitude"])**2 + (lon_bias - r["longitude"])**2)
-                            if d < min_dist:
-                                min_dist = d
-                                best_rest = r
-                        if best_rest:
-                            used_restaurants.add(best_rest["name"])
-                            return best_rest["name"]
-                        if restaurants:
-                            return random.choice(restaurants)["name"]
-                        return "Quán ăn địa phương"
-
-                    # Morning Attraction (Ticket ~10% day budget)
-                    m_att = day_attractions[0] if len(day_attractions) > 0 else None
-                    if m_att:
-                        day_activities.append({
-                            "time": "08:30 - 11:30",
-                            "start_time": "08:30",
-                            "duration_minutes": 180,
-                            "place_name": m_att["name"],
-                            "category": "attraction",
-                            "estimated_cost": int(daily_budget * 0.1),
-                            "description": ""
-                        })
-
-                    # Lunch Restaurant (~15% day budget)
-                    lunch_bias_lat = m_att["latitude"] if m_att else lat
-                    lunch_bias_lon = m_att["longitude"] if m_att else lon
-                    lunch_name = find_nearest_restaurant(lunch_bias_lat, lunch_bias_lon)
-                    day_activities.append({
-                        "time": "12:00 - 13:30",
-                        "start_time": "12:00",
-                        "duration_minutes": 90,
-                        "place_name": lunch_name,
-                        "category": "restaurant",
-                        "estimated_cost": int(daily_budget * 0.15),
-                        "description": ""
-                    })
-
-                    # Afternoon Attraction (~10% day budget)
-                    a_att = day_attractions[1] if len(day_attractions) > 1 else (day_attractions[0] if len(day_attractions) > 0 and len(day_activities) == 1 else None)
-                    if a_att:
-                        day_activities.append({
-                            "time": "14:00 - 17:00",
-                            "start_time": "14:00",
-                            "duration_minutes": 180,
-                            "place_name": a_att["name"],
-                            "category": "attraction",
-                            "estimated_cost": int(daily_budget * 0.1),
-                            "description": ""
-                        })
-
-                    # Dinner Restaurant (~15% day budget)
-                    dinner_bias_lat = a_att["latitude"] if a_att else lunch_bias_lat
-                    dinner_bias_lon = a_att["longitude"] if a_att else lunch_bias_lon
-                    dinner_name = find_nearest_restaurant(dinner_bias_lat, dinner_bias_lon)
-                    day_activities.append({
-                        "time": "18:30 - 20:00",
-                        "start_time": "18:30",
-                        "duration_minutes": 90,
-                        "place_name": dinner_name,
-                        "category": "restaurant",
-                        "estimated_cost": int(daily_budget * 0.15),
-                        "description": ""
-                    })
-
-                    # Evening Hotel Stay (~30% day budget)
-                    day_activities.append({
-                        "time": "20:30 - 22:00",
-                        "start_time": "20:30",
-                        "duration_minutes": 90,
-                        "place_name": default_hotel,
-                        "category": "accommodation",
-                        "estimated_cost": int(daily_budget * 0.3),
-                        "description": ""
-                    })
-
-                    itinerary_list.append({
-                        "day": day_num,
-                        "theme": f"Khám phá ẩm thực & danh thắng ngày {day_num}",
-                        "activities": day_activities
-                    })
-
-                # Flatten activities for GPT description synthesis
-                simplified_activities = []
-                idx = 0
-                for day in itinerary_list:
-                    for act in day["activities"]:
-                        simplified_activities.append({
-                            "index": idx,
-                            "place_name": act["place_name"],
-                            "category": act["category"]
-                        })
-                        idx += 1
-
-                # Construct prompt for GPT to fill descriptions
-                hybrid_prompt = get_hybrid_itinerary_prompt(destination, travel_style, preferences, simplified_activities)
-
-                print("[Hybrid Pipeline] Sending simplified activities to Groq for description synthesis...")
-                response = await client.chat.completions.create(
-                    model=settings.GROQ_MODEL,
-                    messages=[{"role": "user", "content": hybrid_prompt}],
-                    temperature=0.1,
-                    max_tokens=2048,
-                    response_format={"type": "json_object"}
-                )
-                response_text = response.choices[0].message.content or "{}"
-
-                cleaned = clean_json_response(response_text)
-                repaired = try_repair_json(cleaned)
-                data = json.loads(repaired)
-                if isinstance(data, dict) and "descriptions" in data:
-                    desc_list = data.get("descriptions", [])
-                    idx = 0
-                    for day in itinerary_list:
-                        for act in day["activities"]:
-                            if idx < len(desc_list):
-                                act["description"] = desc_list[idx]
-                            else:
-                                act["description"] = f"Khám phá {act['place_name']}."
-                            idx += 1
-
-                    skeleton = {
-                        "destination": destination,
-                        "duration_days": duration_days,
-                        "estimated_total_cost": budget,
-                        "summary": data.get("summary", f"Chuyến đi khám phá {destination}."),
-                        "itinerary": itinerary_list
-                    }
-                    print("[Hybrid Pipeline] Success!")
-                    return skeleton
-    except Exception as hybrid_err:
-        print(f"[Hybrid Pipeline] Failed, falling back to GPT-only: {hybrid_err}")
-
-    # 2. Fallback: GPT-only Generation Flow
-    print("[Fallback] Running Groq-only itinerary generation...")
+    print(f"[Itinerary Planner] Generating realistic itinerary for '{destination}' ({duration_days} days, budget: {budget:,.0f} VND)...")
     prompt = get_itinerary_prompt(destination, duration_days, budget, travel_style, traveler_count, preferences)
 
     response_text = ""
     try:
-        response = await client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.1,
-            max_tokens=4096,
-            response_format={"type": "json_object"}
-        )
-        response_text = response.choices[0].message.content or "{}"
+        try:
+            response = await client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a professional travel planner in Vietnam. You must output a valid JSON object matching the requested schema."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.2,
+                max_tokens=4000,
+                reasoning_effort="low",
+                response_format={"type": "json_object"}
+            )
+            response_text = response.choices[0].message.content or "{}"
+        except Exception as groq_err:
+            print(f"[Itinerary Planner] First attempt with json_object failed: {groq_err}. Retrying without format constraint...")
+            response = await client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a professional travel planner in Vietnam. Output strictly a valid JSON object without markdown or conversational text."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.2,
+                max_tokens=4000,
+                reasoning_effort="low"
+            )
+            response_text = response.choices[0].message.content or "{}"
 
         cleaned = clean_json_response(response_text)
         repaired = try_repair_json(cleaned)
         data = json.loads(repaired)
 
-        if isinstance(data, dict):
-            return data
-        return {}
+        if not isinstance(data, dict):
+            raise ValueError("Phản hồi từ AI không phải định dạng JSON hợp lệ.")
+
+        # Chuẩn hóa các trường cốt lõi
+        data["destination"] = data.get("destination") or destination
+        data["duration_days"] = int(data.get("duration_days") or duration_days)
+        data["estimated_total_cost"] = float(data.get("estimated_total_cost") or budget)
+        data["summary"] = data.get("summary") or f"Chuyến đi khám phá {destination} {duration_days} ngày đáng nhớ."
+        data["highlights"] = data.get("highlights") or []
+        data["travel_warnings"] = data.get("travel_warnings") or []
+
+        # Chuẩn hóa chi tiết từng ngày và từng hoạt động
+        raw_itinerary = data.get("itinerary", [])
+        if isinstance(raw_itinerary, dict):
+            itinerary_days = list(raw_itinerary.values())
+        elif isinstance(raw_itinerary, list):
+            itinerary_days = raw_itinerary
+        else:
+            itinerary_days = []
+
+        normalized_days = []
+        calculated_total_cost = 0.0
+
+        for day_idx, day_obj in enumerate(itinerary_days):
+            if not isinstance(day_obj, dict):
+                continue
+
+            day_num = day_obj.get("day", day_idx + 1)
+            try:
+                day_num = int(day_num)
+            except Exception:
+                day_num = day_idx + 1
+            day_obj["day"] = day_num
+            day_obj["theme"] = day_obj.get("theme") or f"Khám phá {destination} ngày {day_num}"
+
+            raw_activities = day_obj.get("activities", [])
+            if isinstance(raw_activities, dict):
+                raw_activities = list(raw_activities.values())
+            elif not isinstance(raw_activities, list):
+                raw_activities = []
+
+            normalized_activities = []
+            for act in raw_activities:
+                if isinstance(act, str):
+                    act = {"place_name": act, "description": act}
+                elif not isinstance(act, dict):
+                    continue
+
+                try:
+                    cost = float(act.get("estimated_cost", 0.0))
+                except (ValueError, TypeError):
+                    cost = 0.0
+                calculated_total_cost += cost
+                act["estimated_cost"] = cost
+
+                # Đảm bảo start_time và duration_minutes
+                if not act.get("start_time") and act.get("time"):
+                    parts = str(act["time"]).split("-")
+                    act["start_time"] = parts[0].strip() if parts else "08:00"
+
+                if not act.get("duration_minutes"):
+                    act["duration_minutes"] = 90
+                else:
+                    try:
+                        act["duration_minutes"] = int(act["duration_minutes"])
+                    except Exception:
+                        act["duration_minutes"] = 90
+
+                # Chuẩn hóa phương tiện di chuyển & mẹo bản địa
+                if not act.get("transport_to_next"):
+                    act["transport_to_next"] = "Di chuyển bằng xe máy hoặc taxi"
+                if not act.get("local_tip"):
+                    act["local_tip"] = f"Nên đến sớm và thưởng thức trọn vẹn trải nghiệm tại {act.get('place_name', 'địa điểm này')}."
+
+                normalized_activities.append(act)
+
+            day_obj["activities"] = normalized_activities
+            normalized_days.append(day_obj)
+
+        data["itinerary"] = normalized_days
+
+        # Cập nhật lại tổng chi phí nếu AI tính toán chênh lệch
+        if calculated_total_cost > 0 and abs(calculated_total_cost - budget) < budget * 0.5:
+            data["estimated_total_cost"] = calculated_total_cost
+
+        print(f"[Itinerary Planner] Successfully generated {len(normalized_days)} days for {destination}!")
+        return data
+
     except Exception as e:
-        print(f"Error in GPT fallback flow: {ascii(e)}")
+        print(f"[Itinerary Planner] Error generating itinerary: {e}")
         if response_text:
-            print(f"Raw response text: {ascii(response_text)}")
-        return {}
+            print(f"[Itinerary Planner] Raw response: {response_text[:300]}...")
+        raise e
 
 
 async def optimize_route_llm(locations: list) -> list:

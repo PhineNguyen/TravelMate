@@ -1,48 +1,56 @@
 import json
 
 def get_itinerary_prompt(destination: str, duration_days: int, budget: float, travel_style: str, traveler_count: int, preferences: list = None) -> str:
-    return f"""
-    Bạn là chuyên gia lập kế hoạch du lịch chuyên nghiệp. Hãy tạo lịch trình chi tiết:
-    - Điểm đến: {destination}
-    - Số ngày: {duration_days} ngày
-    - Tổng ngân sách: {budget} VNĐ
-    - Phong cách: {travel_style}
-    - Số khách: {traveler_count} người
-    - Sở thích/yêu cầu đặc biệt của khách du lịch: {', '.join(preferences) if preferences else 'Không có'}
+    pref_str = ', '.join(preferences) if preferences else 'Không có yêu cầu đặc biệt'
+    traveler_str = f"{traveler_count} người" if traveler_count > 1 else "1 người (solo)"
+    
+    return f"""Bạn là chuyên gia lập kế hoạch du lịch chuyên nghiệp tại Việt Nam. Hãy lập lịch trình du lịch {destination} {duration_days} ngày cho {traveler_str}, ngân sách {budget:,.0f} VNĐ, phong cách: {travel_style}.
+Sở thích & yêu cầu đặc biệt: {pref_str}.
 
-    Yêu cầu:
-    1. Lập kế hoạch chi tiết cho từng ngày (Day 1, Day 2...). Hãy lựa chọn các địa điểm (nhà hàng, điểm tham quan, hoạt động) và phân bổ thời gian sao cho tối ưu, phù hợp nhất với sở thích/yêu cầu đặc biệt được liệt kê ở trên.
-    2. Phân bổ các hoạt động theo mốc thời gian hợp lý (Sáng, Trưa, Chiều, Tối).
-    3. Ước tính chi phí chi tiết sao cho tổng chi phí gần bằng hoặc nhỏ hơn ngân sách.
-    4. Gán category rõ ràng: "restaurant", "attraction", "accommodation", "activity".
-    5. Hãy tính toán chính xác và điền các trường `start_time` (mốc giờ bắt đầu hoạt động, ví dụ "08:00") và `duration_minutes` (khoảng thời gian hoạt động kéo dài bao nhiêu phút, dạng số nguyên).
-    6. TỐI ƯU TỐC ĐỘ: Trường `summary` và `description` của từng hoạt động phải viết ngắn gọn và cô đọng (Mỗi description tối đa 30 từ). Tuyệt đối không viết quá dài dòng.
+Yêu cầu bắt buộc:
+1. Địa danh THỰC TẾ 100%:
+   - BẮT BUỘC sử dụng các danh lam thắng cảnh, di tích lịch sử, khu vui chơi, quán ăn/nhà hàng CỤ THỂ NỔI TIẾNG có thật tại {destination}.
+   - TUYỆT ĐỐI CẤM: cơ quan nhà nước, bảo hiểm xã hội, ủy ban, bệnh viện, trường học, hoặc tên đường phố chung chung không có tên quán.
+2. Giờ giấc thực tế & linh hoạt:
+   - Các tour lớn (như Bà Nà Hills, Fansipan, VinWonders, vịnh Hạ Long...): PHẢI bố trí 5-7 tiếng trọn vẹn.
+   - Các điểm tham quan vừa: 1.5 - 2.5 tiếng.
+   - Ăn uống, cà phê: 45 - 90 phút.
+   - Hoạt động đêm (chợ đêm, phố đi bộ, bar, ngắm cầu): từ 19:30 - 22:30.
+3. Đáp ứng trọn vẹn sở thích: Ưu tiên tối đa các địa điểm mà người dùng nhắc tới trong sở thích ({pref_str}).
+4. Đầy đủ phương tiện và mẹo: Điền `transport_to_next` (ví dụ: "Taxi 15 phút", "Đi bộ 5 phút"), `transport_duration_minutes`, và `local_tip` hữu ích cho từng hoạt động.
+5. Cung cấp `highlights` (3-5 điểm nổi bật nhất) và `travel_warnings` (2-3 lưu ý thời tiết/mùa cao điểm).
 
-    Trả về ĐÚNG cấu trúc JSON theo mẫu sau, không kèm bất kỳ câu thoại thừa nào:
+Trả về ĐÚNG định dạng JSON sau (không kèm văn bản nào khác ngoài JSON):
+{{
+  "destination": "{destination}",
+  "duration_days": {duration_days},
+  "estimated_total_cost": {int(budget)},
+  "summary": "Tóm tắt hành trình...",
+  "highlights": ["Điểm nhấn 1", "Điểm nhấn 2", "Điểm nhấn 3"],
+  "travel_warnings": ["Lưu ý 1", "Lưu ý 2"],
+  "itinerary": [
     {{
-      "destination": "{destination}",
-      "duration_days": {duration_days},
-      "estimated_total_cost": {budget},
-      "summary": "Tóm tắt chuyến đi dưới 15 từ...",
-      "itinerary": [
+      "day": 1,
+      "theme": "Chủ đề ngày 1",
+      "activities": [
         {{
-          "day": 1,
-          "theme": "Chủ đề ngày 1",
-          "activities": [
-            {{
-              "time": "08:00 - 09:30",
-              "start_time": "08:00",
-              "duration_minutes": 90,
-              "place_name": "Tên địa điểm/Quán ăn",
-              "category": "restaurant",
-              "estimated_cost": 100000,
-              "description": "Mô tả ngắn dưới 30 từ"
-            }}
-          ]
+          "time": "08:00 - 09:30",
+          "start_time": "08:00",
+          "duration_minutes": 90,
+          "place_name": "Tên địa điểm cụ thể",
+          "category": "restaurant",
+          "estimated_cost": 150000,
+          "description": "Mô tả ngắn gọn",
+          "transport_to_next": "Taxi 15 phút",
+          "transport_duration_minutes": 15,
+          "local_tip": "Mẹo hữu ích từ dân bản địa"
         }}
       ]
     }}
-    """
+  ]
+}}
+"""
+
 
 def get_optimize_route_prompt(loc_list: list) -> str:
     return f"""

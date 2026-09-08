@@ -34,6 +34,8 @@ services:
       - DB_NAME=ai_service_gpt_chat
       - DB_USER=ai_user
       - DB_PASSWORD=ai_password
+    volumes:
+      - ./app:/app/app
     ports:
       - "8001:8001"
 
