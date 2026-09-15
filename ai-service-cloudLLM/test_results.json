@@ -4,8 +4,8 @@
     "test_id": "EP-01",
     "description": "Valid Partition: Food & Drink (Món ăn, ẩm thực)",
     "status": "PASS",
-    "details": "Intent=food, ReplyLen=315",
-    "duration": 1.2328853607177734
+    "details": "Intent=food, ReplyLen=300",
+    "duration": 2.535850763320923
   },
   {
     "method": "EP",
@@ -13,15 +13,15 @@
     "description": "Valid Partition: Weather & Climate (Thời tiết)",
     "status": "PASS",
     "details": "Intent=weather, ReplyLen=282",
-    "duration": 1.037302017211914
+    "duration": 1.1607136726379395
   },
   {
     "method": "EP",
     "test_id": "EP-03",
     "description": "Valid Partition: Budget & Expenses (Ngân sách)",
     "status": "PASS",
-    "details": "Intent=budget, ReplyLen=203",
-    "duration": 0.8426389694213867
+    "details": "Intent=budget, ReplyLen=208",
+    "duration": 0.8822274208068848
   },
   {
     "method": "EP",
@@ -29,7 +29,7 @@
     "description": "Valid Partition: Transportation (Phương tiện đi lại)",
     "status": "PASS",
     "details": "Intent=transportation, ReplyLen=170",
-    "duration": 0.7859904766082764
+    "duration": 0.6659786701202393
   },
   {
     "method": "EP",
@@ -37,7 +37,7 @@
     "description": "Valid Partition: Accommodation (Nơi ở / Khách sạn)",
     "status": "PASS",
     "details": "Intent=accommodation, ReplyLen=225",
-    "duration": 1.0115807056427002
+    "duration": 1.2469968795776367
   },
   {
     "method": "EP",
@@ -45,7 +45,7 @@
     "description": "Valid Partition: Place Recommendation (Điểm tham quan)",
     "status": "PASS",
     "details": "Intent=place_recommendation, ReplyLen=355",
-    "duration": 1.4291276931762695
+    "duration": 1.0496289730072021
   },
   {
     "method": "EP",
@@ -53,7 +53,7 @@
     "description": "Valid Partition: Trip Preparation (Chuẩn bị hành lý)",
     "status": "PASS",
     "details": "Intent=trip_preparation, ReplyLen=175",
-    "duration": 3.2482032775878906
+    "duration": 11.157216310501099
   },
   {
     "method": "EP",
@@ -61,15 +61,15 @@
     "description": "Valid Partition: General Travel Inquiry (Hỏi chung)",
     "status": "PASS",
     "details": "Intent=general_travel, ReplyLen=317",
-    "duration": 10.42152738571167
+    "duration": 10.718425989151001
   },
   {
     "method": "EP",
     "test_id": "EP-09",
     "description": "Invalid Partition: Out-of-scope Coding Query (Lập trình)",
     "status": "PASS",
-    "details": "Intent=out_of_scope, ReplyLen=206",
-    "duration": 9.925260543823242
+    "details": "Intent=out_of_scope, ReplyLen=239",
+    "duration": 10.201791048049927
   },
   {
     "method": "EP",
@@ -77,15 +77,15 @@
     "description": "Invalid Partition: Out-of-scope Politics/Math (Ngoài lề)",
     "status": "PASS",
     "details": "Intent=out_of_scope, ReplyLen=206",
-    "duration": 8.207921028137207
+    "duration": 7.122819423675537
   },
   {
     "method": "EP",
     "test_id": "EP-11",
     "description": "Invalid Partition: Gibberish Characters (Ký tự vô nghĩa)",
     "status": "PASS",
-    "details": "Intent=out_of_scope, ReplyLen=206",
-    "duration": 9.029085159301758
+    "details": "Intent=out_of_scope, ReplyLen=239",
+    "duration": 8.280663013458252
   },
   {
     "method": "BVA",
@@ -93,7 +93,7 @@
     "description": "Min-1 Boundary: Message rỗng (0 ký tự)",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 8.039651870727539
+    "duration": 7.869926452636719
   },
   {
     "method": "BVA",
@@ -101,7 +101,7 @@
     "description": "Min Boundary: Message chỉ có 1 ký tự ('?')",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 7.749831676483154
+    "duration": 3.1046700477600098
   },
   {
     "method": "BVA",
@@ -109,7 +109,7 @@
     "description": "Min+1 Boundary: Message câu hỏi cực ngắn (2 ký tự: 'Đi')",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 8.79886794090271
+    "duration": 9.137562274932861
   },
   {
     "method": "BVA",
@@ -117,7 +117,7 @@
     "description": "Nominal Boundary: Message trung bình (~100 ký tự)",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 10.2087984085083
+    "duration": 9.83298945426941
   },
   {
     "method": "BVA",
@@ -125,7 +125,7 @@
     "description": "Max Boundary: Message dài lớn (~2000 ký tự mô tả chi tiết chuyến đi)",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 22.294832706451416
+    "duration": 22.32686972618103
   },
   {
     "method": "BVA",
@@ -133,7 +133,7 @@
     "description": "Min Boundary: session_id ngắn 1 ký tự ('a')",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 8.017194747924805
+    "duration": 7.647042274475098
   },
   {
     "method": "BVA",
@@ -141,7 +141,7 @@
     "description": "Max Boundary: session_id dài đúng 255 ký tự (VARCHAR 255)",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 1.8391039371490479
+    "duration": 8.91559100151062
   },
   {
     "method": "BVA",
@@ -149,7 +149,7 @@
     "description": "Optional Boundary: destination = None, preferences = None",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 3.0862083435058594
+    "duration": 10.057201862335205
   },
   {
     "method": "BVA",
@@ -157,7 +157,7 @@
     "description": "Optional Boundary: preferences là mảng list rỗng []",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 11.068773984909058
+    "duration": 1.9683856964111328
   },
   {
     "method": "BVA",
@@ -165,7 +165,7 @@
     "description": "Optional Boundary: preferences là danh sách nhiều sở thích phức tạp",
     "status": "PASS",
     "details": "HTTP 200",
-    "duration": 2.658484935760498
+    "duration": 9.456427812576294
   },
   {
     "method": "DTT",
@@ -173,7 +173,7 @@
     "description": "Rule 1 (Food Rule): Verified outputs",
     "status": "PASS",
     "details": "Intent=food",
-    "duration": 11.151424646377563
+    "duration": 11.399536371231079
   },
   {
     "method": "DTT",
@@ -181,7 +181,7 @@
     "description": "Rule 2 (Budget Rule): Verified outputs",
     "status": "PASS",
     "details": "Intent=budget",
-    "duration": 15.978506565093994
+    "duration": 9.940451383590698
   },
   {
     "method": "DTT",
@@ -189,7 +189,7 @@
     "description": "Rule 3 (Place Recommendation Rule): Verified outputs",
     "status": "PASS",
     "details": "Intent=place_recommendation",
-    "duration": 4.554295539855957
+    "duration": 8.82859468460083
   },
   {
     "method": "DTT",
@@ -197,7 +197,7 @@
     "description": "Rule 4 (Weather Rule - No Structured Data): Verified outputs",
     "status": "PASS",
     "details": "Intent=weather",
-    "duration": 10.387328147888184
+    "duration": 10.68799352645874
   },
   {
     "method": "DTT",
@@ -205,7 +205,7 @@
     "description": "Rule 5 (Out of Scope Rule - Refusal & No Structured Data): Verified outputs",
     "status": "PASS",
     "details": "Intent=out_of_scope",
-    "duration": 10.153870105743408
+    "duration": 9.17916750907898
   },
   {
     "method": "DTT",
@@ -213,7 +213,7 @@
     "description": "Rule 7 (Persistence): GET history returns user & assistant messages",
     "status": "PASS",
     "details": "Found 2 messages",
-    "duration": 1.015516996383667
+    "duration": 4.864699602127075
   },
   {
     "method": "DTT",
@@ -221,6 +221,6 @@
     "description": "Rule 8 (Clearance): DELETE history removes all session messages",
     "status": "PASS",
     "details": "Session cleaned completely",
-    "duration": 0.008204460144042969
+    "duration": 0.016930580139160156
   }
 ]
