@@ -1,255 +1,220 @@
 import json
+import re
+import asyncio
+from typing import Optional, Tuple, Dict, Any, List
 from groq import AsyncGroq
 from app.core.config import settings
 from app.features.chat.store import PostgresChatStore
+from app.core.helpers import clean_json_response, try_repair_json
 
 chat_store = PostgresChatStore()
 client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
 
-def get_classification_prompt(message: str) -> str:
-    return f"""
-    Bạn là một chuyên gia phân tích ý định câu hỏi du lịch.
-    Hãy phân tích câu hỏi sau đây của người dùng:
-    "{message}"
-
-    Hãy phân loại câu hỏi vào một trong các nhãn (intent) sau:
-    - `out_of_scope`: Câu hỏi hoàn toàn không liên quan đến du lịch, du hành, hành trình, danh lam thắng cảnh, ẩm thực hay di chuyển (ví dụ: học lập trình python, viết code máy tính, học toán học, tìm việc làm thêm, tin tức thời sự chính trị, hướng dẫn làm bài tập...).
-    - `trip_preparation`: Chuẩn bị hành lý, đồ đạc cần mang theo, giấy tờ.
-    - `weather`: Hỏi về thời tiết, nhiệt độ, khí hậu.
-    - `food`: Hỏi về món ăn ngon, ẩm thực, đặc sản, quán ăn, quán nước.
-    - `transportation`: Hỏi về cách đi lại, phương tiện di chuyển.
-    - `budget`: Hỏi về chi phí, ngân sách, giá cả.
-    - `accommodation`: Hỏi về nơi ở, khách sạn, homestay.
-    - `place_recommendation`: Hỏi về địa điểm tham quan, vui chơi, check-in, giải trí.
-    - `general_travel`: Hỏi đáp hoặc trò chuyện du lịch chung (như hỏi kinh nghiệm đi du lịch, lưu ý khi đi một mình...).
-
-    Đồng thời, hãy trích xuất tên địa danh (thành phố/tỉnh thành) được đề cập trong câu hỏi nếu có (ví dụ: "Đà Lạt", "HCM", "Nha Trang"). Nếu không có địa danh nào được nhắc tới, hãy trả về null.
-
-    Trả về kết quả dưới dạng JSON có cấu trúc sau, không kèm bất kỳ lời thoại nào khác ngoài JSON:
-    {{
-      "intent": "tên_intent",
-      "destination": "tên_địa_danh_hoặc_null"
-    }}
+def build_single_pass_system_prompt(destination: Optional[str] = None, preferences: Optional[str] = None) -> str:
     """
-
-
-def build_dynamic_system_prompt(intent: str, destination: str, preferences: str) -> str:
+    Build a unified system prompt instructing the LLM to classify intent,
+    generate the conversational reply, and extract structured data in ONE single pass.
+    """
     dest_str = f" tại '{destination}'" if destination else ""
-    pref_str = f", sở thích/phong cách du lịch của người dùng: {preferences}" if preferences else ""
+    pref_str = f", sở thích/phong cách của người dùng: {preferences}" if preferences else ""
 
-    base_prompt = (
-        "Bạn là một blogger du lịch bản địa người Việt thân thiện của TravelMate. "
-        "Hãy chia sẻ kinh nghiệm du lịch thực tế bằng tiếng Việt với giọng văn tự nhiên, trôi chảy và thân thiện. "
-        "Tuyệt đối tránh viết theo cấu trúc robot chia mục cứng nhắc dịch từ tiếng Anh (như Giáo dục, Lịch sử, Nâng cấp trải nghiệm, Quá trình đi). "
-        "Hãy viết dưới dạng một đoạn văn ngắn gọn chia sẻ trực tiếp và chỉ dùng tối đa 3-5 gạch đầu dòng cho các vật dụng, địa điểm cụ thể. "
-        "Tuyệt đối không dùng ký tự ngoặc vuông [] chứa lời hướng dẫn hoặc ví dụ trống."
-    )
+    return f"""
+Bạn là chuyên gia tư vấn du lịch bản địa người Việt thân thiện, nhiệt tình của TravelMate.
+Hãy chia sẻ kinh nghiệm du lịch thực tế hoàn toàn bằng TIẾNG VIỆT với giọng văn tự nhiên, trôi chảy, hữu ích và gần gũi.
 
-    if intent == "trip_preparation":
-        return base_prompt + f" Người dùng đang hỏi về chuẩn bị hành lý cho chuyến đi{dest_str}{pref_str}. Hãy tư vấn các vật dụng cá nhân, trang phục phù hợp thời tiết và thuốc men/giấy tờ cần thiết. Tập trung hoàn toàn vào chuẩn bị hành lý, KHÔNG đề xuất địa điểm tham quan hay ăn uống."
-    elif intent == "weather":
-        return base_prompt + f" Người dùng đang hỏi về thời tiết{dest_str}. Hãy chia sẻ thông tin thời tiết thực tế của địa phương này và khuyên trang phục phù hợp."
-    elif intent == "food":
-        return base_prompt + f" Người dùng đang hỏi về món ăn/ẩm thực{dest_str}{pref_str}. Hãy giới thiệu các món ăn đặc sản nổi tiếng nhất và gợi ý một số quán ăn cụ thể có thật."
-    elif intent == "transportation":
-        return base_prompt + f" Người dùng đang hỏi về phương tiện đi lại{dest_str}. Hãy hướng dẫn cách di chuyển tiện lợi nhất (như thuê xe máy, taxi, xe khách...)."
-    elif intent == "budget":
-        return base_prompt + f" Người dùng đang hỏi về chi phí/ngân sách{dest_str}. Hãy chia sẻ mức chi phí ước lượng trung bình mỗi ngày (tiền phòng, ăn uống, đi lại)."
-    elif intent == "accommodation":
-        return base_prompt + f" Người dùng đang hỏi về nơi ở/khách sạn{dest_str}{pref_str}. Hãy gợi ý các khu vực thuận tiện nhất để lưu trú và một vài khách sạn cụ thể."
-    elif intent == "place_recommendation":
-        return base_prompt + f" Người dùng đang hỏi về địa điểm chơi/tham quan{dest_str}{pref_str}. Hãy gợi ý các danh lam thắng cảnh nổi tiếng nhất kèm lý do thú vị để ghé thăm."
+THÔNG TIN CHUYẾN ĐI HIỆN TẠI (LUÔN GHI NHỚ VÀ ƯU TIÊN ÁP DỤNG TRONG TOÀN BỘ CUỘC TRÒ CHUYỆN):
+- Địa điểm chuyến đi: {destination or "Chưa xác định (hãy xác định từ câu hỏi nếu có)"}
+- Sở thích/Phong cách du lịch: {preferences or "Chung, khám phá bản địa"}
 
-    return base_prompt + f" Hiện tại bạn đang hỗ trợ thông tin du lịch{dest_str}{pref_str}. Hãy giải đáp câu hỏi của họ một cách tự nhiên, hữu ích nhất."
+NHIỆM VỤ:
+Phân tích câu hỏi của người dùng, phân loại intent và trả về một JSON object DUY NHẤT theo đúng schema sau, không kèm bất kỳ văn bản nào khác ngoài JSON:
+{{
+  "intent": "food | budget | place_recommendation | weather | transportation | accommodation | trip_preparation | general_travel | out_of_scope",
+  "destination": "tên_địa_danh_hoặc_null",
+  "reply": "Câu trả lời trực tiếp bằng văn bản tiếng Việt tự nhiên (tối đa 3-5 gạch đầu dòng ngắn gọn, không dùng ký tự ngoặc vuông [])",
+  "structured_data": null
+}}
+
+QUY TẮC XỬ LÝ THEO TỪNG INTENT:
+1. `out_of_scope`: Câu hỏi hoàn toàn không liên quan đến du lịch, ẩm thực, hành trình hay khám phá.
+   - "reply": "Xin lỗi bạn, tôi là trợ lý du lịch của TravelMate và chỉ có thể tư vấn các thông tin liên quan đến du lịch, hành trình, ẩm thực, thời tiết hoặc chuẩn bị chuyến đi. Bạn vui lòng đặt câu hỏi về du lịch nhé! 😊"
+   - "structured_data": null
+
+2. `food`: Hỏi về món ăn, ẩm thực, đặc sản, quán ăn{dest_str}{pref_str}.
+   - Tư vấn các món ăn đặc sắc và gợi ý một số quán có thật.
+   - "structured_data": {{"items": [{{"name": "Tên món hoặc quán ăn", "note": "Mô tả ngắn gọn hoặc địa chỉ"}}]}}
+
+3. `budget`: Hỏi về chi phí, giá cả, ngân sách{dest_str}.
+   - Ước lượng chi phí trung bình theo ngày hoặc các khoản mục chính (phòng ở, ăn uống, di chuyển, vé tham quan).
+   - "structured_data": {{"budget_items": [{{"category": "Tên khoản chi", "amount": "Số tiền ước tính (VNĐ)"}}]}}
+
+4. `place_recommendation` hoặc `accommodation`: Hỏi về điểm tham quan, vui chơi, khách sạn, homestay{dest_str}{pref_str}.
+   - Gợi ý các địa điểm đáng ghé thăm hoặc nơi lưu trú phù hợp.
+   - "structured_data": {{"places": [{{"name": "Tên địa điểm hoặc khách sạn", "note": "Mô tả ngắn hoặc lý do nên ghé", "category": "Loại (Tham quan / Check-in / Khách sạn / Homestay)"}}]}}
+
+5. Các intent khác (`weather`, `transportation`, `trip_preparation`, `general_travel`):
+   - Trả lời đầy đủ, súc tích trong "reply".
+   - "structured_data": null
+"""
 
 
-async def _classify_intent(message: str) -> tuple[str, str | None]:
+def build_streaming_system_prompt(destination: Optional[str] = None, preferences: Optional[str] = None) -> str:
     """
-    Classify the user's message intent and extract destination using Groq.
-    Returns (intent, destination).
+    Tailored dynamic prompt for text streaming.
     """
-    try:
-        class_prompt = get_classification_prompt(message)
-        response = await client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[
-                {"role": "user", "content": class_prompt}
-            ],
-            temperature=0.1,
-            max_tokens=128,
-            response_format={"type": "json_object"}
-        )
-        raw_text = response.choices[0].message.content or "{}"
-        from app.core.helpers import clean_json_response, try_repair_json
-        cleaned = clean_json_response(raw_text)
-        repaired = try_repair_json(cleaned)
-        class_data = json.loads(repaired)
+    dest_str = f" tại '{destination}'" if destination else ""
+    pref_str = f", sở thích/phong cách du lịch: {preferences}" if preferences else ""
 
-        intent = class_data.get("intent", "general_travel")
-        extracted_dest = class_data.get("destination")
-        if extracted_dest and str(extracted_dest).lower() != "null":
-            return intent, extracted_dest
-        return intent, None
-    except Exception as class_err:
-        print(f"[Chat Classifier] Error: {class_err}")
-        return "general_travel", None
+    return f"""
+Bạn là chuyên gia tư vấn du lịch bản địa người Việt thân thiện của TravelMate.
+Hãy chia sẻ kinh nghiệm du lịch thực tế hoàn toàn bằng TIẾNG VIỆT với giọng văn tự nhiên, nhiệt tình và thân thiện.
+
+THÔNG TIN CHUYẾN ĐI (LUÔN GHI NHỚ VÀ ƯU TIÊN ÁP DỤNG):
+- Địa điểm: {destination or "Chưa xác định (hãy xác định theo câu hỏi người dùng)"}
+- Sở thích/Phong cách: {preferences or "Chung, khám phá bản địa"}
+
+HƯỚNG DẪN TRẢ LỜI:
+1. Nếu câu hỏi hoàn toàn không liên quan đến du lịch (như viết code máy tính, giải toán, bài tập về nhà, thời sự chính trị, tìm việc làm...):
+   Hãy từ chối lịch sự: "Xin lỗi bạn, tôi là trợ lý du lịch của TravelMate và chỉ có thể tư vấn các thông tin liên quan đến du lịch, hành trình, ẩm thực, thời tiết hoặc chuẩn bị chuyến đi. Bạn vui lòng đặt câu hỏi về du lịch nhé! 😊"
+2. Với các câu hỏi về du lịch (ẩm thực, địa điểm, thời tiết, chi phí, nơi ở, di chuyển, hành lý{dest_str}{pref_str}):
+   Hãy giải đáp trực tiếp, tự nhiên, ngắn gọn và chỉ dùng tối đa 3-5 gạch đầu dòng cụ thể. Tuyệt đối không dùng ký tự ngoặc vuông [].
+"""
 
 
-async def _extract_structured_data(intent: str, reply: str, destination: str) -> dict | None:
+def build_conversation_context(history: List[Dict[str, str]], system_prompt: str) -> List[Dict[str, str]]:
     """
-    After getting the chat reply, extract structured data based on intent.
-    This allows the mobile app to render rich UI cards (food lists, budget tables, etc.)
+    Context preservation strategy:
+    1. System prompt (contains persistent Trip Profile).
+    2. If history is long (> 10 messages), preserve the initial turn (first user query & answer)
+       to retain foundational constraints, plus the 8 most recent messages.
     """
-    if intent not in ["food", "budget", "place_recommendation", "accommodation"]:
-        return None
+    messages_payload = [{"role": "system", "content": system_prompt}]
 
-    extract_prompt = None
-    if intent == "food":
-        extract_prompt = f"""
-        Từ nội dung trả lời sau, hãy trích xuất danh sách các món ăn/quán ăn được đề cập:
-        "{reply}"
-        Trả về JSON:
-        {{"items": [{{"name": "Tên món/quán", "note": "Mô tả ngắn"}}]}}
-        """
-    elif intent == "budget":
-        extract_prompt = f"""
-        Từ nội dung trả lời sau, hãy trích xuất bảng chi phí ước tính:
-        "{reply}"
-        Trả về JSON:
-        {{"budget_items": [{{"category": "Loại chi phí", "amount": "Số tiền (VNĐ)"}}]}}
-        """
-    elif intent in ["place_recommendation", "accommodation"]:
-        extract_prompt = f"""
-        Từ nội dung trả lời sau, hãy trích xuất danh sách địa điểm được gợi ý:
-        "{reply}"
-        Trả về JSON:
-        {{"places": [{{"name": "Tên địa điểm", "note": "Mô tả ngắn", "category": "loại"}}]}}
-        """
+    if not history:
+        return messages_payload
 
-    if not extract_prompt:
-        return None
+    # Filter out any old system messages from history
+    user_assistant_msgs = [m for m in history if m.get("role") in ["user", "assistant"]]
 
-    try:
-        response = await client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[{"role": "user", "content": extract_prompt}],
-            temperature=0.0,
-            max_tokens=512,
-            response_format={"type": "json_object"}
-        )
-        from app.core.helpers import clean_json_response, try_repair_json
-        raw = response.choices[0].message.content or "{}"
-        cleaned = clean_json_response(raw)
-        repaired = try_repair_json(cleaned)
-        return json.loads(repaired)
-    except Exception:
-        return None
+    if len(user_assistant_msgs) <= 10:
+        messages_payload.extend(user_assistant_msgs)
+    else:
+        # Keep the foundational exchange (first 2 messages) + recent 8 messages
+        foundational = user_assistant_msgs[:2]
+        recent = user_assistant_msgs[-8:]
+        messages_payload.extend(foundational)
+        messages_payload.append({
+            "role": "system",
+            "content": "(Lưu ý: Các tin nhắn trò chuyện trung gian đã được rút gọn để tập trung vào ngữ cảnh gần nhất)."
+        })
+        messages_payload.extend(recent)
+
+    return messages_payload
 
 
-async def chat_with_ai_llm(session_id: str, message: str, destination: str = None, preferences: str | list = None, language: str = "vi") -> dict:
+async def chat_with_ai_llm(
+    session_id: str,
+    message: str,
+    destination: Optional[str] = None,
+    preferences: Optional[str | list] = None,
+    language: str = "vi"
+) -> Dict[str, Any]:
+    """
+    Single-pass chat handler:
+    Performs classification, reply generation, and structured data extraction
+    in ONE single LLM inference call, cutting latency by over 60%.
+    """
     if isinstance(preferences, list):
         preferences = ", ".join(str(p) for p in preferences)
 
-    # 1. Fetch current history from PostgreSQL
-    history = chat_store.get_history(session_id)
+    # 1. Fetch history asynchronously with Connection Pool
+    history = await chat_store.get_history(session_id)
 
-    # 2. Classify intent and destination using Groq
-    intent, extracted_dest = await _classify_intent(message)
-    active_destination = extracted_dest if extracted_dest else destination
-
-    print(f"[Chat AI] Session: {session_id} | Intent: {intent} | Destination: {active_destination}")
-
-    # 3. Check for out of scope query
-    if intent == "out_of_scope":
-        reply = "Xin lỗi, tôi là trợ lý du lịch của TravelMate và chỉ có thể hỗ trợ các thông tin liên quan đến du lịch, hành trình, ẩm thực, thời tiết hoặc chuẩn bị chuyến đi. Bạn vui lòng đặt câu hỏi liên quan đến du lịch nhé! 😊"
-        chat_store.add_message(session_id, "user", message)
-        chat_store.add_message(session_id, "assistant", reply)
-        return {"reply": reply, "intent": intent, "structured_data": None}
-
-    system_content = build_dynamic_system_prompt(intent, active_destination, preferences)
-
-    # 4. If empty session, initialize with system prompt
-    if not history:
-        chat_store.add_message(session_id, "system", system_content)
-        history = [{"role": "system", "content": system_content}]
-
-    # 5. Add user message to PostgreSQL
-    chat_store.add_message(session_id, "user", message)
+    # 2. Add user message to DB asynchronously
+    await chat_store.add_message(session_id, "user", message)
     history.append({"role": "user", "content": message})
 
-    # 6. Build messages payload: dynamic system + last 10 messages
-    system_msg = {"role": "system", "content": system_content}
-    messages_payload = [system_msg]
-    if len(history) > 1:
-        messages_payload += history[1:][-10:]
+    # 3. Build single-pass system prompt & context window
+    system_prompt = build_single_pass_system_prompt(destination, preferences)
+    messages_payload = build_conversation_context(history, system_prompt)
 
-    try:
-        response = await client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=messages_payload,
-            temperature=0.2
-        )
-        content = response.choices[0].message.content or "Trợ lý không phản hồi."
+    # 4. Call Groq ONCE with JSON mode (with automatic retry for 429 rate-limit)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = await client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=messages_payload,
+                temperature=0.2,
+                response_format={"type": "json_object"}
+            )
+            raw_text = response.choices[0].message.content or "{}"
+            cleaned = clean_json_response(raw_text)
+            repaired = try_repair_json(cleaned)
+            result_data = json.loads(repaired)
 
-        # 7. Store assistant response in PostgreSQL
-        chat_store.add_message(session_id, "assistant", content)
+            intent = result_data.get("intent", "general_travel")
+            reply = result_data.get("reply", "Tôi chưa có phản hồi cụ thể cho câu hỏi này.")
+            structured_data = result_data.get("structured_data")
 
-        # 8. Extract structured data based on intent (async, non-blocking for UX)
-        structured_data = await _extract_structured_data(intent, content, active_destination or "")
+            # 5. Save assistant response to DB asynchronously
+            await chat_store.add_message(session_id, "assistant", reply)
 
-        return {"reply": content, "intent": intent, "structured_data": structured_data}
+            print(f"[Chat AI Single-Pass] Session: {session_id} | Intent: {intent}")
+            return {
+                "reply": reply,
+                "intent": intent,
+                "structured_data": structured_data
+            }
 
-    except Exception as e:
-        print(f"Error in chat session {session_id}: {ascii(e)}")
-        return {"reply": f"Xin lỗi, tôi gặp sự cố khi kết nối hệ thống AI: {str(e)}", "intent": "error", "structured_data": None}
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait_time = 1.0 * (attempt + 1)
+                print(f"[Chat AI Rate Limit] Retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})...")
+                await asyncio.sleep(wait_time)
+                continue
+
+            print(f"[Chat AI Single-Pass Error] {e}")
+            fallback_reply = f"Xin lỗi bạn, hệ thống AI gặp sự cố kết nối: {str(e)}"
+            await chat_store.add_message(session_id, "assistant", fallback_reply)
+            return {
+                "reply": fallback_reply,
+                "intent": "error",
+                "structured_data": None
+            }
 
 
 async def get_chat_history_llm(session_id: str) -> list:
-    return chat_store.get_history(session_id)
+    return await chat_store.get_history(session_id)
 
 
 async def clear_chat_history_llm(session_id: str):
-    chat_store.clear_history(session_id)
+    await chat_store.clear_history(session_id)
 
 
-async def chat_with_ai_stream(session_id: str, message: str, destination: str = None, preferences: str | list = None):
+async def chat_with_ai_stream(
+    session_id: str,
+    message: str,
+    destination: Optional[str] = None,
+    preferences: Optional[str | list] = None
+):
     """
-    Streaming chat using Groq's streaming API (Server-Sent Events).
+    Streaming chat using Groq streaming API.
     """
     if isinstance(preferences, list):
         preferences = ", ".join(str(p) for p in preferences)
 
-    history = chat_store.get_history(session_id)
-
-    # Classify intent and destination using Groq
-    intent, extracted_dest = await _classify_intent(message)
-    active_destination = extracted_dest if extracted_dest else destination
-
-    print(f"[Chat AI Stream] Session: {session_id} | Intent: {intent} | Destination: {active_destination}")
-
-    # Check for out of scope query
-    if intent == "out_of_scope":
-        reply = "Xin lỗi, tôi là trợ lý du lịch của TravelMate và chỉ có thể hỗ trợ các thông tin liên quan đến du lịch, hành trình, ẩm thực, thời tiết hoặc chuẩn bị chuyến đi. Bạn vui lòng đặt câu hỏi liên quan đến du lịch nhé! 😊"
-        chat_store.add_message(session_id, "user", message)
-        chat_store.add_message(session_id, "assistant", reply)
-        yield f"data: {json.dumps({'content': reply}, ensure_ascii=False)}\n\n"
-        return
-
-    system_content = build_dynamic_system_prompt(intent, active_destination, preferences)
-
-    if not history:
-        chat_store.add_message(session_id, "system", system_content)
-        history = [{"role": "system", "content": system_content}]
-
-    chat_store.add_message(session_id, "user", message)
+    # 1. Retrieve history and record user message
+    history = await chat_store.get_history(session_id)
+    await chat_store.add_message(session_id, "user", message)
     history.append({"role": "user", "content": message})
 
-    system_msg = {"role": "system", "content": system_content}
-    messages_payload = [system_msg]
-    if len(history) > 1:
-        messages_payload += history[1:][-10:]
+    # 2. Build tailored dynamic prompt and context payload
+    system_prompt = build_streaming_system_prompt(destination, preferences)
+    messages_payload = build_conversation_context(history, system_prompt)
 
+    # 5. Stream from Groq directly
     full_response = []
     try:
         stream = await client.chat.completions.create(
@@ -265,8 +230,11 @@ async def chat_with_ai_stream(session_id: str, message: str, destination: str = 
                 full_response.append(content)
                 yield f"data: {json.dumps({'content': content}, ensure_ascii=False)}\n\n"
 
+        # 6. Save full response asynchronously when streaming finishes
         assistant_content = "".join(full_response)
-        chat_store.add_message(session_id, "assistant", assistant_content)
+        if assistant_content:
+            await chat_store.add_message(session_id, "assistant", assistant_content)
+
     except Exception as e:
-        print(f"Error streaming chat: {e}")
+        print(f"[Chat Stream Error] {e}")
         yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"

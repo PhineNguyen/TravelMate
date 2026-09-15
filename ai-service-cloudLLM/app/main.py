@@ -1,5 +1,8 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.core.config import settings
+from app.features.chat.store import PostgresChatStore
+from app.features.chat.service import chat_store
 from app.features.chat.router import router as chat_router
 from app.features.itinerary.router import router as itinerary_router
 from app.features.places.router import router as places_router
@@ -9,12 +12,28 @@ from app.features.packing.router import router as packing_router
 from app.features.review.router import router as review_router
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Initialize async connection pool
+    try:
+        await chat_store.init_pool()
+    except Exception as e:
+        print(f"[Lifespan] Error on startup DB init: {e}")
+    yield
+    # Shutdown: Close pool
+    try:
+        await chat_store.close_pool()
+    except Exception as e:
+        print(f"[Lifespan] Error on shutdown DB close: {e}")
+
+
 app = FastAPI(
     title="TravelMate AI Service (Cloud LLM)",
     version="2.0.0",
     description=(
         "Microservice AI sử dụng Groq + GPT-OSS-20B + Geoapify — Feature-Based Architecture.\n\n"
-    )
+    ),
+    lifespan=lifespan
 )
 
 # Register Feature-Based Routers
