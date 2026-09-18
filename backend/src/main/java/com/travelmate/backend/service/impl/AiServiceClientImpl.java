@@ -1,5 +1,6 @@
 package com.travelmate.backend.service.impl;
 
+import com.travelmate.backend.dto.response.AiChatResponse;
 import com.travelmate.backend.dto.response.AiItineraryGenerateResponse;
 import com.travelmate.backend.service.AiServiceClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,10 +24,10 @@ public class AiServiceClientImpl implements AiServiceClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
-    public String getChatReply(String sessionId, String message, String destination, String preferences) {
+    public AiChatResponse chat(String sessionId, String message, String destination, String preferences) {
         String url = aiServiceUrl + "/ai/chat";
 
-        java.util.Map<String, Object> body = new java.util.HashMap<>();
+        Map<String, Object> body = new HashMap<>();
         body.put("session_id", sessionId);
         body.put("message", message);
         if (destination != null) {
@@ -38,17 +40,29 @@ public class AiServiceClientImpl implements AiServiceClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<java.util.Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
+            ResponseEntity<AiChatResponse> response = restTemplate.postForEntity(url, requestEntity, AiChatResponse.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return (String) response.getBody().get("reply");
+                return response.getBody();
             }
-            return "Tôi gặp sự cố khi nhận phản hồi từ hệ thống AI (Mã lỗi: " + response.getStatusCode() + ")";
+            return AiChatResponse.builder()
+                    .reply("Tôi gặp sự cố khi nhận phản hồi từ hệ thống AI (Mã lỗi: " + response.getStatusCode() + ")")
+                    .intent("error")
+                    .build();
         } catch (Exception e) {
-            return "Không thể kết nối đến máy chủ AI: " + e.getMessage();
+            return AiChatResponse.builder()
+                    .reply("Không thể kết nối đến máy chủ AI: " + e.getMessage())
+                    .intent("error")
+                    .build();
         }
+    }
+
+    @Override
+    public String getChatReply(String sessionId, String message, String destination, String preferences) {
+        AiChatResponse response = chat(sessionId, message, destination, preferences);
+        return response != null ? response.getReply() : null;
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.travelmate.backend.repository.AIMessageRepository;
 import com.travelmate.backend.repository.UserPreferenceRepository;
 import com.travelmate.backend.entity.User;
 import com.travelmate.backend.entity.UserPreference;
+import com.travelmate.backend.dto.response.AiChatResponse;
 import com.travelmate.backend.service.AIMessageService;
 import com.travelmate.backend.service.AiServiceClient;
 
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,17 +83,25 @@ public class AIMessageServiceImpl implements AIMessageService {
         }
 
         // 3. Gọi API của ai-service để lấy câu trả lời (Phiên chat tự động quản lý lịch sử ở phía ai-service)
-        String aiReplyText = aiServiceClient.getChatReply("conversation_" + conversationId, userContent, destination, preferences);
+        AiChatResponse aiResponse = aiServiceClient.chat("conversation_" + conversationId, userContent, destination, preferences);
 
-        // 4. Lưu tin nhắn phản hồi của AI vào PostgreSQL (Java Backend DB)
+        String aiReplyText = (aiResponse != null && aiResponse.getReply() != null)
+                ? aiResponse.getReply()
+                : "Tôi gặp sự cố khi nhận phản hồi từ hệ thống AI.";
+        String aiIntent = (aiResponse != null) ? aiResponse.getIntent() : null;
+        Map<String, Object> structuredData = (aiResponse != null) ? aiResponse.getStructuredData() : null;
+
+        // 4. Lưu tin nhắn phản hồi của AI vào PostgreSQL (Java Backend DB) cùng intent và structuredData
         AIMessage aiMsg = AIMessage.builder()
                 .conversation(conv)
                 .senderType(SenderType.AI)
                 .content(aiReplyText)
+                .messageType(aiIntent)
+                .contextData(structuredData)
                 .build();
         AIMessage savedAiMsg = aiMessageRepository.save(aiMsg);
 
-        // 5. Trả về DTO câu trả lời của AI
+        // 5. Trả về DTO câu trả lời của AI (bao gồm reply, messageType=intent, contextData=structuredData)
         return AIMessageMapper.toDto(savedAiMsg);
     }
 
