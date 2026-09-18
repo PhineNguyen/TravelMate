@@ -14,8 +14,7 @@ async def chat(payload: ChatRequest):
             payload.session_id,
             payload.message,
             payload.destination,
-            payload.preferences,
-            payload.language or "vi"
+            payload.preferences
         )
         if isinstance(result, dict):
             return ChatResponse(

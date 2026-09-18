@@ -44,7 +44,7 @@ services:
       SPRING_MAIL_USERNAME: nguyenquangtien2005z@gmail.com
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-      AI_SERVICE_URL: http://host.docker.internal:8000
+      AI_SERVICE_URL: http://host.docker.internal:8001
     ports:
       - "8080:8080"
     # Cấu hình dùng để tự động build lại backend khi bạn sửa code ở máy local (Development)

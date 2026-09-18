@@ -120,8 +120,7 @@ async def chat_with_ai_llm(
     session_id: str,
     message: str,
     destination: Optional[str] = None,
-    preferences: Optional[str | list] = None,
-    language: str = "vi"
+    preferences: Optional[str | list] = None
 ) -> Dict[str, Any]:
     """
     Single-pass chat handler:

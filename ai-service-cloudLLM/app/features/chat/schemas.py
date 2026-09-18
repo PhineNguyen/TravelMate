@@ -6,7 +6,6 @@ class ChatRequest(BaseModel):
     message: str = Field(..., description="Tin nhắn người dùng gửi cho AI")
     destination: Optional[str] = Field(default=None, description="Địa điểm của chuyến đi hiện tại (nếu có)")
     preferences: Optional[Union[str, List[str]]] = Field(default=None, description="Sở thích và phong cách của người dùng (nếu có)")
-    language: Optional[str] = Field(default="vi", description="Ngôn ngữ phản hồi: vi (Tiếng Việt) | en (English)")
 
 class ChatResponse(BaseModel):
     reply: str = Field(..., description="Câu trả lời văn bản từ AI")

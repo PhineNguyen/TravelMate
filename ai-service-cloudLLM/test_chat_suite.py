@@ -260,7 +260,7 @@ async def test_boundary_value_analysis(client: httpx.AsyncClient):
             "expect_error": False,
             "validator": lambda resp: resp.status_code == 200
         },
-        # Biên tham số tùy chọn (destination, preferences, language)
+        # Biên tham số tùy chọn (destination, preferences)
         {
             "id": "BVA-08",
             "desc": "Optional Boundary: destination = None, preferences = None",
