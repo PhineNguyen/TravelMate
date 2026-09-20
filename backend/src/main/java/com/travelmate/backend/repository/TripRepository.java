@@ -61,7 +61,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     // ==================== CUSTOM HÀNH ĐỘNG XÓA MỀM (SOFT DELETE)
     // ====================
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE Trip t SET t.isDeleted = true, t.deletedAt = CURRENT_TIMESTAMP WHERE t.id = :id AND t.isDeleted = false")
     int softDeleteById(@Param("id") Long id);

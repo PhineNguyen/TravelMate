@@ -2,7 +2,7 @@ package com.travelmate.backend.controller;
 
 import com.travelmate.backend.dto.AIConversationDTO;
 import com.travelmate.backend.dto.request.AIConversationCreateRequest;
-import com.travelmate.backend.dto.request.AIConversationUpdateRequest;
+
 import com.travelmate.backend.service.AIConversationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,29 +31,8 @@ public class AIConversationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(aiConversationService.create(dto));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AIConversationDTO> update(@PathVariable Long id, @Valid @RequestBody AIConversationUpdateRequest request) {
-        AIConversationDTO dto = AIConversationDTO.builder()
-                .id(id)
-                .sessionTitle(request.getSessionTitle())
-                .build();
-        return ResponseEntity.ok(aiConversationService.update(dto));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<AIConversationDTO> get(@PathVariable Long id) {
-        AIConversationDTO dto = aiConversationService.findById(id);
-        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<AIConversationDTO>> list() {
-        return ResponseEntity.ok(aiConversationService.listAll());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        aiConversationService.delete(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/trip/{tripId}")
+    public ResponseEntity<List<AIConversationDTO>> byTrip(@PathVariable Long tripId) {
+        return ResponseEntity.ok(aiConversationService.findByTripId(tripId));
     }
 }

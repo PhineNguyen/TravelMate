@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AIMessageServiceImpl implements AIMessageService {
+    private final com.travelmate.backend.security.ResourceAccess access;
 
     private final AIMessageRepository aiMessageRepository;
     private final AIConversationRepository aiConversationRepository;
@@ -52,6 +53,8 @@ public class AIMessageServiceImpl implements AIMessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found with id: " + conversationId));
 
         // 2. Lưu tin nhắn của User vào PostgreSQL (Java Backend DB)
+        access.user(conv.getUser().getId());
+        if (conv.getTrip() != null) access.trip(conv.getTrip().getId());
         AIMessage userMsg = AIMessage.builder()
                 .conversation(conv)
                 .senderType(SenderType.USER)
@@ -181,6 +184,8 @@ public class AIMessageServiceImpl implements AIMessageService {
         if (conversationId == null) {
             throw new IllegalArgumentException("conversationId is required");
         }
+        var conversation = aiConversationRepository.findById(conversationId).orElseThrow(() -> new java.util.NoSuchElementException("Conversation not found"));
+        access.user(conversation.getUser().getId());
         return aiMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId).stream()
                 .map(AIMessageMapper::toDto)
                 .collect(Collectors.toList());

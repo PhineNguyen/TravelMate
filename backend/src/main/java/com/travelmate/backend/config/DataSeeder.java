@@ -252,12 +252,15 @@ public class DataSeeder { // Xóa bỏ 'implements CommandLineRunner'
                         // 10. Bảng Trip
                         List<Trip> trips = new ArrayList<>();
                         for (int i = 0; i < 8; i++) {
+                                LocalDate startDate = LocalDate.now().plusDays(i * 7);
+                                int durationDays = 3 + (i % 5);
                                 trips.add(Trip.builder()
                                                 .owner(users.get(i % users.size()))
                                                 .template(templates.get(i % templates.size()))
                                                 .destination(templateDestinations[i % templateDestinations.length])
-                                                .startDate(LocalDate.now().plusDays(i * 7))
-                                                .duration(3 + (i % 5))
+                                                .startDate(startDate)
+                                                .duration(durationDays)
+                                                .endDate(startDate.plusDays(durationDays - 1L))
                                                 .travelerCount(2 + (i % 4))
                                                 .totalBudget(BigDecimal.valueOf(5000000 + i * 1100000))
                                                 .planningMode(PlanningMode.MANUAL)

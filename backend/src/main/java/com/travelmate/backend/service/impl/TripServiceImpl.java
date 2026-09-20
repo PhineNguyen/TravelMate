@@ -51,6 +51,7 @@ public class TripServiceImpl implements TripService {
     private final AiServiceClient aiServiceClient;
     private final ItineraryItemRepository itineraryItemRepository;
     private final PlaceRepository placeRepository;
+    private final com.travelmate.backend.repository.TemplateItemRepository templateItemRepository;
 
     private void checkOwnership(Trip trip, User user) {
         if (!trip.getOwner().getId().equals(user.getId())) {
@@ -139,6 +140,10 @@ public class TripServiceImpl implements TripService {
         }
 
         TripTemplate tripTemplate = null;
+        if (dto.getPlanningMode() == com.travelmate.backend.entity.enums.PlanningMode.TEMPLATE
+                && dto.getTemplateId() == null) {
+            throw new IllegalArgumentException("templateId is required for TEMPLATE mode");
+        }
         if (dto.getTemplateId() != null) {
             tripTemplate = tripTemplateRepository.findById(dto.getTemplateId())
                     .orElseThrow(() -> new IllegalArgumentException("Template not found"));
@@ -168,6 +173,20 @@ public class TripServiceImpl implements TripService {
                 .build();
         try {
             Trip savedTrip = tripRepository.save(trip);
+            if (dto.getPlanningMode() == com.travelmate.backend.entity.enums.PlanningMode.TEMPLATE) {
+                for (var item : templateItemRepository.findByTemplateIdOrderByDayNumberAscOrderIndexAsc(dto.getTemplateId())) {
+                    if (item.getDayNumber() > savedTrip.getDuration()) {
+                        throw new IllegalArgumentException("Template exceeds trip duration");
+                    }
+                    itineraryItemRepository.save(ItineraryItem.builder().trip(savedTrip).place(item.getPlace())
+                            .dayNumber(item.getDayNumber()).orderIndex(item.getOrderIndex())
+                            .startTime(item.getStartTime()).duration(item.getDuration()).note(item.getNote())
+                            .sourceType(SourceType.TEMPLATE).build());
+                }
+            } else if (dto.getPlanningMode() == com.travelmate.backend.entity.enums.PlanningMode.AI) {
+                generateItineraryWithAI(savedTrip.getId(), TripItineraryGenerateRequest.builder()
+                        .travelStyle(dto.getTravelStyle()).preferences(dto.getPreferences()).build());
+            }
             return TripMapper.toResponse(savedTrip);
         } catch (DataIntegrityViolationException ex) {
             throw new DataIntegrityViolationException("Database constraint violated, check for unique invite code.",
@@ -256,7 +275,7 @@ public class TripServiceImpl implements TripService {
     @Override
     @Transactional(readOnly = true)
     public List<TripResponse> listAll() {
-        return tripRepository.findAllByIsDeletedFalse().stream()
+        return tripRepository.findByOwnerIdAndIsDeletedFalse(getCurrentUser().getId(), Pageable.unpaged()).stream()
                 .map(TripMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -418,6 +437,10 @@ public class TripServiceImpl implements TripService {
                 request.getTravelStyle(),
                 travelerCount,
                 request.getPreferences());
+
+        if (response == null || response.getItinerary() == null || response.getItinerary().isEmpty()) {
+            throw new IllegalStateException("AI returned no itinerary");
+        }
 
         // 4. Xóa sạch lịch trình cũ nếu có
         List<ItineraryItem> oldItems = itineraryItemRepository.findByTripId(id);

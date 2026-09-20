@@ -21,21 +21,16 @@ public class UserPreferenceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userPreferenceService.create(dto));
     }
 
+     @GetMapping("/user/{userId}")
+    public ResponseEntity<UserPreferenceDTO> findByUserId(@PathVariable Long userId) {
+        UserPreferenceDTO dto = userPreferenceService.findByIdUser(userId);
+        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<UserPreferenceDTO> update(@PathVariable Long id, @Valid @RequestBody UserPreferenceDTO dto) {
         dto.setId(id);
         return ResponseEntity.ok(userPreferenceService.update(dto));
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<UserPreferenceDTO> findByUserId(@PathVariable Long userId) {
-        UserPreferenceDTO dto = userPreferenceService.findByIdUser(userId);
-        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userPreferenceService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 }

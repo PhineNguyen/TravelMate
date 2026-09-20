@@ -21,6 +21,14 @@ public class PlaceServiceImpl implements PlaceService {
     private final PlaceRepository placeRepository;
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PlaceDTO> search(String query) {
+        String term = query == null ? "" : query.trim();
+        return placeRepository.findByIsActiveTrueAndNameContainingIgnoreCase(term).stream()
+                .map(PlaceMapper::toDto).toList();
+    }
+
+    @Override
     @Transactional
     public PlaceDTO create(PlaceDTO dto) {
         if (dto == null)

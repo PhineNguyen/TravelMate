@@ -23,26 +23,9 @@ public class PlaceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(placeService.create(dto));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PlaceDTO> update(@PathVariable Long id, @Valid @RequestBody PlaceDTO dto) {
-        dto.setId(id);
-        return ResponseEntity.ok(placeService.update(dto));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<PlaceDTO> get(@PathVariable Long id) {
-        PlaceDTO dto = placeService.findById(id);
-        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
-    }
-
     @GetMapping
-    public ResponseEntity<List<PlaceDTO>> list() {
-        return ResponseEntity.ok(placeService.listAll());
+    public ResponseEntity<List<PlaceDTO>> list(@RequestParam(required = false) String query) {
+        return ResponseEntity.ok(placeService.search(query));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        placeService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 }

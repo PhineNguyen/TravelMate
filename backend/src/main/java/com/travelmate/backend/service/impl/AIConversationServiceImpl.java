@@ -22,11 +22,25 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AIConversationServiceImpl implements AIConversationService {
+    private final com.travelmate.backend.security.ResourceAccess access;
 
     private final AIConversationRepository aiConversationRepository;
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
     private final AiServiceClient aiServiceClient;
+    private final com.travelmate.backend.service.TripService tripService;
+    private final com.travelmate.backend.service.AIMessageService aiMessageService;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AIConversationDTO> findByTripId(Long tripId) {
+        tripService.findById(tripId);
+        return aiConversationRepository.findByTrip_IdOrderByCreatedAtDesc(tripId).stream().map(entity -> {
+            AIConversationDTO dto = AIConversationMapper.toDto(entity);
+            dto.setMessages(aiMessageService.listByConversation(entity.getId()));
+            return dto;
+        }).toList();
+    }
 
     @Override
     @Transactional
@@ -38,6 +52,8 @@ public class AIConversationServiceImpl implements AIConversationService {
         if (dto.getUserId() == null)
             throw new IllegalArgumentException("userId is required");
 
+        access.user(dto.getUserId());
+        access.trip(dto.getTripId());
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 

@@ -1,12 +1,68 @@
-BAO_CAO_LOI_VA_CACH_SUA.md
-.vscode/settings.json
-.gitignore
-backend/.env
+# Dependencies and local package caches
+node_modules/
+/.npm-cache/
+/.m2-cache/
+.yarn/cache/
+
+# Environment and credentials (keep safe configuration examples)
 .env
 .env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.p8
+*.jks
+*.keystore
+*.mobileprovision
+
+# Build and test output
+**/target/
+**/dist/
+**/build/
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+*.log
+
+# Expo / React Native generated files
+.expo/
+web-build/
+.metro-health-check*
+.kotlin/
+
+# Python virtual environments and caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Local IDE and OS files
 .idea/
-.idea
-*.md
-*.xml
-*.sql
-.sql
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*.tmp
+
+# Local databases, exports and signing credentials
+*.db
+*.sqlite
+*.sqlite3
+credentials.json
+service-account*.json
+google-services.json
+GoogleService-Info.plist

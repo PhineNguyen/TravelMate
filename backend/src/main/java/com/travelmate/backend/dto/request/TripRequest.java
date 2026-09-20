@@ -47,4 +47,6 @@ public class TripRequest {
     private Long templateId;
     private Boolean isCustomized;
     private TripStatus tripStatus;
+    private String travelStyle;
+    private java.util.List<String> preferences;
 }

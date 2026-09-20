@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class AIConversationDTO {
+    private java.util.List<AIMessageDTO> messages;
     private Long id;
     private Long userId;
     private Long tripId;

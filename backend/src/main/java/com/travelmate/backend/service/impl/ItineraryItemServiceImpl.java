@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ItineraryItemServiceImpl implements ItineraryItemService {
+    private final com.travelmate.backend.security.ResourceAccess access;
 
     private final ItineraryItemRepository itineraryItemRepository;
     private final TripRepository tripRepository;
@@ -43,6 +44,8 @@ public class ItineraryItemServiceImpl implements ItineraryItemService {
 
         Trip trip = tripRepository.findById(dto.getTripId())
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+        access.trip(dto.getTripId());
+        if (dto.getDayNumber() < 1 || dto.getOrderIndex() < 0) throw new IllegalArgumentException("Invalid day/order");
         Place place = null;
         if (dto.getPlaceId() != null)
             place = placeRepository.findById(dto.getPlaceId())
@@ -82,9 +85,12 @@ public class ItineraryItemServiceImpl implements ItineraryItemService {
         ItineraryItem existing = itineraryItemRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("ItineraryItem not found"));
 
+        access.trip(existing.getTrip().getId());
         if (dto.getPlaceId() != null)
             existing.setPlace(placeRepository.findById(dto.getPlaceId())
                     .orElseThrow(() -> new IllegalArgumentException("Place not found")));
+        if (dto.getDayNumber() != null && dto.getDayNumber() < 1) throw new IllegalArgumentException("Invalid day");
+        if (dto.getOrderIndex() != null && dto.getOrderIndex() < 0) throw new IllegalArgumentException("Invalid order");
         if (dto.getDayNumber() != null)
             existing.setDayNumber(dto.getDayNumber());
         if (dto.getStartTime() != null)
@@ -115,7 +121,9 @@ public class ItineraryItemServiceImpl implements ItineraryItemService {
     public ItineraryItemDTO findById(Long id) {
         if (id == null)
             throw new IllegalArgumentException("id is required");
-        return itineraryItemRepository.findById(id).map(ItineraryItemMapper::toDto).orElse(null);
+        ItineraryItem item = itineraryItemRepository.findById(id).orElseThrow(() -> new java.util.NoSuchElementException("Item not found"));
+        access.trip(item.getTrip().getId());
+        return ItineraryItemMapper.toDto(item);
     }
 
     @Override
@@ -128,12 +136,35 @@ public class ItineraryItemServiceImpl implements ItineraryItemService {
         if (tripId == null) {
             throw new IllegalArgumentException("tripId is required");
         }
+        access.trip(tripId);
         return itineraryItemRepository.findByTripIdOrderByDayNumberAscOrderIndexAsc(tripId)
                 .stream()
                 .map(ItineraryItemMapper::toDto)
                 .collect(Collectors.toList());
     }
-
+    @Transactional
+    public void reorder(List<ItineraryItemDTO> items) {
+        if (items == null || items.isEmpty()) throw new IllegalArgumentException("Items are required");
+        java.util.Set<Long> ids = new java.util.HashSet<>();
+        Long tripId = null;
+        for (ItineraryItemDTO dto : items) {
+            if (dto == null || dto.getId() == null || !ids.add(dto.getId())
+                    || dto.getDayNumber() == null || dto.getDayNumber() < 1
+                    || dto.getOrderIndex() == null || dto.getOrderIndex() < 0)
+                throw new IllegalArgumentException("Invalid reorder item");
+            // Lấy điểm đến từ DB và chỉ cập nhật lại Ngày + Số thứ tự
+            ItineraryItem item = itineraryItemRepository.findById(dto.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ItineraryItem"));
+            access.trip(item.getTrip().getId());
+            if (tripId != null && !tripId.equals(item.getTrip().getId()))
+                throw new IllegalArgumentException("Cannot reorder multiple trips");
+            tripId = item.getTrip().getId();
+            item.setDayNumber(dto.getDayNumber());
+            item.setOrderIndex(dto.getOrderIndex());
+            
+            // Vì có annotation @Transactional, Hibernate sẽ tự động lưu các thay đổi này xuống DB
+        }
+    }
     @Override
     @Transactional
     public void delete(Long id) {
@@ -141,6 +172,7 @@ public class ItineraryItemServiceImpl implements ItineraryItemService {
             throw new IllegalArgumentException("id is required");
         if (!itineraryItemRepository.existsById(id))
             throw new IllegalArgumentException("ItineraryItem not found");
+        findById(id);
         itineraryItemRepository.deleteById(id);
     }
 

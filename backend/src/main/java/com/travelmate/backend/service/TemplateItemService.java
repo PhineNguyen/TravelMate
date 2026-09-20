@@ -12,5 +12,7 @@ public interface TemplateItemService {
 
     List<TemplateItemDTO> listAll();
 
+    List<TemplateItemDTO> findByTemplateId(Long templateId);
+
     void delete(Long id);
 }

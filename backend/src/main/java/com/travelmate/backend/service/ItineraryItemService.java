@@ -4,6 +4,7 @@ import com.travelmate.backend.dto.ItineraryItemDTO;
 import java.util.List;
 
 public interface ItineraryItemService {
+    void reorder(List<ItineraryItemDTO> items);
     ItineraryItemDTO create(ItineraryItemDTO dto);
 
     ItineraryItemDTO update(ItineraryItemDTO dto);

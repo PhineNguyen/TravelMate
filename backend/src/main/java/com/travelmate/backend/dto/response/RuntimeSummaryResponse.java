@@ -17,6 +17,8 @@ public class RuntimeSummaryResponse {
     private LocalDate tripDate;
     private Integer currentDay;
     private String currentDestination;
+    private Long nextItemId;
+    private String googleMapsUrl;
     private long completedItems;
     private long upcomingItems;
     private BigDecimal spentBudget;

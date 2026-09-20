@@ -14,6 +14,8 @@ public class ItineraryItemDTO {
     private Long id;
     private Long tripId;
     private Long placeId;
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private PlaceDTO place;
     private Integer dayNumber;
     private LocalTime startTime;
     private Integer duration;

@@ -49,7 +49,7 @@ public class TripInsightServiceImpl implements TripInsightService {
 
                 List<CategoryBreakdownResponse> byCategory = expenses.stream()
                                 .collect(Collectors.groupingBy(
-                                                expense -> Optional.ofNullable(expense.getCategory()).orElse(null),
+                                                expense -> Optional.ofNullable(expense.getCategory()).orElse(com.travelmate.backend.entity.enums.ExpenseCategory.OTHER),
                                                 LinkedHashMap::new,
                                                 Collectors.reducing(BigDecimal.ZERO,
                                                                 expense -> Optional.ofNullable(expense.getAmount())
@@ -98,6 +98,20 @@ public class TripInsightServiceImpl implements TripInsightService {
 
                 BigDecimal spentBudget = expenseRepository.sumAmountByTripId(tripId);
                 BigDecimal plannedBudget = Optional.ofNullable(trip.getTotalBudget()).orElse(BigDecimal.ZERO);
+                ItineraryItem nextItem = items.stream()
+                                .filter(item -> !today.isBefore(trip.getStartDate()) && !today.isAfter(trip.getEndDate()))
+                                .filter(item -> item.getDayNumber() == currentDay)
+                                .filter(item -> item.getStartTime() == null || !item.getStartTime().isBefore(java.time.LocalTime.now()))
+                                .sorted(java.util.Comparator.comparing(ItineraryItem::getStartTime,
+                                        java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder()))).findFirst().orElse(null);
+                String mapsUrl = null;
+                if (nextItem != null && nextItem.getPlace() != null) {
+                        var place = nextItem.getPlace();
+                        String destination = place.getLatitude() != null && place.getLongitude() != null
+                                        ? place.getLatitude() + "," + place.getLongitude() : place.getName();
+                        if (destination != null) mapsUrl = "https://www.google.com/maps/dir/?api=1&destination="
+                                        + java.net.URLEncoder.encode(destination, java.nio.charset.StandardCharsets.UTF_8);
+                }
                 List<String> alerts = new ArrayList<>();
                 if (plannedBudget.signum() > 0) {
                         BigDecimal overspend = spentBudget.subtract(plannedBudget);
@@ -111,6 +125,8 @@ public class TripInsightServiceImpl implements TripInsightService {
                                 .tripDate(trip.getStartDate())
                                 .currentDay(currentDay)
                                 .currentDestination(currentDestination)
+                                .nextItemId(nextItem == null ? null : nextItem.getId())
+                                .googleMapsUrl(mapsUrl)
                                 .completedItems(completedItems)
                                 .upcomingItems(upcomingItems)
                                 .spentBudget(spentBudget)
@@ -124,7 +140,7 @@ public class TripInsightServiceImpl implements TripInsightService {
                                 .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
                 boolean ownsTrip = trip.getOwner() != null && userId.equals(trip.getOwner().getId());
                 if (!ownsTrip) {
-                        throw new IllegalArgumentException("Access denied for this trip");
+                        throw new org.springframework.security.access.AccessDeniedException("Access denied for this trip");
                 }
                 return trip;
         }
