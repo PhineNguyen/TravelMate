@@ -57,3 +57,9 @@ export function normalizeBaseUrl(value: string) {
     );
   }
 }
+
+export function resolveApiBase(platform: string, configured?: string, origin?: string) {
+  if (configured === 'same-origin' && platform === 'web' && origin) return origin;
+  if (configured && configured !== 'same-origin') return normalizeBaseUrl(configured);
+  return platform === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
+}

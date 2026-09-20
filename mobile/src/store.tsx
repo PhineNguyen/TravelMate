@@ -1,4 +1,4 @@
-import { normalizeBaseUrl } from './lib';
+import { normalizeBaseUrl, resolveApiBase } from './lib';
 import React, {
   createContext,
   useCallback,
@@ -56,8 +56,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [session, changeSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [baseUrl, changeBase] = useState(
-    process.env.EXPO_PUBLIC_API_URL ||
-      (Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080'),
+    resolveApiBase(
+      Platform.OS,
+      process.env.EXPO_PUBLIC_API_URL,
+      Platform.OS === 'web' ? globalThis.location?.origin : undefined,
+    ),
   );
   const demo = useRef<DemoData>(initialDemo());
   useEffect(() => {

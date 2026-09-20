@@ -1,6 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { durationBetween, normalizeBaseUrl, positiveNumber, tripFilter } from '../src/lib';
+import {
+  durationBetween,
+  normalizeBaseUrl,
+  positiveNumber,
+  tripFilter,
+  resolveApiBase,
+} from '../src/lib';
+
+test('Docker web uses the visited origin with no fixed host or API port', () => {
+  assert.equal(
+    resolveApiBase('web', 'same-origin', 'http://192.168.1.10:3000'),
+    'http://192.168.1.10:3000',
+  );
+  assert.equal(
+    resolveApiBase('web', 'same-origin', 'https://travel.example.com'),
+    'https://travel.example.com',
+  );
+  assert.equal(resolveApiBase('android'), 'http://10.0.2.2:8080');
+  assert.equal(resolveApiBase('ios', 'https://api.example.com/'), 'https://api.example.com');
+});
 import { initialDemo } from '../src/demo';
 import { createDemoClient } from '../src/api/demo-client';
 import type { Budget, Expense, Item, Preference, Trip } from '../src/types';

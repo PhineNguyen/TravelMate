@@ -1,5 +1,11 @@
 # TravelMate Mobile
 
+## Chạy bằng Docker, không cần cài Node/Expo
+
+Tại thư mục gốc repository, chạy `docker compose up --build -d`, rồi mở **http://localhost:3000**. Docker build bản React Native Web và khởi động backend cùng PostgreSQL. Nginx chuyển tiếp `/api/` đến backend; frontend tự dùng origin đang truy cập, không cần sửa IP API. Xem [hướng dẫn Docker](../README.md#chạy-bằng-docker) để truy cập từ điện thoại, đổi cổng và cấu hình dịch vụ ngoài.
+
+Dockerfile chạy typecheck, tests và Expo web export trước khi tạo image Nginx. File `.env`, `node_modules` và output build trên máy được loại khỏi Docker context. Bản này chạy trong trình duyệt; chạy native Android/iOS vẫn theo hướng dẫn bên dưới.
+
 Ứng dụng Expo React Native + TypeScript cho backend TravelMate. Giao diện tiếng Việt, tông kem/xanh rừng, font đóng gói cùng app, hỗ trợ Android, iOS và preview web.
 
 ## Chạy ứng dụng
