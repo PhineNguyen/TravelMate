@@ -161,6 +161,7 @@ public class UserServiceImpl implements UserService {
             throw new NoSuchElementException("User not found with id: " + id);
         }
 
+        if (!getCurrentUser().getId().equals(id)) throw new AccessDeniedException("You can only delete your own account" );
         userRepository.deleteById(id);
     }
 

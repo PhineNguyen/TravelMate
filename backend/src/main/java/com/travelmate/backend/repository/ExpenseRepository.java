@@ -27,8 +27,6 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     List<Expense> findByCreatedByIdAndIsDeletedFalse(Long createdById);
 
-    List<Expense> findByTripIdAndIsSharedTrueAndIsDeletedFalse(Long tripId);
-
     List<Expense> findByTripIdAndCategoryAndIsDeletedFalse(Long tripId, ExpenseCategory category);
 
     // Phục vụ hàm lọc động searchExpenses ở Controller (Lọc theo cả Trip
@@ -57,7 +55,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
      * Thay vì kéo Entity lên rồi set thuộc tính, câu lệnh này sẽ tác động trực tiếp
      * dưới DB
      */
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Expense e SET e.isDeleted = true, e.deletedAt = CURRENT_TIMESTAMP WHERE e.id = :id AND e.isDeleted = false")
     int softDeleteById(@Param("id") Long id);
 }

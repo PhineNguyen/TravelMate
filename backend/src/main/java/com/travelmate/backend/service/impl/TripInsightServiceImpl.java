@@ -2,38 +2,21 @@ package com.travelmate.backend.service.impl;
 
 import com.travelmate.backend.dto.response.BudgetSummaryResponse;
 import com.travelmate.backend.dto.response.CategoryBreakdownResponse;
-import com.travelmate.backend.dto.response.DashboardOverviewResponse;
-import com.travelmate.backend.dto.response.RouteStopResponse;
-import com.travelmate.backend.dto.response.RouteSummaryResponse;
 import com.travelmate.backend.dto.response.RuntimeSummaryResponse;
-import com.travelmate.backend.dto.response.TripMiniResponse;
+import com.travelmate.backend.entity.Expense;
 import com.travelmate.backend.entity.ItineraryItem;
-import com.travelmate.backend.entity.RouteNode;
-import com.travelmate.backend.entity.RoutePlan;
 import com.travelmate.backend.entity.Trip;
-import com.travelmate.backend.entity.TripParticipant;
-import com.travelmate.backend.entity.WeatherAlert;
-import com.travelmate.backend.entity.Expense; // Đảm bảo import thực thể Expense
-import com.travelmate.backend.entity.enums.AlertSeverity;
-import com.travelmate.backend.entity.enums.TripStatus;
 import com.travelmate.backend.repository.ExpenseRepository;
 import com.travelmate.backend.repository.ItineraryItemRepository;
-import com.travelmate.backend.repository.NotificationRepository;
-import com.travelmate.backend.repository.RouteNodeRepository;
-import com.travelmate.backend.repository.RoutePlanRepository;
-import com.travelmate.backend.repository.TripParticipantRepository;
 import com.travelmate.backend.repository.TripRepository;
-import com.travelmate.backend.repository.WeatherAlertRepository;
 import com.travelmate.backend.service.TripInsightService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -44,63 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TripInsightServiceImpl implements TripInsightService {
         private final TripRepository tripRepository;
-        private final TripParticipantRepository tripParticipantRepository;
         private final ExpenseRepository expenseRepository;
-        private final RoutePlanRepository routePlanRepository;
-        private final RouteNodeRepository routeNodeRepository;
         private final ItineraryItemRepository itineraryItemRepository;
-        private final WeatherAlertRepository weatherAlertRepository;
-        private final NotificationRepository notificationRepository;
-
-        @Override
-        @Transactional(readOnly = true)
-        public DashboardOverviewResponse getDashboard(Long userId) {
-                List<Trip> accessibleTrips = getAccessibleTrips(userId);
-                long totalTrips = accessibleTrips.size();
-                long activeTrips = accessibleTrips.stream().filter(trip -> trip.getTripStatus() == TripStatus.ACTIVE)
-                                .count();
-                long joinedTrips = tripParticipantRepository.findByUserIdAndIsActiveTrue(userId).stream()
-                                .map(TripParticipant::getTrip)
-                                .filter(this::isNotDeleted)
-                                .map(Trip::getId)
-                                .distinct()
-                                .count();
-
-                BigDecimal totalSpent = accessibleTrips.stream()
-                                .map(trip -> expenseRepository.sumAmountByTripId(trip.getId()))
-                                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                List<Trip> budgetedTrips = accessibleTrips.stream()
-                                .filter(trip -> trip.getTotalBudget() != null)
-                                .toList();
-                BigDecimal averageBudget = budgetedTrips.isEmpty()
-                                ? BigDecimal.ZERO
-                                : budgetedTrips.stream().map(Trip::getTotalBudget)
-                                                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                                                .divide(BigDecimal.valueOf(budgetedTrips.size()), 2,
-                                                                RoundingMode.HALF_UP);
-
-                long unreadNotifications = notificationRepository.countByUserIdAndIsReadFalse(userId);
-                List<TripMiniResponse> recentTrips = accessibleTrips.stream()
-                                .sorted(Comparator
-                                                .comparing(Trip::getUpdatedAt,
-                                                                Comparator.nullsLast(Comparator.naturalOrder()))
-                                                .reversed())
-                                .limit(5)
-                                .map(this::toTripMiniResponse)
-                                .collect(Collectors.toList());
-
-                return DashboardOverviewResponse.builder()
-                                .userId(userId)
-                                .totalTrips(totalTrips)
-                                .activeTrips(activeTrips)
-                                .joinedTrips(joinedTrips)
-                                .totalSpent(totalSpent)
-                                .averageBudget(averageBudget)
-                                .unreadNotifications(unreadNotifications)
-                                .recentTrips(recentTrips)
-                                .build();
-        }
 
         @Override
         @Transactional(readOnly = true)
@@ -117,12 +45,11 @@ public class TripInsightServiceImpl implements TripInsightService {
                                 ? "HIGH"
                                 : utilizationPercent.compareTo(BigDecimal.valueOf(75)) >= 0 ? "MEDIUM" : "LOW";
 
-                // Sửa từ findByTripId sang findByTripIdAndIsDeletedFalse để đồng bộ repository
                 List<Expense> expenses = expenseRepository.findByTripIdAndIsDeletedFalse(tripId);
 
                 List<CategoryBreakdownResponse> byCategory = expenses.stream()
                                 .collect(Collectors.groupingBy(
-                                                expense -> Optional.ofNullable(expense.getCategory()).orElse(null),
+                                                expense -> Optional.ofNullable(expense.getCategory()).orElse(com.travelmate.backend.entity.enums.ExpenseCategory.OTHER),
                                                 LinkedHashMap::new,
                                                 Collectors.reducing(BigDecimal.ZERO,
                                                                 expense -> Optional.ofNullable(expense.getAmount())
@@ -150,39 +77,6 @@ public class TripInsightServiceImpl implements TripInsightService {
 
         @Override
         @Transactional(readOnly = true)
-        public RouteSummaryResponse getRouteSummary(Long tripId, Long userId) {
-                getAccessibleTrip(tripId, userId);
-                RoutePlan routePlan = routePlanRepository.findTopByTripIdOrderByOptimizedAtDesc(tripId).orElse(null);
-                if (routePlan == null) {
-                        return RouteSummaryResponse.builder()
-                                        .tripId(tripId)
-                                        .stops(List.of())
-                                        .build();
-                }
-
-                List<RouteNode> nodes = routeNodeRepository.findByRoutePlanIdOrderBySequenceOrderAsc(routePlan.getId());
-                List<RouteStopResponse> stops = nodes.stream().map(node -> RouteStopResponse.builder()
-                                .sequenceOrder(node.getSequenceOrder())
-                                .placeName(node.getPlace() != null ? node.getPlace().getName() : null)
-                                .arrivalTime(node.getArrivalTime())
-                                .departureTime(node.getDepartureTime())
-                                .build()).collect(Collectors.toList());
-
-                String nextStop = stops.isEmpty() ? null : stops.get(0).getPlaceName();
-                return RouteSummaryResponse.builder()
-                                .tripId(tripId)
-                                .strategyType(routePlan.getStrategyType())
-                                .totalDistanceKm(routePlan.getTotalDistance() != null
-                                                ? BigDecimal.valueOf(routePlan.getTotalDistance())
-                                                : BigDecimal.ZERO)
-                                .estimatedDurationMinutes(routePlan.getEstimatedDuration())
-                                .nextStop(nextStop)
-                                .stops(stops)
-                                .build();
-        }
-
-        @Override
-        @Transactional(readOnly = true)
         public RuntimeSummaryResponse getRuntimeSummary(Long tripId, Long userId) {
                 Trip trip = getAccessibleTrip(tripId, userId);
                 List<ItineraryItem> items = itineraryItemRepository
@@ -204,12 +98,21 @@ public class TripInsightServiceImpl implements TripInsightService {
 
                 BigDecimal spentBudget = expenseRepository.sumAmountByTripId(tripId);
                 BigDecimal plannedBudget = Optional.ofNullable(trip.getTotalBudget()).orElse(BigDecimal.ZERO);
-                List<String> alerts = new ArrayList<>();
-                weatherAlertRepository.findTopByTripIdOrderByCreatedAtDesc(tripId)
-                                .ifPresent(alert -> alerts.add(formatAlert(alert)));
-                if (weatherAlertRepository.countByTripIdAndIsResolvedFalse(tripId) > 0) {
-                        alerts.add("There are unresolved weather alerts for this trip");
+                ItineraryItem nextItem = items.stream()
+                                .filter(item -> !today.isBefore(trip.getStartDate()) && !today.isAfter(trip.getEndDate()))
+                                .filter(item -> item.getDayNumber() == currentDay)
+                                .filter(item -> item.getStartTime() == null || !item.getStartTime().isBefore(java.time.LocalTime.now()))
+                                .sorted(java.util.Comparator.comparing(ItineraryItem::getStartTime,
+                                        java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder()))).findFirst().orElse(null);
+                String mapsUrl = null;
+                if (nextItem != null && nextItem.getPlace() != null) {
+                        var place = nextItem.getPlace();
+                        String destination = place.getLatitude() != null && place.getLongitude() != null
+                                        ? place.getLatitude() + "," + place.getLongitude() : place.getName();
+                        if (destination != null) mapsUrl = "https://www.google.com/maps/dir/?api=1&destination="
+                                        + java.net.URLEncoder.encode(destination, java.nio.charset.StandardCharsets.UTF_8);
                 }
+                List<String> alerts = new ArrayList<>();
                 if (plannedBudget.signum() > 0) {
                         BigDecimal overspend = spentBudget.subtract(plannedBudget);
                         if (overspend.signum() > 0) {
@@ -217,59 +120,29 @@ public class TripInsightServiceImpl implements TripInsightService {
                         }
                 }
 
-                long activeParticipants = tripParticipantRepository.countByTripIdAndIsActiveTrue(tripId);
                 return RuntimeSummaryResponse.builder()
                                 .tripId(tripId)
                                 .tripDate(trip.getStartDate())
                                 .currentDay(currentDay)
                                 .currentDestination(currentDestination)
+                                .nextItemId(nextItem == null ? null : nextItem.getId())
+                                .googleMapsUrl(mapsUrl)
                                 .completedItems(completedItems)
                                 .upcomingItems(upcomingItems)
-                                .activeParticipants(activeParticipants)
-                                .unreadNotifications(notificationRepository.countByUserIdAndIsReadFalse(userId))
                                 .spentBudget(spentBudget)
                                 .plannedBudget(plannedBudget)
                                 .alerts(alerts)
                                 .build();
         }
 
-        private List<Trip> getAccessibleTrips(Long userId) {
-                Map<Long, Trip> trips = new LinkedHashMap<>();
-                tripRepository.findByOwnerIdAndIsDeletedFalse(userId).forEach(trip -> trips.put(trip.getId(), trip));
-                tripParticipantRepository.findByUserIdAndIsActiveTrue(userId).stream()
-                                .map(TripParticipant::getTrip)
-                                .filter(this::isNotDeleted)
-                                .forEach(trip -> trips.putIfAbsent(trip.getId(), trip));
-                return trips.values().stream()
-                                .sorted(Comparator
-                                                .comparing(Trip::getCreatedAt,
-                                                                Comparator.nullsLast(Comparator.naturalOrder()))
-                                                .reversed())
-                                .collect(Collectors.toList());
-        }
-
         private Trip getAccessibleTrip(Long tripId, Long userId) {
                 Trip trip = tripRepository.findByIdAndIsDeletedFalse(tripId)
                                 .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
                 boolean ownsTrip = trip.getOwner() != null && userId.equals(trip.getOwner().getId());
-                boolean joinedTrip = tripParticipantRepository.existsByTripIdAndUserId(tripId, userId);
-                if (!ownsTrip && !joinedTrip) {
-                        throw new IllegalArgumentException("Access denied for this trip");
+                if (!ownsTrip) {
+                        throw new org.springframework.security.access.AccessDeniedException("Access denied for this trip");
                 }
                 return trip;
-        }
-
-        private boolean isNotDeleted(Trip trip) {
-                return trip != null && !trip.isDeleted();
-        }
-
-        private TripMiniResponse toTripMiniResponse(Trip trip) {
-                return TripMiniResponse.builder()
-                                .id(trip.getId())
-                                .destination(trip.getDestination())
-                                .startDate(trip.getStartDate())
-                                .tripStatus(trip.getTripStatus())
-                                .build();
         }
 
         private int calculateCurrentDay(Trip trip, LocalDate today) {
@@ -285,14 +158,5 @@ public class TripInsightServiceImpl implements TripInsightService {
                         return Math.min(currentDay, trip.getDuration());
                 }
                 return currentDay;
-        }
-
-        private String formatAlert(WeatherAlert alert) {
-                String severity = alert.getSeverity() != null ? alert.getSeverity().name()
-                                : AlertSeverity.MEDIUM.name();
-                String type = alert.getAlertType() != null ? alert.getAlertType().name() : "WEATHER";
-                String action = alert.getSuggestedAction() != null ? alert.getSuggestedAction()
-                                : "Review itinerary conditions";
-                return severity + " " + type + ": " + action;
         }
 }

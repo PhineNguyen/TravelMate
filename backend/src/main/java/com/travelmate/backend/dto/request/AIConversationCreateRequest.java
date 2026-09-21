@@ -15,6 +15,7 @@ public class AIConversationCreateRequest {
     @NotNull(message = "userId is required")
     private Long userId;
 
+    @NotNull(message = "tripId is required")
     private Long tripId;
 
     private String sessionTitle;

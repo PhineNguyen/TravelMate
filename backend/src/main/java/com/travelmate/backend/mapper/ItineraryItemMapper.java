@@ -11,6 +11,7 @@ public class ItineraryItemMapper {
                 .id(i.getId())
                 .tripId(i.getTrip() != null ? i.getTrip().getId() : null)
                 .placeId(i.getPlace() != null ? i.getPlace().getId() : null)
+                .place(PlaceMapper.toDto(i.getPlace()))
                 .dayNumber(i.getDayNumber())
                 .startTime(i.getStartTime())
                 .duration(i.getDuration())

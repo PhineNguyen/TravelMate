@@ -23,24 +23,27 @@ public class ItineraryItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(itineraryItemService.create(dto));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ItineraryItemDTO> get(@PathVariable Long id) {
+        // Đã bỏ check null vì findById trong Service sẽ tự ném lỗi nếu không tìm thấy
+        return ResponseEntity.ok(itineraryItemService.findById(id));
+    }
+
+    // Đã sửa lại thành @PathVariable để khớp với đường dẫn /trip/{tripId}
+    @GetMapping("/trip/{tripId}")
+    public ResponseEntity<List<ItineraryItemDTO>> getByTrip(@PathVariable Long tripId) {
+        return ResponseEntity.ok(itineraryItemService.findByTripId(tripId));
+    }
+
+    @PutMapping("/reorder")
+    public ResponseEntity<Void> reorder(@RequestBody List<ItineraryItemDTO> items) {
+        itineraryItemService.reorder(items);
+        return ResponseEntity.ok().build();
+    }
     @PutMapping("/{id}")
     public ResponseEntity<ItineraryItemDTO> update(@PathVariable Long id, @Valid @RequestBody ItineraryItemDTO dto) {
         dto.setId(id);
         return ResponseEntity.ok(itineraryItemService.update(dto));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ItineraryItemDTO> get(@PathVariable Long id) {
-        ItineraryItemDTO dto = itineraryItemService.findById(id);
-        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<ItineraryItemDTO>> list(@RequestParam(required = false) Long tripId) {
-        if (tripId != null) {
-            return ResponseEntity.ok(itineraryItemService.findByTripId(tripId));
-        }
-        return ResponseEntity.ok(itineraryItemService.listAll());
     }
 
     @DeleteMapping("/{id}")

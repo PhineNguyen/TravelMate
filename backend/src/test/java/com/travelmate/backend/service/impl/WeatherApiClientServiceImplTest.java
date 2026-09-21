@@ -1,8 +1,6 @@
 package com.travelmate.backend.service.impl;
 
 import com.travelmate.backend.dto.CurrentWeatherDTO;
-import com.travelmate.backend.repository.WeatherAlertRepository;
-import com.travelmate.backend.repository.WeatherSnapshotRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,12 +28,6 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 @ExtendWith(MockitoExtension.class)
 class WeatherApiClientServiceImplTest {
 
-    @Mock
-    private WeatherAlertRepository weatherAlertRepository;
-
-    @Mock
-    private WeatherSnapshotRepository weatherSnapshotRepository;
-
     private WeatherApiClientServiceImpl weatherService;
     private MockRestServiceServer mockServer;
 
@@ -45,10 +37,7 @@ class WeatherApiClientServiceImplTest {
         mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
         RestClient restClient = restClientBuilder.build();
 
-        weatherService = new WeatherApiClientServiceImpl(
-                restClient,
-                weatherAlertRepository,
-                weatherSnapshotRepository);
+        weatherService = new WeatherApiClientServiceImpl(restClient);
 
         ReflectionTestUtils.setField(weatherService, "apiKey", "test-api-key-123");
         ReflectionTestUtils.setField(weatherService, "apiUrl", "https://api.openweathermap.org/data/2.5");

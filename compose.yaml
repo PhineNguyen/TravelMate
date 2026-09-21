@@ -1,0 +1,46 @@
+# Local quick start: docker compose up --build -d
+name: travelmate-local
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: travelmate
+      POSTGRES_USER: ${POSTGRES_USER:-travelmate}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-travelmate-local-only}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/travelmate
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-travelmate}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-travelmate-local-only}
+      AI_SERVICE_URL: ${AI_SERVICE_URL:-http://host.docker.internal:8000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build: ./mobile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}:8080"
+
+volumes:
+  postgres_data:

@@ -12,5 +12,7 @@ public interface AIConversationService {
 
     List<AIConversationDTO> listAll();
 
+    List<AIConversationDTO> findByTripId(Long tripId);
+
     void delete(Long id);
 }

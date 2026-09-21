@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ExpenseServiceImpl implements ExpenseService {
+    private final com.travelmate.backend.security.ResourceAccess access;
 
     private final ExpenseRepository expenseRepository;
     private final TripRepository tripRepository;
@@ -54,6 +55,8 @@ public class ExpenseServiceImpl implements ExpenseService {
         User user = userRepository.findById(dto.getCreatedById())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        access.trip(dto.getTripId());
+        access.user(dto.getCreatedById());
         Expense e = ExpenseMapper.toEntity(dto);
         e.setTrip(trip);
         e.setCreatedBy(user);
@@ -87,6 +90,8 @@ public class ExpenseServiceImpl implements ExpenseService {
         Expense existing = expenseRepository.findByIdAndIsDeletedFalse(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Expense not found or has been deleted"));
 
+        access.trip(existing.getTrip().getId());
+        if (dto.getTripId() != null && !dto.getTripId().equals(existing.getTrip().getId())) throw new IllegalArgumentException("Cannot change expense trip");
         if (dto.getAmount() != null) {
             if (dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException("amount must be > 0");
@@ -97,8 +102,6 @@ public class ExpenseServiceImpl implements ExpenseService {
             existing.setCategory(dto.getCategory());
         if (dto.getDescription() != null)
             existing.setDescription(dto.getDescription());
-        if (dto.getIsShared() != null)
-            existing.setShared(dto.getIsShared());
 
         // ✅ ĐỒNG BỘ: Hỗ trợ cập nhật ngày chi tiêu thực tế nếu có truyền lên
         if (dto.getExpenseDate() != null)
@@ -133,6 +136,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public Page<ExpenseResponse> searchExpenses(Long tripId, ExpenseCategory category, Pageable pageable) {
+        access.trip(tripId);
         Page<Expense> expensePage;
 
         // ✅ ĐỒNG BỘ: Logic lọc động kết hợp phân trang
@@ -157,6 +161,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         // ✅ ĐỒNG BỘ LOGIC: Thực hiện gọi hàm update xóa mềm tối ưu dưới DB thay vì hard
         // delete
+        Expense expense = expenseRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new java.util.NoSuchElementException("Expense not found"));
+        access.trip(expense.getTrip().getId());
         int rowsAffected = expenseRepository.softDeleteById(id);
         if (rowsAffected == 0) {
             throw new IllegalArgumentException("Expense not found or already deleted");

@@ -25,7 +25,6 @@ public class TripDTO {
     private Long templateId;
     private Boolean isCustomized;
     private TripStatus tripStatus;
-    private String inviteCode;
 
     // ✅ Bổ sung bộ đôi trường phục vụ tính năng Xóa mềm (Soft Delete)
     private Boolean isDeleted;

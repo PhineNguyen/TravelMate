@@ -22,7 +22,6 @@ public class ExpenseDTO {
     private LocalDate expenseDate;
 
     private LocalDateTime createdAt;
-    private Boolean isShared;
 
     // Trạng thái và thời gian xóa mềm để đồng bộ cấu trúc với TripDTO
     private Boolean isDeleted;

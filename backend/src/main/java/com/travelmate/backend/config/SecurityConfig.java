@@ -59,42 +59,13 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 // 2. Mở công khai API Auth
-                                                .requestMatchers("/api/auth/**", "/api/v1/auth/**").permitAll()
-
-                                                // 3. Cho phép đọc dữ liệu trip/template/weather từ frontend dev khi
-                                                // test local
-                                                .requestMatchers(HttpMethod.GET, "/api/trips", "/api/trips/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/trip-templates",
-                                                                "/api/trip-templates/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/weather-snapshots",
-                                                                "/api/weather-snapshots/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/weather-alerts",
-                                                                "/api/weather-alerts/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/weather",
-                                                                "/api/weather/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/notifications",
-                                                                "/api/notifications/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/expenses",
-                                                                "/api/expenses/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/shared-trip-invites",
-                                                                "/api/shared-trip-invites/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/analytics-snapshots",
-                                                                "/api/analytics-snapshots/**")
-                                                .permitAll()
-
-                                                // 4. Mở endpoint xử lý lỗi mặc định của Spring
+                                                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/oauth",
+                                                        "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                                                 .requestMatchers("/error").permitAll()
 
                                                 // 5. Các API còn lại bắt buộc có JWT Token
                                                 .anyRequest().authenticated())
+                                .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, ex) -> response.sendError(401)))
                                 .formLogin(form -> form.disable());
 
                 http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

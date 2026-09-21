@@ -14,14 +14,12 @@ import com.travelmate.backend.entity.enums.TripStatus;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.util.ArrayList;
-import java.util.List;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "trips", indexes = {
         @Index(name = "idx_trip_owner", columnList = "owner_id"),
-        @Index(name = "idx_trip_start_date", columnList = "start_date"),
-        @Index(name = "idx_trip_invite_code", columnList = "invite_code")
+        @Index(name = "idx_trip_start_date", columnList = "start_date")
 })
 
 @Getter
@@ -48,6 +46,9 @@ public class Trip {
     @Column(name = "duration", nullable = false)
     private Integer duration;
 
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
+
     @Column(name = "traveler_count", nullable = false)
     private Integer travelerCount;
 
@@ -69,9 +70,6 @@ public class Trip {
     @Column(name = "trip_status", nullable = false)
     private TripStatus tripStatus;
 
-    @Column(name = "invite_code", nullable = false, length = 100)
-    private String inviteCode;
-
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
@@ -88,6 +86,14 @@ public class Trip {
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<TripParticipant> tripParticipations = new ArrayList<>();
+    private java.util.List<ItineraryItem> itineraryItems = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<Expense> expenses = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<AIConversation> conversations = new java.util.ArrayList<>();
 
 }

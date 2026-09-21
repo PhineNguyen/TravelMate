@@ -12,5 +12,7 @@ public interface PlaceService {
 
     List<PlaceDTO> listAll();
 
+    List<PlaceDTO> search(String query);
+
     void delete(Long id);
 }

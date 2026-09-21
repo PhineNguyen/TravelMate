@@ -4,3 +4,6 @@ target
 README.md
 .idea
 .vscode
+.env
+.env.*
+*.log

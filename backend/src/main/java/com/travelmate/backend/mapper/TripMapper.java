@@ -12,6 +12,7 @@ public class TripMapper {
                 .ownerId(e.getOwner() != null ? e.getOwner().getId() : null)
                 .destination(e.getDestination())
                 .startDate(e.getStartDate())
+                .endDate(e.getEndDate())
                 .duration(e.getDuration())
                 .travelerCount(e.getTravelerCount())
                 .totalBudget(e.getTotalBudget())
@@ -19,7 +20,6 @@ public class TripMapper {
                 .templateId(e.getTemplate() != null ? e.getTemplate().getId() : null)
                 .isCustomized(e.isCustomized())
                 .tripStatus(e.getTripStatus())
-                .inviteCode(e.getInviteCode())
                 .createdAt(e.getCreatedAt())
                 .updatedAt(e.getUpdatedAt())
                 .build();

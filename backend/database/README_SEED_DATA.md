@@ -6,13 +6,8 @@ File `seed_frontend_demo.sql` bo sung du lieu mau cho cac man hinh frontend:
 - `users` va `user_preferences`: tai khoan va du lieu onboarding mau
 - `places`: dia diem cho itinerary/map
 - `trips`: cac chuyen di cho Home va All Trips
-- `trip_participants`: owner cua trip
 - `itinerary_item`: lich trinh mau
 - `expenses`: khoan chi tieu mau
-- `shared_trip_invites`: loi moi chia se trip
-- `notifications`: thong bao budget, weather va invite
-- `weather_snapshot`: du lieu thoi tiet
-- `analytics_snapshot`: du lieu Travel Insights
 
 Script khong xoa du lieu cu. Co the chay lai nhieu lan; cac ban ghi mau trung email, title, trip hoac noi dung se duoc bo qua.
 

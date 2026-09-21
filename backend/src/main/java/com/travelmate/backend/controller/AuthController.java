@@ -6,7 +6,6 @@ import com.travelmate.backend.dto.request.LogoutRequest;
 import com.travelmate.backend.dto.request.OAuthLoginRequest;
 import com.travelmate.backend.dto.request.PasswordResetConfirmRequest;
 import com.travelmate.backend.dto.request.PasswordResetRequest;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.travelmate.backend.dto.response.AuthResponse;
 import com.travelmate.backend.dto.response.PasswordResetResponse;
 import com.travelmate.backend.service.AuthService;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -54,7 +52,9 @@ public class AuthController {
     }
 
     @DeleteMapping("/logout")
-    public ResponseEntity<Void> logout(@Valid @RequestBody(required = false) LogoutRequest request) {
+    public ResponseEntity<Void> logout(@org.springframework.web.bind.annotation.RequestHeader("Authorization") String authorization) {
+        LogoutRequest request = new LogoutRequest();
+        request.setRefreshToken(authorization.replaceFirst("^Bearer ", ""));
         authService.logout(request);
         return ResponseEntity.noContent().build();
     }

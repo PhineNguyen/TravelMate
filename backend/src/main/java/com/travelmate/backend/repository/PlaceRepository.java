@@ -14,6 +14,8 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
 
     Optional<Place> findByNameAndCityAndCountry(String name, String city, String country);
 
+    List<Place> findByIsActiveTrueAndNameContainingIgnoreCase(String name);
+
     boolean existsByNameAndCityAndCountry(String name, String city, String country);
 
     List<Place> findByCity(String city);

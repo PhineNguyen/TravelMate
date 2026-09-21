@@ -36,6 +36,4 @@ public class ExpenseRequest {
     private String description;
 
     private LocalDate expenseDate;
-
-    private Boolean isShared;
 }

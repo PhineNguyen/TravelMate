@@ -5,7 +5,6 @@ import com.travelmate.backend.dto.request.TripUpdateRequest;
 import com.travelmate.backend.dto.request.TripItineraryGenerateRequest;
 import com.travelmate.backend.dto.response.TripResponse;
 import com.travelmate.backend.dto.response.AiItineraryGenerateResponse;
-import com.travelmate.backend.service.WeatherApiClientService;
 import com.travelmate.backend.service.AiServiceClient;
 import com.travelmate.backend.entity.Trip;
 import com.travelmate.backend.entity.ItineraryItem;
@@ -41,7 +40,6 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,10 +48,10 @@ public class TripServiceImpl implements TripService {
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
     private final TripTemplateRepository tripTemplateRepository;
-    private final WeatherApiClientService weatherApiClientService;
     private final AiServiceClient aiServiceClient;
     private final ItineraryItemRepository itineraryItemRepository;
     private final PlaceRepository placeRepository;
+    private final com.travelmate.backend.repository.TemplateItemRepository templateItemRepository;
 
     private void checkOwnership(Trip trip, User user) {
         if (!trip.getOwner().getId().equals(user.getId())) {
@@ -63,31 +61,35 @@ public class TripServiceImpl implements TripService {
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() == null) {
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication.getPrincipal() == null) {
             throw new IllegalStateException("User not authenticated");
         }
+
         Object principal = authentication.getPrincipal();
+
         if (principal instanceof User user) {
             return user;
         }
+
         if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
             return userRepository.findByEmailAndActiveTrue(userDetails.getUsername())
-                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Authenticated user not found in database"));
         }
-        throw new IllegalStateException("Unsupported authentication principal type: " + principal.getClass().getName());
+
+        throw new IllegalStateException(
+                "Unsupported authentication principal type: "
+                        + principal.getClass().getName());
     }
 
     private void checkReadAccess(Trip trip, User user) {
         if (trip.getOwner().getId().equals(user.getId())) {
             return;
         }
-
-        boolean isCollaborator = trip.getTripParticipations().stream()
-                .anyMatch(participant -> participant.getUser().getId().equals(user.getId()));
-
-        if (!isCollaborator) {
-            throw new AccessDeniedException("Access denied. You are not a collaborator on this trip.");
-        }
+        throw new AccessDeniedException("Access denied. You are not the owner of this trip.");
     }
 
     @Override
@@ -96,50 +98,60 @@ public class TripServiceImpl implements TripService {
         if (dto == null) {
             throw new IllegalArgumentException("TripRequest must not be null");
         }
+
         if (dto.getId() != null) {
             throw new IllegalArgumentException("Id must be null when creating");
         }
-        if (dto.getOwnerId() == null) {
-            throw new IllegalArgumentException("OwnerId is required");
-        }
-        if (trimToNull(dto.getDestination()) == null) {
+
+        User owner = getCurrentUser();
+
+        String destination = trimToNull(dto.getDestination());
+        if (destination == null) {
             throw new IllegalArgumentException("Destination is required");
         }
+
         if (dto.getStartDate() == null) {
-            throw new IllegalArgumentException("StartDate is required");
+            throw new IllegalArgumentException("Start date is required");
         }
+        if (dto.getEndDate() == null) {
+            throw new IllegalArgumentException("End date is required");
+        }
+        if (dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("End date must be greater than or equal to start date");
+        }
+
         if (dto.getDuration() == null || dto.getDuration() <= 0) {
-            throw new IllegalArgumentException("Duration must be > 0");
+            throw new IllegalArgumentException(
+                    "Duration must be greater than zero");
         }
 
         if (dto.getTravelerCount() == null || dto.getTravelerCount() <= 0) {
-            throw new IllegalArgumentException("Traveler count must be > 0");
-        }
-        if (dto.getPlanningMode() == null) {
-            throw new IllegalArgumentException("PlanningMode is required");
+            throw new IllegalArgumentException(
+                    "Traveler count must be greater than zero");
         }
 
-        User owner = userRepository.findById(dto.getOwnerId())
-                .orElseThrow(() -> new IllegalArgumentException("OwnerId not found"));
+        if (dto.getTotalBudget() != null
+                && dto.getTotalBudget().signum() < 0) {
+            throw new IllegalArgumentException("Budget must not be negative");
+        }
+
+        if (dto.getPlanningMode() == null) {
+            throw new IllegalArgumentException("Planning mode is required");
+        }
 
         TripTemplate tripTemplate = null;
+        if (dto.getPlanningMode() == com.travelmate.backend.entity.enums.PlanningMode.TEMPLATE
+                && dto.getTemplateId() == null) {
+            throw new IllegalArgumentException("templateId is required for TEMPLATE mode");
+        }
         if (dto.getTemplateId() != null) {
             tripTemplate = tripTemplateRepository.findById(dto.getTemplateId())
                     .orElseThrow(() -> new IllegalArgumentException("Template not found"));
         }
 
-        java.math.BigDecimal totalBudget = dto.getTotalBudget() != null
+        BigDecimal totalBudget = dto.getTotalBudget() != null
                 ? dto.getTotalBudget().setScale(2, RoundingMode.HALF_UP)
                 : null;
-
-        String inviteCode = trimToNull(dto.getInviteCode());
-        if (inviteCode == null) {
-            inviteCode = generateUniqueInviteCode();
-        } else {
-            if (tripRepository.existsByInviteCodeAndIsDeletedFalse(inviteCode)) {
-                throw new IllegalArgumentException("Invite code already in use");
-            }
-        }
 
         TripStatus status = dto.getTripStatus() != null ? dto.getTripStatus() : TripStatus.DRAFT;
         validateCreateStatus(status);
@@ -149,6 +161,7 @@ public class TripServiceImpl implements TripService {
                 .owner(owner)
                 .destination(trimToNull(dto.getDestination()))
                 .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
                 .duration(dto.getDuration())
                 .travelerCount(dto.getTravelerCount()) // ✅ Map trường mới vào Entity
                 .totalBudget(totalBudget)
@@ -156,14 +169,23 @@ public class TripServiceImpl implements TripService {
                 .template(tripTemplate)
                 .isCustomized(isCustomized)
                 .tripStatus(status)
-                .inviteCode(inviteCode)
                 .isDeleted(false)
                 .build();
         try {
             Trip savedTrip = tripRepository.save(trip);
-            // Fetch weather data if trip is created as active
-            if (savedTrip.getTripStatus() == TripStatus.ACTIVE) {
-                weatherApiClientService.fetchAndProcessWeatherData(savedTrip.getDestination(), savedTrip);
+            if (dto.getPlanningMode() == com.travelmate.backend.entity.enums.PlanningMode.TEMPLATE) {
+                for (var item : templateItemRepository.findByTemplateIdOrderByDayNumberAscOrderIndexAsc(dto.getTemplateId())) {
+                    if (item.getDayNumber() > savedTrip.getDuration()) {
+                        throw new IllegalArgumentException("Template exceeds trip duration");
+                    }
+                    itineraryItemRepository.save(ItineraryItem.builder().trip(savedTrip).place(item.getPlace())
+                            .dayNumber(item.getDayNumber()).orderIndex(item.getOrderIndex())
+                            .startTime(item.getStartTime()).duration(item.getDuration()).note(item.getNote())
+                            .sourceType(SourceType.TEMPLATE).build());
+                }
+            } else if (dto.getPlanningMode() == com.travelmate.backend.entity.enums.PlanningMode.AI) {
+                generateItineraryWithAI(savedTrip.getId(), TripItineraryGenerateRequest.builder()
+                        .travelStyle(dto.getTravelStyle()).preferences(dto.getPreferences()).build());
             }
             return TripMapper.toResponse(savedTrip);
         } catch (DataIntegrityViolationException ex) {
@@ -187,8 +209,6 @@ public class TripServiceImpl implements TripService {
         User currentUser = getCurrentUser();
         checkOwnership(existing, currentUser);
 
-        TripStatus previousStatus = existing.getTripStatus();
-
         if (isTerminal(existing.getTripStatus())) {
             throw new IllegalArgumentException("Trip is read-only in terminal state");
         }
@@ -196,6 +216,10 @@ public class TripServiceImpl implements TripService {
             existing.setDestination(trimToNull(dto.getDestination()));
         if (dto.getStartDate() != null)
             existing.setStartDate(dto.getStartDate());
+        if (dto.getEndDate() != null)
+            existing.setEndDate(dto.getEndDate());
+        if (existing.getEndDate() == null || existing.getEndDate().isBefore(existing.getStartDate()))
+            throw new IllegalArgumentException("End date must be greater than or equal to start date");
         if (dto.getDuration() != null) {
             if (dto.getDuration() <= 0)
                 throw new IllegalArgumentException("Duration must not be <= 0");
@@ -208,6 +232,8 @@ public class TripServiceImpl implements TripService {
             existing.setTravelerCount(dto.getTravelerCount());
         }
         if (dto.getTotalBudget() != null) {
+            if (dto.getTotalBudget().signum() < 0)
+                throw new IllegalArgumentException("Budget must not be negative");
             existing.setTotalBudget(dto.getTotalBudget().setScale(2, RoundingMode.HALF_UP));
         }
         if (dto.getPlanningMode() != null)
@@ -224,12 +250,6 @@ public class TripServiceImpl implements TripService {
         }
         try {
             Trip updatedTrip = tripRepository.save(existing);
-
-            // If trip status changed to ACTIVE, fetch weather data
-            if (previousStatus != TripStatus.ACTIVE && updatedTrip.getTripStatus() == TripStatus.ACTIVE) {
-                weatherApiClientService.fetchAndProcessWeatherData(updatedTrip.getDestination(), updatedTrip);
-            }
-
             return TripMapper.toResponse(updatedTrip);
         } catch (DataIntegrityViolationException ex) {
             throw new DataIntegrityViolationException("Database constraint violated on update.", ex);
@@ -255,14 +275,11 @@ public class TripServiceImpl implements TripService {
     @Override
     @Transactional(readOnly = true)
     public List<TripResponse> listAll() {
-        return tripRepository.findAllByIsDeletedFalse().stream()
+        return tripRepository.findByOwnerIdAndIsDeletedFalse(getCurrentUser().getId(), Pageable.unpaged()).stream()
                 .map(TripMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * ✅ HOÀN THIỆN: Tìm kiếm, lọc động và phân trang danh sách chuyến đi (Chưa xóa)
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<TripResponse> searchTrips(Long ownerId, TripStatus status, String destination, Pageable pageable) {
@@ -286,6 +303,21 @@ public class TripServiceImpl implements TripService {
         // Mặc định trả về toàn bộ dữ liệu chưa xóa có phân trang
         return tripRepository.findAllByIsDeletedFalse(pageable)
                 .map(TripMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TripResponse> getMyTrips(String view, Pageable pageable) {
+        User currentUser = getCurrentUser();
+        String selectedView = view == null ? "owned" : view.trim().toLowerCase();
+
+        Page<Trip> trips = switch (selectedView) {
+            case "owned" -> tripRepository.findByOwnerIdAndIsDeletedFalse(currentUser.getId(), pageable);
+            case "completed" -> tripRepository.findAccessibleTripsByStatus(
+                    currentUser.getId(), TripStatus.COMPLETED, pageable);
+            default -> throw new IllegalArgumentException("View must be owned or completed");
+        };
+        return trips.map(TripMapper::toResponse);
     }
 
     /**
@@ -325,6 +357,9 @@ public class TripServiceImpl implements TripService {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
 
+        User currentUser = getCurrentUser();
+        checkOwnership(trip, currentUser);
+
         if (!trip.isDeleted()) {
             throw new IllegalArgumentException("Trip is already active and does not need restoration");
         }
@@ -334,14 +369,6 @@ public class TripServiceImpl implements TripService {
         trip.setDeletedAt(null);
 
         return TripMapper.toResponse(tripRepository.save(trip));
-    }
-
-    private String generateUniqueInviteCode() {
-        String code;
-        do {
-            code = UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
-        } while (tripRepository.existsByInviteCodeAndIsDeletedFalse(code));
-        return code;
     }
 
     private String trimToNull(String v) {
@@ -410,6 +437,10 @@ public class TripServiceImpl implements TripService {
                 request.getTravelStyle(),
                 travelerCount,
                 request.getPreferences());
+
+        if (response == null || response.getItinerary() == null || response.getItinerary().isEmpty()) {
+            throw new IllegalStateException("AI returned no itinerary");
+        }
 
         // 4. Xóa sạch lịch trình cũ nếu có
         List<ItineraryItem> oldItems = itineraryItemRepository.findByTripId(id);

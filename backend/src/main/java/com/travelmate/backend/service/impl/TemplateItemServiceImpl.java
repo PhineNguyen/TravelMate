@@ -27,6 +27,16 @@ public class TemplateItemServiceImpl implements TemplateItemService {
     private final PlaceRepository placeRepository;
 
     @Override
+    @Transactional(readOnly = true)
+    public List<TemplateItemDTO> findByTemplateId(Long templateId) {
+        if (!templateRepository.existsById(templateId)) {
+            throw new java.util.NoSuchElementException("Template not found");
+        }
+        return repository.findByTemplateIdOrderByDayNumberAscOrderIndexAsc(templateId).stream()
+                .map(TemplateItemMapper::toDto).toList();
+    }
+
+    @Override
     @Transactional
     public TemplateItemDTO create(TemplateItemDTO dto) {
         if (dto == null)

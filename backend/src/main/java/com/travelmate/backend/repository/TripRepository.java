@@ -31,6 +31,17 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     Page<Trip> findByOwnerIdAndIsDeletedFalse(Long ownerId, Pageable pageable);
 
+    @Query("""
+            select distinct t from Trip t
+            where t.isDeleted = false
+              and t.tripStatus = :status
+              and t.owner.id = :userId
+            """)
+    Page<Trip> findAccessibleTripsByStatus(
+            @Param("userId") Long userId,
+            @Param("status") TripStatus status,
+            Pageable pageable);
+
     List<Trip> findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(Long ownerId);
 
     // ==================== TRUY VẤN THEO TRẠNG THÁI (CHƯA XÓA) ====================
@@ -39,11 +50,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     Page<Trip> findByTripStatusAndIsDeletedFalse(TripStatus tripStatus, Pageable pageable);
 
     List<Trip> findByOwnerIdAndTripStatusAndIsDeletedFalse(Long ownerId, TripStatus tripStatus);
-
-    // ==================== TRUY VẤN THEO MÃ MỜI (CHƯA XÓA) ====================
-    Optional<Trip> findByInviteCodeAndIsDeletedFalse(String inviteCode);
-
-    boolean existsByInviteCodeAndIsDeletedFalse(String inviteCode);
 
     // ==================== BỘ LỌC ĐỊA ĐIỂM & THỜI GIAN (CHƯA XÓA)
     // ====================
@@ -55,7 +61,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     // ==================== CUSTOM HÀNH ĐỘNG XÓA MỀM (SOFT DELETE)
     // ====================
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE Trip t SET t.isDeleted = true, t.deletedAt = CURRENT_TIMESTAMP WHERE t.id = :id AND t.isDeleted = false")
     int softDeleteById(@Param("id") Long id);
@@ -71,10 +77,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     Page<Trip> findByTripStatus(TripStatus tripStatus, Pageable pageable);
 
     List<Trip> findByOwnerIdAndTripStatus(Long ownerId, TripStatus tripStatus);
-
-    Optional<Trip> findByInviteCode(String inviteCode);
-
-    boolean existsByInviteCode(String inviteCode);
 
     List<Trip> findByStartDateBetween(LocalDate from, LocalDate to);
 
