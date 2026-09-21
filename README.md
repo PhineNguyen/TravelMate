@@ -13,7 +13,7 @@ Mở **http://localhost:3000** sau khi backend khởi động. Docker tự cài 
 - `docker compose logs -f backend frontend`: xem trạng thái khởi động.
 - `docker compose down`: dừng stack, giữ dữ liệu PostgreSQL trong volume.
 - Chạy lại `docker compose up --build -d` sau khi cập nhật source.
-- `backend/.env` là tùy chọn cho stack này. AI cần service riêng tại `host.docker.internal:8000` (hoặc đặt `AI_SERVICE_URL` trong `.env` ở thư mục gốc); email và thời tiết thật cần cấu hình nhà cung cấp. Stack không khởi chạy AI service.
+- `backend/.env` là tùy chọn cho stack này. AI cần service riêng tại `host.docker.internal:8001` (hoặc đặt `AI_SERVICE_URL` trong `.env` ở thư mục gốc); email và thời tiết thật cần cấu hình nhà cung cấp. Stack không khởi chạy AI service.
 - Cấu hình mặc định dành cho chạy local. Stack `travelmate-local` dùng database riêng, không dùng lại database của Compose trong `backend/`.
 
 Để mở bằng trình duyệt điện thoại cùng mạng, đặt `WEB_BIND_ADDRESS=0.0.0.0` trong `.env` ở thư mục gốc, chạy lại lệnh trên và truy cập `http://<IP-LAN-máy-chạy-Docker>:3000` (cho phép cổng 3000 qua firewall). Có thể đổi cổng bằng `WEB_PORT=3001`. API tự đi qua cùng địa chỉ web; nếu trước đó đã lưu máy chủ thủ công trong app, cập nhật cài đặt kết nối về địa chỉ web đang truy cập.

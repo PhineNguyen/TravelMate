@@ -24,6 +24,9 @@ services:
     depends_on:
       ai-gpt-db:
         condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
     environment:
       - PORT=8001
       - GROQ_API_KEY=${GROQ_API_KEY}

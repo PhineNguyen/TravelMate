@@ -7,7 +7,7 @@ Tai lieu nay liet ke cac endpoint REST dang duoc khai bao trong source code vao 
 | Dich vu | Base URL mac dinh | Ghi chu |
 | --- | --- | --- |
 | Backend Spring Boot | `http://localhost:8080` | Port co the thay doi theo cau hinh khi chay. |
-| AI Service FastAPI | `http://localhost:8000` | Gia tri `AI_SERVICE_URL` cua backend mac dinh tro den dia chi nay. |
+| AI Service FastAPI | `http://localhost:8001` | Gia tri `AI_SERVICE_URL` cua backend mac dinh tro den dia chi nay. |
 
 ## Quy uoc
 

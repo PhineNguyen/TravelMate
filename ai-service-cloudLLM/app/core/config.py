@@ -6,7 +6,7 @@ load_dotenv()
 class Settings:
     GEOAPIFY_API_KEY: str = os.getenv("GEOAPIFY_API_KEY", "")
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
     PORT: int = int(os.getenv("PORT", "8001"))
     DB_HOST: str = os.getenv("DB_HOST", "localhost")
     DB_PORT: int = int(os.getenv("DB_PORT", "5435"))

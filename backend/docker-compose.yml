@@ -15,14 +15,14 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: travelmate
-      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
-      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-postgres}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d travelmate"]
+      test: ["CMD-SHELL", "pg_isready -U ${SPRING_DATASOURCE_USERNAME:-postgres} -d travelmate"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,13 +39,17 @@ services:
         condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
     environment:
       SERVER_PORT: 8080
       SPRING_SECURITY_USER_NAME: admin
       SPRING_SECURITY_USER_PASSWORD: admin123
       SPRING_APPLICATION_NAME: travelmate-backend
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/travelmate
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-postgres}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
@@ -54,7 +58,7 @@ services:
       SPRING_MAIL_USERNAME: nguyenquangtien2005z@gmail.com
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-      AI_SERVICE_URL: http://host.docker.internal:8001
+      AI_SERVICE_URL: ${AI_SERVICE_URL:-http://host.docker.internal:8001}
     ports:
       - "8080:8080"
     # Cấu hình dùng để tự động build lại backend khi bạn sửa code ở máy local (Development)
