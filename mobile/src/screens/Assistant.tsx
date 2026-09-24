@@ -12,6 +12,85 @@ import { useApp, useResource } from '../store';
 import { Button, C, Empty, ErrorBox, Icon, Loading, Pill, S } from '../ui';
 import type { Conversation, Message, Trip } from '../types';
 import { errorText } from '../lib';
+function renderInlineText(text: string, baseStyle: any, boldStyle: any) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      return (
+        <Text key={index} style={boldStyle}>
+          {part.slice(2, -2)}
+        </Text>
+      );
+    }
+    return (
+      <Text key={index} style={baseStyle}>
+        {part}
+      </Text>
+    );
+  });
+}
+
+function FormattedChatMessage({
+  content,
+  isUser,
+}: {
+  content: string;
+  isUser: boolean;
+}) {
+  const textColor = isUser ? C.white : C.ink;
+  const baseTextStyle = [S.body, { color: textColor, lineHeight: 23 }];
+  const boldTextStyle = [
+    S.body,
+    { fontFamily: 'DMBold', fontWeight: '700' as const, color: textColor, lineHeight: 23 },
+  ];
+
+  const lines = content.split('\n');
+
+  return (
+    <View style={{ gap: 6 }}>
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <View key={idx} style={{ height: 4 }} />;
+        }
+
+        const bulletMatch = trimmed.match(/^([-*•])\s+(.*)$/);
+        const numberMatch = trimmed.match(/^(\d+[\.\)])\s+(.*)$/);
+
+        if (bulletMatch) {
+          return (
+            <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start', paddingLeft: 4 }}>
+              <Text style={[baseTextStyle, { marginRight: 8, lineHeight: 23 }]}>•</Text>
+              <Text selectable style={[baseTextStyle, { flex: 1 }]}>
+                {renderInlineText(bulletMatch[2], baseTextStyle, boldTextStyle)}
+              </Text>
+            </View>
+          );
+        }
+
+        if (numberMatch) {
+          return (
+            <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start', paddingLeft: 4 }}>
+              <Text style={[boldTextStyle, { marginRight: 8, lineHeight: 23 }]}>
+                {numberMatch[1]}
+              </Text>
+              <Text selectable style={[baseTextStyle, { flex: 1 }]}>
+                {renderInlineText(numberMatch[2], baseTextStyle, boldTextStyle)}
+              </Text>
+            </View>
+          );
+        }
+
+        return (
+          <Text key={idx} selectable style={baseTextStyle}>
+            {renderInlineText(line, baseTextStyle, boldTextStyle)}
+          </Text>
+        );
+      })}
+    </View>
+  );
+}
+
 export function AssistantScreen({
   initialTrip,
   createTrip,
@@ -170,15 +249,7 @@ export function AssistantScreen({
                   borderColor: C.line,
                 }}
               >
-                <Text
-                  selectable
-                  style={[
-                    S.body,
-                    { color: m.senderType === 'USER' ? C.white : C.ink, lineHeight: 23 },
-                  ]}
-                >
-                  {m.content}
-                </Text>
+                <FormattedChatMessage content={m.content} isUser={m.senderType === 'USER'} />
               </View>
             </View>
           ))
